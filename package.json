@@ -1,0 +1,31 @@
+{
+  "name": "b",
+  "version": "0.1.0",
+  "description": "cjia framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:baishuiz/b.git"
+  },
+  "keywords": [
+    "javascript",
+    "module",
+    "loader"
+  ],
+  "author": "baishuiz@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/baishuiz/b.js/issues"
+  },
+  "homepage": "https://github.com/baishuiz/b.js",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-concat": "~0.5.1",
+    "grunt-contrib-jasmine": "~0.8.2",
+    "grunt-contrib-uglify": "~0.8.0",
+    "grunt-template-jasmine-istanbul": "~0.3.3"
+  }
+}
