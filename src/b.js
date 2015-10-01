@@ -88,7 +88,7 @@ Air.run(function(require){
             scopeList[appName] = rootScope;
 
             // 构建 subScope
-            generateScopeTree(app, rootScope);
+            generateScopeTree(app.childNodes, rootScope);
 
         }
 

@@ -11,7 +11,7 @@ Air.Module("directive.repeat", function(require){
          var needRepeat = node(target).hasAttribute(directive);
          needRepeat && init();
          var cloneNode = needRepeat && clone();
-         needRepeat && parseScope(target.getAttribute(directive));
+        // needRepeat && parseScope(target.getAttribute(directive));
          var container = needRepeat && document.createDocumentFragment();
 
 
@@ -24,6 +24,9 @@ Air.Module("directive.repeat", function(require){
          function bind(cloneNode){
            beacon({target:target, oldNode:cloneNode})
            .on(EVENTS.DATA_CHANGE, function(){
+             var node      = require("utility.node");
+             var needRepeat = node(this.oldNode).hasAttribute(directive);
+             if(!needRepeat) return;
              var node = this.oldNode;
              var target = this.target;
              parseScope(target.getAttribute(directive));
@@ -57,10 +60,10 @@ Air.Module("directive.repeat", function(require){
                 //parentElement.remove(a)
 
 
-                // beacon.on('hi', {
-                //   dom : newNode,
-                //   $scope : {book:$scope[group][item]}
-                // })
+                beacon.on('hi', {
+                  dom : [newNode],
+                  $scope : {book:$scope[group][item]}
+                })
 
                 container.appendChild(newNode);
 
@@ -68,7 +71,8 @@ Air.Module("directive.repeat", function(require){
 
 
                mend.parentElement.insertBefore(container,mend);
-              //generateScopeTree(container, $scope)
+
+              //generateScopeTree(container, {book:$scope[group][item]})
 
 
 
