@@ -14,8 +14,13 @@ module.exports = function(grunt){
                 src : [
 
                         './libs/*.js',
+                        './src/core/event.js',
+                        './src/utility/*.js',
+                        './src/directive/*.js',
                         './src/core/scope.js',
                         './src/core/scopeList.js',
+                        './src/core/scopeTree.js',
+
                         './src/core/run.js',
                         './src/*.js'
                       ],
@@ -64,4 +69,5 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.registerTask('default', [ 'concat', 'uglify', 'jasmine']);
     grunt.registerTask('package', [ 'concat', 'uglify']);
+    grunt.registerTask('debug', [ 'concat', 'jasmine:pivotal']);
 };

@@ -14,9 +14,9 @@
 <div id="app1" ng-app="f1">
     <div class="age">{{user.feeling}}{{user.age}}</div>
     <div class="name"> {{user.name}}</div>
-    <ul type="{{books.type}}" ng-controller="booklist">
+    <ul id="booklist" type="{{books.type}}" ng-controller="booklist">
     	book : <li ng-repeat="book in books">{{book.name}}</li>
-    </ul>	
+    </ul>
 
     <ul ng-controller="userInfo">
     	<li id="userName">name: {{user.name}} </li>
@@ -41,9 +41,11 @@
   
   <script src=".grunt/grunt-contrib-jasmine/boot.js"></script>
   
-  <script src="dist/b.0.1.0.min.js"></script>
+  <script src="dist/b.0.1.0.js"></script>
   
   <script src="test/spec/Public.API.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   

@@ -14,9 +14,9 @@
 <div id="app1" ng-app="f1">
     <div class="age">{{user.feeling}}{{user.age}}</div>
     <div class="name"> {{user.name}}</div>
-    <ul type="{{books.type}}" ng-controller="booklist">
+    <ul id="booklist" type="{{books.type}}" ng-controller="booklist">
     	book : <li ng-repeat="book in books">{{book.name}}</li>
-    </ul>	
+    </ul>
 
     <ul ng-controller="userInfo">
     	<li id="userName">name: {{user.name}} </li>

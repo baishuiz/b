@@ -35,8 +35,6 @@ describe("模版数据绑定", function () {
                 age  : 'so very happy'
             }
         });
-
-
         var dom = {
             userName : document.querySelector("#userName"),
             userAge  : document.querySelector("#userAge")
@@ -45,5 +43,27 @@ describe("模版数据绑定", function () {
         expect(dom.userAge.innerHTML.replace(/^\s+|\s+$/ig,'')).toEqual("age: so very happy");
     });
 
+
+
+        it("repeat 指令", function(){
+            b.run("booklist", function(require, $scope){
+                $scope.books = [
+                  {
+                    name : "瓦尔登湖",
+                    author :"Air"
+                  },
+                  {
+                    name : "瓦尔登湖2",
+                    author : "xmf"
+                  }
+                ]
+            });
+
+            var dom = {
+                booklist : document.querySelector("#booklist")
+            }
+            expect(dom.booklist.childElementCount).toEqual(2);
+
+        });
 
 });
