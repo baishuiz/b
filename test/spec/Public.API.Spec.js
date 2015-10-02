@@ -63,6 +63,8 @@ describe("模版数据绑定", function () {
                 booklist : document.querySelector("#booklist")
             }
             expect(dom.booklist.childElementCount).toEqual(2);
+            expect(dom.booklist.children[0].innerHTML).toEqual("瓦尔登湖");
+            expect(dom.booklist.children[1].innerHTML).toEqual("瓦尔登湖2");
 
         });
 

@@ -1,0 +1,49 @@
+<div ng-controller="controller" >
+    <ul cjia-event="click $view.goto(detail)">
+      <li ng-repeat="detail in detailList">
+        <img src="xxx" cjia-event="click showPopup({{detail.id}})" />
+        <a href="{{detail.URI}}"> {{detail.roomName}} </a>
+      </li>
+    </ul>
+    <button cjia-event="click $view.back()" > back </button>
+    <popup id="detailPop" ng-init="{popId=$this.id}">
+        <img src={{activeDetail.img}} />
+        <slider ng-init="{{}}">
+            <img ng-repeat={{img in activeDeatil.images}} />
+        </slider">
+        <ul>
+          <li>{{activeDetail.info}}</li>
+        </ul>
+    <popup>
+</div>
+
+
+
+
+b.run("controller", function(require, $scope){
+   var popup = require("widget.popupwindow");
+   var detailPop = popup({
+                    dom : $scope.popId,
+                    contentBox : $scope.detailContent
+                   });
+
+
+
+
+   $scope.$event = {
+       changeDetail : function(){
+
+       },
+
+       showPopup : function(id){
+           //$scope.detailContent =
+            detailPop.show($scope.detailContent)
+       }
+   }
+
+
+})
+
+
+
+＃元素事件自动转成委托， 委托至当前 view 元素

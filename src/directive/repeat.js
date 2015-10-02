@@ -1,81 +1,61 @@
 Air.Module("directive.repeat", function(require){
-	var node      = require("utility.node");
-  var EVENTS    = require("core.event");
+	var node      = require("utility.node"),
+      directive = require("core.directive"),
+      EVENTS    = require("core.event");
 
-  var directive = "ng-repeat";
+  var key       = directive.signup('repeat', 'ng-repeat');
 
   var api = function(target, $scope){
-    var mstart = document.createComment("repeat");
-    var mend = document.createComment(" end repeat ");
+		     var placeholder = {start : null, end : null},
+             needRepeat  = node(target).hasAttribute(key),
+						 cloneNode,
+						 container;
 
-         var needRepeat = node(target).hasAttribute(directive);
-         needRepeat && init();
-         var cloneNode = needRepeat && clone();
-        // needRepeat && parseScope(target.getAttribute(directive));
-         var container = needRepeat && document.createDocumentFragment();
-
+				 needRepeat && init();
 
          function init(){
-           target.parentElement.insertBefore(mstart, target);
-           target.parentElement.insertBefore(mend, target);
-           mend.parentElement.removeChild(target);
+					 placeholder.start = document.createComment("repeat");
+					 placeholder.end   = document.createComment(" end repeat ");
+           cloneNode         = clone();
+           container         = document.createDocumentFragment();
+           target.parentElement.insertBefore(placeholder.start, target);
+           target.parentElement.insertBefore(placeholder.end, target);
+           placeholder.end.parentElement.removeChild(target);
          }
 
          function bind(cloneNode){
            beacon({target:target, oldNode:cloneNode})
            .on(EVENTS.DATA_CHANGE, function(){
-             var node      = require("utility.node");
-             var needRepeat = node(this.oldNode).hasAttribute(directive);
-             if(!needRepeat) return;
-             var node = this.oldNode;
-             var target = this.target;
-             parseScope(target.getAttribute(directive));
+             var node       = require("utility.node"),
+                 needRepeat = node(this.oldNode).hasAttribute(key);
+             needRepeat && repeat(this);
+						 function repeat(target){
+                 var node = target.oldNode;
+                 var dom = target.target;
+                 parseScope(dom.getAttribute(key));
+						 }
            })
          }
 
-
-         function repeat ($scope){
-             // var newNode = cloneNode.cloneNode(true);
-             // container.
-         }
-
          function clone($scope){
-           // var container = document.createDocumentFragment();
            var cloneNode = target.cloneNode(true);
-            bind(cloneNode);
+           bind(cloneNode);
            return cloneNode;
          }
-
-
-
 
          function parseScope(condition){
               var container = document.createDocumentFragment();
               var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
               for(var item in $scope[group]) {
-                //repeat(item);
                 var newNode = cloneNode.cloneNode(true);
-                newNode.removeAttribute(directive);
-
-                //parentElement.remove(a)
-
-
-                beacon.on('hi', {
+                newNode.removeAttribute(key);
+                beacon.on(EVENTS.REPEAT_DONE, {
                   dom : [newNode],
                   $scope : {book:$scope[group][item]}
                 })
-
                 container.appendChild(newNode);
-
               }
-
-
-               mend.parentElement.insertBefore(container,mend);
-
-              //generateScopeTree(container, {book:$scope[group][item]})
-
-
-
+              placeholder.end.parentElement.insertBefore(container,placeholder.end);
          }
          return needRepeat;
 	}

@@ -1,26 +1,23 @@
 Air.Module("core.scopeTree", function(require){
-  var Scope = require("core.scope");
-  var node = require("utility.node");
-  var EVENTS    = require("core.event");
-  var repeatFilter = require("directive.repeat");
-  var nodeType = node.type;
+  var Scope        = require("core.scope"),
+      node         = require("utility.node"),
+      directive    = require("core.directive"),
+      EVENTS       = require("core.event"),
+      repeatFilter = require("directive.repeat");
 
-  var key = {
-    module : "cjia-module",
-      app    : "ng-app",
-      controller : "ng-controller"
-  }
+  var nodeType = node.type,
+      key      = directive.key
 
   function isEmpty(obj) {
       for(var prop in obj) {
-          if(obj.hasOwnProperty(prop))
-              return false;
+          if(obj.hasOwnProperty(prop)){
+            return false;
+          }
       }
-
       return true;
   }
 
-beacon.on("hi", function(e, data){
+beacon.on(EVENTS.REPEAT_DONE, function(e, data){
   generateScopeTree(data.dom , data.$scope)
   beacon.on(EVENTS.REPEAT_DATA_CHANGE);
 
@@ -61,7 +58,7 @@ beacon.on("hi", function(e, data){
                 }
            } else if (child.nodeType == nodeType.HTML) {
 
-               var needRepeat = node(child).hasAttribute("ng-repeat");
+               var needRepeat = node(child).hasAttribute(key.repeat);
                if(needRepeat) {
                    var newNodes = repeatFilter(child, $scope);
                    for (var i = 0; i < newNodes.length; i++) {
@@ -70,22 +67,15 @@ beacon.on("hi", function(e, data){
                    }
                } else {
 
-                     var isController = child.attributes.getNamedItem('ng-controller');
+                     var isController = child.attributes.getNamedItem(key.controller);
                      if(isController){
                          var controllerName = child.getAttribute(key.controller)
                          $scope = new Scope($scope);
                          scopeList[controllerName] = $scope;
                      }
 
-                     //var repeatFilter = require("directive.repeat");
-
-
                      generateScopeTree(child.childNodes, $scope);
                }
-
-
-
-
            }
       }
   }
