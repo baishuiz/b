@@ -50,10 +50,14 @@ describe("模版数据绑定", function () {
                 $scope.books = [
                   {
                     name : "瓦尔登湖",
-                    author :"Air"
+                    author :["Air","me"]
                   },
                   {
                     name : "瓦尔登湖2",
+                    author : "xmf"
+                  },
+                  {
+                    name : "瓦尔登湖3",
                     author : "xmf"
                   }
                 ]
@@ -62,9 +66,10 @@ describe("模版数据绑定", function () {
             var dom = {
                 booklist : document.querySelector("#booklist")
             }
-            expect(dom.booklist.childElementCount).toEqual(2);
-            expect(dom.booklist.children[0].innerHTML).toEqual("瓦尔登湖");
-            expect(dom.booklist.children[1].innerHTML).toEqual("瓦尔登湖2");
+            expect(dom.booklist.childElementCount).toEqual(3);
+            expect(dom.booklist.children[0].innerText).toEqual("瓦尔登湖Airme");
+            expect(dom.booklist.children[1].innerText).toEqual("瓦尔登湖2xmf");
+            expect(dom.booklist.children[2].innerText).toEqual("瓦尔登湖3xmf");
 
         });
 

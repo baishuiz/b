@@ -90,18 +90,31 @@
          function parseScope(condition){
               var container = document.createDocumentFragment();
               var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
-              for(var item in $scope[group]) {
+							var itemName = condition.match(/(\w+)\s+in\s+(\w+)/i)[1];
+              //var repeatScope = new Function("$scope", "group","return $scope[group]")($scope, group);
+							var repeatScope = Air.NS(group, $scope);
+							var nodes = [];
+							for(var item in repeatScope) {
                 var newNode = cloneNode.cloneNode(true);
                 newNode.removeAttribute(key);
-                beacon.on(EVENTS.REPEAT_DONE, {
-                  dom : [newNode],
-                  $scope : {book:$scope[group][item]}
-                })
+								var activeScope = {}
+								activeScope[itemName] = repeatScope[item]
+								nodes.push({
+									node : newNode.childNodes,
+									$scope : activeScope
+								});
                 container.appendChild(newNode);
               }
               placeholder.end.parentElement.insertBefore(container,placeholder.end);
+
+							beacon.on(EVENTS.REPEAT_DONE, nodes)
+
+							return {
+								    scope : repeatScope,
+										nodes : nodes
+							};
          }
-         return needRepeat;
+         return parseScope(target.getAttribute(key));
 	}
 	return api;
 })
@@ -137,10 +150,16 @@
       return true;
   }
 
-beacon.on(EVENTS.REPEAT_DONE, function(e, data){
-  generateScopeTree(data.dom , data.$scope)
-  beacon.on(EVENTS.REPEAT_DATA_CHANGE);
+beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
+  // generateScopeTree(data.dom , data.$scope)
+  // beacon.on(EVENTS.REPEAT_DATA_CHANGE);
 
+
+  for (var i = 0; i < nodes.length; i++) {
+    var repeatNode = nodes[i];
+    generateScopeTree(repeatNode.node, repeatNode.$scope);
+    beacon.on(EVENTS.REPEAT_DATA_CHANGE);
+  }
 })
 
   function generateScopeTree(childNodes , $scope){
@@ -172,7 +191,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, data){
 
 
                     };
-                    text.replace(/{{.*?}}/ig, '');
+                    //text.replace(/{{.*?}}/ig, '');
                      textNode.nodeValue = text
 
                 }
@@ -180,11 +199,8 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, data){
 
                var needRepeat = node(child).hasAttribute(key.repeat);
                if(needRepeat) {
-                   var newNodes = repeatFilter(child, $scope);
-                   for (var i = 0; i < newNodes.length; i++) {
-                     var repeadNode = newNodes[i];
-                     generateScopeTree(repeatNode.node, repeatNode.$scope);
-                   }
+                   var  result = repeatFilter(child, $scope);
+
                } else {
 
                      var isController = child.attributes.getNamedItem(key.controller);

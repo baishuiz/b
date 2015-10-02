@@ -17,10 +17,16 @@ Air.Module("core.scopeTree", function(require){
       return true;
   }
 
-beacon.on(EVENTS.REPEAT_DONE, function(e, data){
-  generateScopeTree(data.dom , data.$scope)
-  beacon.on(EVENTS.REPEAT_DATA_CHANGE);
+beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
+  // generateScopeTree(data.dom , data.$scope)
+  // beacon.on(EVENTS.REPEAT_DATA_CHANGE);
 
+
+  for (var i = 0; i < nodes.length; i++) {
+    var repeatNode = nodes[i];
+    generateScopeTree(repeatNode.node, repeatNode.$scope);
+    beacon.on(EVENTS.REPEAT_DATA_CHANGE);
+  }
 })
 
   function generateScopeTree(childNodes , $scope){
@@ -52,7 +58,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, data){
 
 
                     };
-                    text.replace(/{{.*?}}/ig, '');
+                    //text.replace(/{{.*?}}/ig, '');
                      textNode.nodeValue = text
 
                 }
@@ -60,11 +66,8 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, data){
 
                var needRepeat = node(child).hasAttribute(key.repeat);
                if(needRepeat) {
-                   var newNodes = repeatFilter(child, $scope);
-                   for (var i = 0; i < newNodes.length; i++) {
-                     var repeadNode = newNodes[i];
-                     generateScopeTree(repeatNode.node, repeatNode.$scope);
-                   }
+                   var  result = repeatFilter(child, $scope);
+
                } else {
 
                      var isController = child.attributes.getNamedItem(key.controller);
