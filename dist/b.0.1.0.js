@@ -31,14 +31,15 @@
       var api = {
         hasAttribute : function(attributeName){
           return node.attributes.getNamedItem(attributeName);
-        } 
+        }
       };
       return api;
   };
 
   node.type = {
       TEXT : 3,
-      HTML : 1
+      HTML : 1,
+      ATTR : 2
   }
   return node;
 });
@@ -94,7 +95,7 @@
               //var repeatScope = new Function("$scope", "group","return $scope[group]")($scope, group);
 							var repeatScope = Air.NS(group, $scope);
 							var nodes = [];
-							for(var item in repeatScope) {
+							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
                 newNode.removeAttribute(key);
 								var activeScope = {}
@@ -158,10 +159,11 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
   for (var i = 0; i < nodes.length; i++) {
     var repeatNode = nodes[i];
     generateScopeTree(repeatNode.node, repeatNode.$scope);
-    beacon.on(EVENTS.REPEAT_DATA_CHANGE);
+    beacon.on(EVENTS.REPEAT_DATA_CHANGE, repeatNode.$scope);
   }
 })
 
+  var regMarkup = /{{.*?}}/ig;
   function generateScopeTree(childNodes , $scope){
       var scopeList = require('core.scopeList');
 
@@ -169,15 +171,26 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
       var childCount = childNodes.length;
       for(var childIndex = 0; childIndex < childCount; childIndex++ ) {
            var child = childNodes[childIndex];
-           if(child.nodeType == nodeType.TEXT){
+           if(child.nodeType == nodeType.TEXT || child.nodeType == nodeType.ATTR){
               var tag = child.nodeValue;
-              beacon({target:child, oldvalue:child.nodeValue})
-              .on(EVENTS.DATA_CHANGE, txtNodeDataChange);
 
-              beacon({target:child, oldvalue:child.nodeValue})
-              .on(EVENTS.REPEAT_DATA_CHANGE, txtNodeDataChange);
 
-                function txtNodeDataChange(e, data){
+              var text = child.nodeValue;
+
+              if(text.match(regMarkup)){
+
+
+                beacon({target:child, oldvalue:child.nodeValue, scope:$scope})
+                .on(EVENTS.DATA_CHANGE, txtNodeDataChange);
+
+                beacon({target:child, oldvalue:child.nodeValue, scope:$scope})
+                .on(EVENTS.REPEAT_DATA_CHANGE, txtNodeDataChange);
+              }
+                function txtNodeDataChange(e, $scope){
+                    if(this.scope !== $scope){
+                      return ;
+                    }
+                    // console.log(this.target.nodeValue,this.oldvalue)
                     var textNode = this.target;
                     var text     = this.oldvalue;
                     var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
@@ -196,7 +209,11 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
 
                 }
            } else if (child.nodeType == nodeType.HTML) {
-
+              generateScopeTree(child.attributes, $scope);
+              //  for (var attrIndex = 0; attrIndex < child.attributes.length; attrIndex++) {
+              //    var activeAttribute = child.attributes[attrIndex];
+              //    generateScopeTree(activeAttribute, $scope);
+              //  }
                var needRepeat = node(child).hasAttribute(key.repeat);
                if(needRepeat) {
                    var  result = repeatFilter(child, $scope);
@@ -209,7 +226,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                          $scope = new Scope($scope);
                          scopeList[controllerName] = $scope;
                      }
-
+                     generateScopeTree(child.attributes, $scope);
                      generateScopeTree(child.childNodes, $scope);
                }
            }
@@ -226,7 +243,7 @@ return generateScopeTree;
     	var scopeList = require("core.scopeList");
         var scope = scopeList[controllerName];
         controller(require, scope);
-        beacon.on(EVENTS.DATA_CHANGE);
+        beacon.on(EVENTS.DATA_CHANGE, scope);
     }
 
     return run;

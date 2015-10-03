@@ -3,14 +3,15 @@ Air.Module("utility.node", function(){
       var api = {
         hasAttribute : function(attributeName){
           return node.attributes.getNamedItem(attributeName);
-        } 
+        }
       };
       return api;
   };
 
   node.type = {
       TEXT : 3,
-      HTML : 1
+      HTML : 1,
+      ATTR : 2
   }
   return node;
 });

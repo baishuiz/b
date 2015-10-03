@@ -5,7 +5,7 @@ Air.Module("core.run", function(require){
     	var scopeList = require("core.scopeList");
         var scope = scopeList[controllerName];
         controller(require, scope);
-        beacon.on(EVENTS.DATA_CHANGE);
+        beacon.on(EVENTS.DATA_CHANGE, scope);
     }
 
     return run;

@@ -17,15 +17,19 @@ describe("模版数据绑定", function () {
 
         var dom = {
             userName : document.querySelector("#app1>.name"),
-            userAge  : document.querySelector("#app1>.age")
+            userAge  : document.querySelector("#app1>.age"),
+            app2       : document.querySelector('#app2')
         }
         expect(dom.userName.innerHTML.replace(/^\s+|\s+$/ig,'')).toEqual("Air");
         expect(dom.userAge.innerHTML.replace(/^\s+|\s+$/ig,'')).toEqual("happy");
 
 
         b.run("f2", function(require, $scope){
-            $scope.name = "yet?"
+            $scope.name = "yet?";
+            $scope.result = "Yes!"
         })
+
+        expect(dom.app2.innerText.replace(/^\s+|\s+$/ig,'')).toEqual('Hello, yet? Yes!');
     });
 
 
@@ -54,13 +58,16 @@ describe("模版数据绑定", function () {
                   },
                   {
                     name : "瓦尔登湖2",
-                    author : "xmf"
+                    author : ["xmf"]
                   },
                   {
                     name : "瓦尔登湖3",
-                    author : "xmf"
+                    author : ["xmf"]
                   }
-                ]
+                ];
+
+                $scope.books.type = "story";
+
             });
 
             var dom = {
@@ -70,7 +77,12 @@ describe("模版数据绑定", function () {
             expect(dom.booklist.children[0].innerText).toEqual("瓦尔登湖Airme");
             expect(dom.booklist.children[1].innerText).toEqual("瓦尔登湖2xmf");
             expect(dom.booklist.children[2].innerText).toEqual("瓦尔登湖3xmf");
+            expect(dom.booklist.getAttribute("type")).toEqual("story");
 
         });
+
+        // it("controller 重复"， function(){
+        //   // b.run()
+        // });
 
 });

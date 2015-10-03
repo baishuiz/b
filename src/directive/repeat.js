@@ -50,7 +50,7 @@ Air.Module("directive.repeat", function(require){
               //var repeatScope = new Function("$scope", "group","return $scope[group]")($scope, group);
 							var repeatScope = Air.NS(group, $scope);
 							var nodes = [];
-							for(var item in repeatScope) {
+							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
                 newNode.removeAttribute(key);
 								var activeScope = {}

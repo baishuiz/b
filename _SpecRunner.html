@@ -25,7 +25,7 @@
 </div>
 
 <div id="app2" ng-app="f2">
-    <h1>Hello, {{name}}</h1>
+    <h1>Hello, {{name}} {{result}}</h1>
 </div>
 
 
@@ -41,9 +41,11 @@
   
   <script src=".grunt/grunt-contrib-jasmine/boot.js"></script>
   
-  <script src="dist/b.0.1.0.min.js"></script>
+  <script src="dist/b.0.1.0.js"></script>
   
   <script src="test/spec/Public.API.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   
