@@ -84,6 +84,7 @@ describe("模版数据绑定", function () {
         it("module 绑定输入控件", function(){
           b.run("f3", function(require, $scope){
             $scope.name = "baby";
+            $scope.result = "123";
 
           })
           var dom = {
@@ -91,6 +92,32 @@ describe("模版数据绑定", function () {
 
           }
           expect(dom.input.value).toEqual('baby');
+          dom.input.value += ". How are you?"
+          beacon(dom.input).on('change');
+          expect(dom.input.value).toEqual('baby. How are you?');
         });
 
+});
+
+
+describe('事件绑定', function(){
+  it('dom 原生事件', function(){
+    b.run("f4", function(require, $scope){
+      $scope.$event = {
+        addResult : function(num, msg){
+          $scope.result = $scope.result + num;
+          $scope.msg = msg;
+        }
+      }
+
+      $scope.result = 1;
+    });
+
+    var dom = {
+      result : document.querySelector('#eventResult')
+    }
+    expect(dom.result.innerText).toEqual("1");
+    beacon(dom.result).on('click');
+    expect(dom.result.innerText).toEqual("2ok");
+  })
 });

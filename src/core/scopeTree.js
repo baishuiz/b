@@ -1,15 +1,21 @@
 Air.Module("core.scopeTree", function(require){
-  var Scope        = require("core.scope"),
-      node         = require("utility.node"),
-      directive    = require("core.directive"),
-      EVENTS       = require("core.event"),
-      repeatFilter = require("directive.repeat"),
-      initModule   = require("direcitve.module");
+  var Scope          = require("core.scope"),
+      node           = require("utility.node"),
+      directive      = require("core.directive"),
+      EVENTS         = require("core.event"),
+      repeatFilter   = require("directive.repeat"),
+      eventDirective = require("direcitve.event"),
+      initModule     = require("direcitve.module");
 
   var nodeType = node.type,
       key      = directive.key
 
   function isEmpty(obj) {
+      var isObject = beacon.utility.isType(obj, 'Object');
+      var isArray = beacon.utility.isType(obj, 'Array');
+      if(!isObject && !isArray){
+        return false;
+      }
       for(var prop in obj) {
           if(obj.hasOwnProperty(prop)){
             return false;
@@ -97,6 +103,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                      }
                      generateScopeTree(child.attributes, $scope);
                      initModule(child, $scope);
+                     eventDirective(child, $scope);
                      generateScopeTree(child.childNodes, $scope);
                }
            }

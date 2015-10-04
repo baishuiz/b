@@ -43,6 +43,45 @@
   }
   return node;
 });
+;Air.Module('direcitve.event', function(require){
+  var directive = require('core.directive'),
+      node      = require('utility.node'),
+      EVENTS    = require("core.event");
+  directive.signup('event', 'ng-event');
+
+  var api = function(target, $scope){
+    if(!node(target).hasAttribute(directive.key.event)){
+      return;
+    }
+
+    var eventCMD = target.getAttribute(directive.key.event).split(/\s/);
+    var eventName = eventCMD[0];
+    var eventHandle = eventCMD[1].replace(/\(.*?\)/,'');
+    //var eventParam = eventCMD[1].match(/(\((.*?)\))/)[2].split(',')
+    var eventParam = eventCMD[1].match(/(\((.*?)\))/)[2]
+    // beacon(target).on($scope)
+
+    beacon(target).on(eventName, function (){
+        $scope.$event[eventHandle].apply(this, eval("["+eventParam+"]"));
+        beacon.on(EVENTS.DATA_CHANGE, $scope);
+    });
+
+
+
+    beacon({target:target, scope:$scope, eventName:eventName, eventHandle:eventHandle})
+    .on(EVENTS.DATA_CHANGE, function(e, $scope){
+      if(this.scope !== $scope) {
+        return;
+      }
+      // var target = this;
+      //beacon(this.target).off(this.eventName,eventHandle);
+      // this.target.value = Air.NS(dataPath, $scope)
+
+    });
+  }
+
+  return api;
+})
 ;Air.Module('direcitve.module', function(require){
   var directive = require('core.directive'),
       node      = require('utility.node'),
@@ -173,17 +212,23 @@
     var scopeList = {};
     return scopeList;
 });Air.Module("core.scopeTree", function(require){
-  var Scope        = require("core.scope"),
-      node         = require("utility.node"),
-      directive    = require("core.directive"),
-      EVENTS       = require("core.event"),
-      repeatFilter = require("directive.repeat"),
-      initModule   = require("direcitve.module");
+  var Scope          = require("core.scope"),
+      node           = require("utility.node"),
+      directive      = require("core.directive"),
+      EVENTS         = require("core.event"),
+      repeatFilter   = require("directive.repeat"),
+      eventDirective = require("direcitve.event"),
+      initModule     = require("direcitve.module");
 
   var nodeType = node.type,
       key      = directive.key
 
   function isEmpty(obj) {
+      var isObject = beacon.utility.isType(obj, 'Object');
+      var isArray = beacon.utility.isType(obj, 'Array');
+      if(!isObject && !isArray){
+        return false;
+      }
       for(var prop in obj) {
           if(obj.hasOwnProperty(prop)){
             return false;
@@ -271,6 +316,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                      }
                      generateScopeTree(child.attributes, $scope);
                      initModule(child, $scope);
+                     eventDirective(child, $scope);
                      generateScopeTree(child.childNodes, $scope);
                }
            }
