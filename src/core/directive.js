@@ -1,6 +1,6 @@
 Air.Module("core.directive", function(){
   var directive = {
-        module     : "cjia-module",
+        //module     : "cjia-module",
         app        : "ng-app",
         controller : "ng-controller"
   };

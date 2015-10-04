@@ -24,12 +24,17 @@ Air.Module("directive.repeat", function(require){
          }
 
          function bind(cloneNode){
-           beacon({target:target, oldNode:cloneNode})
-           .on(EVENTS.DATA_CHANGE, function(){
-             var node       = require("utility.node"),
+
+           beacon({target:target, oldNode:cloneNode, scope:$scope})
+           .on(EVENTS.DATA_CHANGE, function(e, $scope){
+							 if(this.scope !== $scope){
+								return ;
+							}
+						 var node       = require("utility.node"),
                  needRepeat = node(this.oldNode).hasAttribute(key);
              needRepeat && repeat(this);
 						 function repeat(target){
+							   beacon.on('cloneNodeRemove')
                  var node = target.oldNode;
                  var dom = target.target;
                  parseScope(dom.getAttribute(key));
@@ -52,6 +57,11 @@ Air.Module("directive.repeat", function(require){
 							var nodes = [];
 							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
+
+								beacon(newNode).once("cloneNodeRemove", function(){
+									this.parentElement.removeChild(this);
+								});
+
                 newNode.removeAttribute(key);
 								var activeScope = {}
 								activeScope[itemName] = repeatScope[item]

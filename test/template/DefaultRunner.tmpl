@@ -29,6 +29,11 @@
 </div>
 
 
+<div id="app3" ng-app="f3">
+    <input id="ipt" ng-module="{{name}}" />
+    <h1>Hello, {{name}} {{result}}</h1>
+</div>
+
 <% with (scripts) { %>
   <% [].concat(polyfills, jasmine, boot, vendor, helpers, src, specs,reporters).forEach(function(script){ %>
   <script src="<%= script %>"></script>

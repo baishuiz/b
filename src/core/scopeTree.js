@@ -3,7 +3,8 @@ Air.Module("core.scopeTree", function(require){
       node         = require("utility.node"),
       directive    = require("core.directive"),
       EVENTS       = require("core.event"),
-      repeatFilter = require("directive.repeat");
+      repeatFilter = require("directive.repeat"),
+      initModule   = require("direcitve.module");
 
   var nodeType = node.type,
       key      = directive.key
@@ -75,7 +76,9 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
 
                 }
            } else if (child.nodeType == nodeType.HTML) {
+
               generateScopeTree(child.attributes, $scope);
+              //initModule(child, $scope);
               //  for (var attrIndex = 0; attrIndex < child.attributes.length; attrIndex++) {
               //    var activeAttribute = child.attributes[attrIndex];
               //    generateScopeTree(activeAttribute, $scope);
@@ -93,6 +96,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                          scopeList[controllerName] = $scope;
                      }
                      generateScopeTree(child.attributes, $scope);
+                     initModule(child, $scope);
                      generateScopeTree(child.childNodes, $scope);
                }
            }

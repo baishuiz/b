@@ -81,8 +81,16 @@ describe("模版数据绑定", function () {
 
         });
 
-        // it("controller 重复"， function(){
-        //   // b.run()
-        // });
+        it("module 绑定输入控件", function(){
+          b.run("f3", function(require, $scope){
+            $scope.name = "baby";
+
+          })
+          var dom = {
+            input : document.querySelector('#ipt')
+
+          }
+          expect(dom.input.value).toEqual('baby');
+        });
 
 });
