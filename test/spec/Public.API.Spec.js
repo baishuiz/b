@@ -121,3 +121,50 @@ describe('事件绑定', function(){
     expect(dom.result.innerText).toEqual("2ok");
   })
 });
+
+describe('view切换', function(){
+  beforeEach(function() {
+      jasmine.Ajax.install();
+      jasmine.Ajax.stubRequest('http://m.ctrip.com/webapp/hotel/').andReturn({
+        "status": 200,
+        "contentType": 'text/plain',
+        "Access-Control-Allow-Origin" : "*",
+        "responseText": 'Hello from the world'
+      });
+  });
+  it('viewport 初始化', function(done){
+    //b.goto()
+
+
+
+    var dom = {
+      view1 : document.querySelector('#view1'),
+      view2 : document.querySelector('#view2'),
+      view3 : document.querySelector('#view3'),
+      view4 : document.querySelector('#view4')
+    }
+    expect(b.views.count).toEqual(4);
+    expect(b.views.active).toEqual(dom.view1);
+    b.views.goto("name2")
+    expect(b.views.count).toEqual(4);
+    expect(b.views.active).toEqual(dom.view2);
+    b.views.goto("name4")
+    expect(b.views.count).toEqual(4);
+    expect(b.views.active).toEqual(dom.view4);
+    b.views.goto("name1")
+    expect(b.views.count).toEqual(4);
+    expect(b.views.active).toEqual(dom.view1);
+
+    beacon.on('hi',function(){
+      dom.view5 = document.querySelector('view[name="name5"]')
+      expect(b.views.count).toEqual(5);
+      expect(b.views.active).toEqual(dom.view5);
+      done();
+    })
+
+    b.views.goto("name5")
+
+    // expect(b.views.count).toEqual(5);
+    // expect(b.views.active).toEqual(dom.view5);
+  })
+})

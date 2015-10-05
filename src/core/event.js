@@ -3,6 +3,7 @@ Air.Module("core.event", function(){
     DATA_CHANGE        : beacon.createEvent("data change"),
     REPEAT_DATA_CHANGE : beacon.createEvent("repeat data change"),
     REPEAT_DONE        : beacon.createEvent("repeat done")
+    
   }
   return events;
 });

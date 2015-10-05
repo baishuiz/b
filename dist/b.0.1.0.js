@@ -23,8 +23,108 @@
     DATA_CHANGE        : beacon.createEvent("data change"),
     REPEAT_DATA_CHANGE : beacon.createEvent("repeat data change"),
     REPEAT_DONE        : beacon.createEvent("repeat done")
+    
   }
   return events;
+});
+;Air.Module('core.network.request', function(){
+
+    var state = {
+      unInit : 0,
+      opend  : 1,
+      sended : 2,
+      receiving : 3,
+      complete : 4
+    }
+
+    var events = {
+      REQUEST_COMPLETE   : beacon.createEvent("request complete")
+    };
+
+    function XHR(){
+        var xhr = new XMLHttpRequest();
+        var request = this;
+        xhr.onreadystatechange = function(){
+          if(xhr.readyState === state.complete) {
+            if(xhr.status>=200 && xhr.status<300 || xhr.status==304){
+                beacon(request).on(events.REQUEST_COMPLETE, {data:xhr.responseText});
+            } else {
+                beacon(request).on(events.REQUEST_COMPLETE, {err:xhr.status});
+            }
+          }
+        };
+        this.xhr = xhr;
+    }
+
+     XHR.prototype = {
+
+
+         request : function(options){
+            this.xhr.open(options.method, options.url, true);
+            this.xhr.send(null);
+         },
+
+         get  : function(url,data){
+              this.request({
+                    method: 'GET',
+                    url   : url,
+                    data  : data
+              });
+         }
+     }
+    XHR.EVENTS  = events
+    return XHR;
+});
+;Air.Module('core.views', function(require){
+  var Request = require('core.network.request');
+  var api = {
+    count:0,
+    goto : function(viewName){
+
+
+          var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
+
+          if(target){
+            setActive();
+          } else {
+            var request = new Request();
+            beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+              if(data.data){
+                api.active && api.active.removeAttribute('active');
+                var viewport = document.querySelector("viewport[main='true']");
+                var view = document.createElement("view");
+                view.setAttribute("active", "true");
+                view.setAttribute("name", viewName);
+                view.innerHTML = data.data;
+                viewport.appendChild(view);
+                api.count +=1;
+                api.active = view;
+                beacon.on('hi')
+              }
+            });
+
+            request.get("http://m.ctrip.com/webapp/hotel/");
+
+          }
+          //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");
+          function setActive(){
+            api.active && api.active.removeAttribute('active');
+            target.setAttribute('active','true');
+
+            api.active = target;
+          }
+    },
+    active : null
+  }
+
+  Air.domReady(function(){
+
+      var views = document.querySelectorAll("viewport[main='true'] view");
+      api.count = views.length;
+      api.active = document.querySelector("viewport[main='true'] view[active='true']");
+  });
+
+  return api;
 });
 ;Air.Module("utility.node", function(){
   var node = function(node){
@@ -47,8 +147,9 @@
   var directive = require('core.directive'),
       node      = require('utility.node'),
       EVENTS    = require("core.event");
-  directive.signup('event', 'ng-event');
 
+  directive.signup('event', 'ng-event');
+  var reg = /(\((.*?)\))/;
   var api = function(target, $scope){
     if(!node(target).hasAttribute(directive.key.event)){
       return;
@@ -56,27 +157,19 @@
 
     var eventCMD = target.getAttribute(directive.key.event).split(/\s/);
     var eventName = eventCMD[0];
-    var eventHandle = eventCMD[1].replace(/\(.*?\)/,'');
-    //var eventParam = eventCMD[1].match(/(\((.*?)\))/)[2].split(',')
-    var eventParam = eventCMD[1].match(/(\((.*?)\))/)[2]
-    // beacon(target).on($scope)
+    var eventHandle = eventCMD[1].replace(reg,'');
+    var eventParam = eventCMD[1].match(reg)[2]
 
     beacon(target).on(eventName, function (){
         $scope.$event[eventHandle].apply(this, eval("["+eventParam+"]"));
         beacon.on(EVENTS.DATA_CHANGE, $scope);
     });
 
-
-
     beacon({target:target, scope:$scope, eventName:eventName, eventHandle:eventHandle})
     .on(EVENTS.DATA_CHANGE, function(e, $scope){
       if(this.scope !== $scope) {
         return;
       }
-      // var target = this;
-      //beacon(this.target).off(this.eventName,eventHandle);
-      // this.target.value = Air.NS(dataPath, $scope)
-
     });
   }
 
@@ -86,6 +179,7 @@
   var directive = require('core.directive'),
       node      = require('utility.node'),
       EVENTS    = require("core.event");
+
   directive.signup('module', 'ng-module');
 
   var api = function(target, $scope){
@@ -96,7 +190,6 @@
                      .replace(/{{|}}/ig,'');
       target.value = Air.NS(dataPath, $scope);
       beacon(target).on('input', function(){
-        //$[data]Air.NS(dataPath, $scope);
         var target = this;
         new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
 
@@ -370,7 +463,8 @@ return generateScopeTree;
 
     void function main(){
         var api = {
-            run : require('core.run')
+            run : require('core.run'),
+            views: require('core.views')
         };
         window[FRAMEWORK_NAME] = api;
     }();

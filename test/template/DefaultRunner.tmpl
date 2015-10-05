@@ -10,33 +10,44 @@
 
 </head>
 <body>
+<style>
+viewport view {display:none}
+viewport view[active="true"]{display:block}
+</style>
+<viewport main="true" >
+  <view id="view1" name="name1" active="true">
+    <div id="app1" ng-app="f1">
+        <div class="age">{{user.feeling}}{{user.age}}</div>
+        <div class="name"> {{user.name}}</div>
+        <ul id="booklist" type="{{books.type}}" ng-controller="booklist">
+        	book : <li ng-repeat="book in books">{{book.name}}<span ng-repeat="author in book.author">{{author}}</span></li>
+        </ul>
 
-<div id="app1" ng-app="f1">
-    <div class="age">{{user.feeling}}{{user.age}}</div>
-    <div class="name"> {{user.name}}</div>
-    <ul id="booklist" type="{{books.type}}" ng-controller="booklist">
-    	book : <li ng-repeat="book in books">{{book.name}}<span ng-repeat="author in book.author">{{author}}</span></li>
-    </ul>
+        <ul ng-controller="userInfo">
+        	<li id="userName">name: {{user.name}} </li>
+        	<li id="userAge">age: {{userInfo.age}} </li>
+        </ul>
+    </div>
+  </view>
+  <view id="view2" name="name2">
+    <div id="app2" ng-app="f2">
+        <h1>Hello, {{name}} {{result}}</h1>
+    </div>
+  </view>
 
-    <ul ng-controller="userInfo">
-    	<li id="userName">name: {{user.name}} </li>
-    	<li id="userAge">age: {{userInfo.age}} </li>
-    </ul>
-</div>
+  <view id="view3" name="name3">
+    <div id="app3" ng-app="f3">
+        <input id="ipt" ng-module="{{name}}" />
+        <h1>Hello, {{name}} {{result}}</h1>
+    </div>
+  </view>
 
-<div id="app2" ng-app="f2">
-    <h1>Hello, {{name}} {{result}}</h1>
-</div>
-
-
-<div id="app3" ng-app="f3">
-    <input id="ipt" ng-module="{{name}}" />
-    <h1>Hello, {{name}} {{result}}</h1>
-</div>
-
-<div id="app4" ng-app="f4">
-    <h1 id="eventResult" ng-event="click addResult(1,'ok')" >{{result}}{{msg}}</h1>
-</div>
+  <view id="view4" name="name4">
+    <div id="app4" ng-app="f4">
+        <h1 id="eventResult" ng-event="click addResult(1,'ok')" >{{result}}{{msg}}</h1>
+    </div>
+  </view>
+</viewport>
 
 <% with (scripts) { %>
   <% [].concat(polyfills, jasmine, boot, vendor, helpers, src, specs,reporters).forEach(function(script){ %>

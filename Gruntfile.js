@@ -12,16 +12,16 @@ module.exports = function(grunt){
 
            ,dist: {
                 src : [
-
                         './libs/*.js',
                         './src/core/directive.js',
                         './src/core/event.js',
+                        './src/core/network/request.js',
+                        './src/core/views.js',
                         './src/utility/*.js',
                         './src/directive/*.js',
                         './src/core/scope.js',
                         './src/core/scopeList.js',
                         './src/core/scopeTree.js',
-
                         './src/core/run.js',
                         './src/*.js'
                       ],
@@ -34,8 +34,13 @@ module.exports = function(grunt){
               src: './dist/<%=output.fileName %>',
               coverage: './dist/<%=output.fileName %>',
               options: {
+                // '--web-security' : false,
+                // '--local-to-remote-url-access' : true,
+                // '--ignore-ssl-errors' : true,
                 specs: './test/spec/*Spec.js',
                 keepRunner: true,
+                //host: 'http://127.0.0.1:8808/',
+                vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],
                 template: require('grunt-template-jasmine-istanbul'),
                 templateOptions: {
                     template : 'test/template/DefaultRunner.tmpl',
@@ -51,7 +56,8 @@ module.exports = function(grunt){
               options: {
                 template: 'test/template/DefaultRunner.tmpl',
                 specs: './test/spec/*Spec.js',
-                keepRunner:true
+                keepRunner:true,
+                vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],
               }
             }
         }
