@@ -1,6 +1,7 @@
 Air.Module('direcitve.module', function(require){
   var directive = require('core.directive'),
       node      = require('utility.node'),
+      util      = require('utility.util'),
       EVENTS    = require("core.event");
 
   directive.signup('module', 'ng-module');
@@ -11,7 +12,7 @@ Air.Module('direcitve.module', function(require){
       }
       var dataPath = target.getAttribute(directive.key.module)
                      .replace(/{{|}}/ig,'');
-      target.value = Air.NS(dataPath, $scope);
+      // target.value = Air.NS(dataPath, $scope);
       beacon(target).on('input', function(){
         var target = this;
         new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
@@ -23,7 +24,8 @@ Air.Module('direcitve.module', function(require){
         if(this.scope !== $scope) {
           return;
         }
-        this.target.value = Air.NS(dataPath, $scope)
+        var value = Air.NS(dataPath, $scope);
+        this.target.value = !util.isEmpty(value) ? value : "";
       });
   }
   return api;

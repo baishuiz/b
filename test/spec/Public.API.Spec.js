@@ -88,13 +88,14 @@ describe("模版数据绑定", function () {
 
           })
           var dom = {
-            input : document.querySelector('#ipt')
+            input : document.querySelector('#ipt'),
+            h1    : document.querySelector('#hh')
 
           }
           expect(dom.input.value).toEqual('baby');
           dom.input.value += ". How are you?"
-          beacon(dom.input).on('change');
-          expect(dom.input.value).toEqual('baby. How are you?');
+          beacon(dom.input).on('input');
+          expect(dom.h1.innerText).toEqual('Hello, baby. How are you? 123');
         });
 
 });

@@ -146,6 +146,24 @@
   }
   return node;
 });
+;Air.Module('utility.util', function(){
+  var util = {
+    isEmpty :   function (obj) {
+          var isObject = beacon.utility.isType(obj, 'Object');
+          var isArray = beacon.utility.isType(obj, 'Array');
+          if(!isObject && !isArray){
+            return false;
+          }
+          for(var prop in obj) {
+              if(obj.hasOwnProperty(prop)){
+                return false;
+              }
+          }
+          return true;
+      }
+  };
+  return util;
+});
 ;Air.Module('direcitve.event', function(require){
   var directive = require('core.directive'),
       node      = require('utility.node'),
@@ -181,6 +199,7 @@
 ;Air.Module('direcitve.module', function(require){
   var directive = require('core.directive'),
       node      = require('utility.node'),
+      util      = require('utility.util'),
       EVENTS    = require("core.event");
 
   directive.signup('module', 'ng-module');
@@ -191,7 +210,7 @@
       }
       var dataPath = target.getAttribute(directive.key.module)
                      .replace(/{{|}}/ig,'');
-      target.value = Air.NS(dataPath, $scope);
+      // target.value = Air.NS(dataPath, $scope);
       beacon(target).on('input', function(){
         var target = this;
         new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
@@ -203,7 +222,8 @@
         if(this.scope !== $scope) {
           return;
         }
-        this.target.value = Air.NS(dataPath, $scope)
+        var value = Air.NS(dataPath, $scope);
+        this.target.value = !util.isEmpty(value) ? value : "";
       });
   }
   return api;
