@@ -155,7 +155,7 @@ describe('view切换', function(){
     expect(b.views.count).toEqual(4);
     expect(b.views.active).toEqual(dom.view1);
 
-    beacon.on('hi',function(){
+    beacon.on(b.views.EVENTS.SHOWED, function(){
       dom.view5 = document.querySelector('view[name="name5"]')
       expect(b.views.count).toEqual(5);
       expect(b.views.active).toEqual(dom.view5);

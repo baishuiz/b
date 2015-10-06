@@ -78,6 +78,9 @@
 ;Air.Module('core.views', function(require){
   var Request = require('core.network.request');
   var api = {
+    EVENTS : {
+      SHOWED : beacon.createEvent("view showed")
+    },
     count:0,
     goto : function(viewName){
 
@@ -99,7 +102,7 @@
                 viewport.appendChild(view);
                 api.count +=1;
                 api.active = view;
-                beacon.on('hi')
+                beacon.on(api.EVENTS.SHOWED);
               }
             });
 
