@@ -31,7 +31,8 @@ Air.run(function(require){
     void function main(){
         var api = {
             run : require('core.run'),
-            views: require('core.views')
+            views: require('core.views'),
+            config : require('core.config')
         };
         window[FRAMEWORK_NAME] = api;
     }();

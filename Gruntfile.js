@@ -15,6 +15,7 @@ module.exports = function(grunt){
                         './libs/*.js',
                         './src/core/directive.js',
                         './src/core/event.js',
+                        './src/core/config.js',
                         './src/core/network/request.js',
                         './src/core/views.js',
                         './src/utility/*.js',

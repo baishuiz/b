@@ -1,5 +1,6 @@
 Air.Module('core.views', function(require){
-  var Request = require('core.network.request');
+  var Request = require('core.network.request'),
+      config  = require('core.config');
   var api = {
     EVENTS : {
       SHOWED : beacon.createEvent("view showed")
@@ -29,7 +30,7 @@ Air.Module('core.views', function(require){
               }
             });
 
-            request.get("http://m.ctrip.com/webapp/hotel/");
+            request.get(config.get("templatePath") + viewName);
 
           }
           //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");

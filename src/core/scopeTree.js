@@ -58,7 +58,6 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                     for (var i = markups.length - 1; i >= 0; i--) {
                         var markup   = markups[i];
                         var dataPath = markup.replace(/{{|}}/ig,"");
-                        // var data = JSON.stringify(Air.NS(dataPath, $scope)).replace(/{}/ig,'')
                         var data = Air.NS(dataPath, $scope);
                         data = util.isEmpty(data) ? '' : data;
                         text = text.replace(markup, data)

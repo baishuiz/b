@@ -27,6 +27,20 @@
   }
   return events;
 });
+;Air.Module('core.config', function(){
+  var configs = {};
+  var api = {
+    get : function(key){
+      return configs[key] ;
+    },
+
+    set : function(key, value){
+      configs[key] = value;
+      return configs[key];
+    }
+  };
+  return api;
+});
 ;Air.Module('core.network.request', function(){
 
     var state = {
@@ -76,7 +90,8 @@
     return XHR;
 });
 ;Air.Module('core.views', function(require){
-  var Request = require('core.network.request');
+  var Request = require('core.network.request'),
+      config  = require('core.config');
   var api = {
     EVENTS : {
       SHOWED : beacon.createEvent("view showed")
@@ -106,7 +121,7 @@
               }
             });
 
-            request.get("http://m.ctrip.com/webapp/hotel/");
+            request.get(config.get("templatePath") + viewName);
 
           }
           //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");
@@ -387,7 +402,6 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                     for (var i = markups.length - 1; i >= 0; i--) {
                         var markup   = markups[i];
                         var dataPath = markup.replace(/{{|}}/ig,"");
-                        // var data = JSON.stringify(Air.NS(dataPath, $scope)).replace(/{}/ig,'')
                         var data = Air.NS(dataPath, $scope);
                         data = util.isEmpty(data) ? '' : data;
                         text = text.replace(markup, data)
@@ -475,7 +489,8 @@ return generateScopeTree;
     void function main(){
         var api = {
             run : require('core.run'),
-            views: require('core.views')
+            views: require('core.views'),
+            config : require('core.config')
         };
         window[FRAMEWORK_NAME] = api;
     }();

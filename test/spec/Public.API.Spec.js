@@ -126,7 +126,7 @@ describe('事件绑定', function(){
 describe('view切换', function(){
   beforeEach(function() {
       jasmine.Ajax.install();
-      jasmine.Ajax.stubRequest('http://m.ctrip.com/webapp/hotel/').andReturn({
+      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/name5').andReturn({
         "status": 200,
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",
@@ -163,6 +163,7 @@ describe('view切换', function(){
       done();
     })
 
+    b.config.set("templatePath", "http://www.cjia-img.com/template/");
     b.views.goto("name5")
 
     // expect(b.views.count).toEqual(5);
