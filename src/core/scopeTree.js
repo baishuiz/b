@@ -1,6 +1,7 @@
 Air.Module("core.scopeTree", function(require){
   var Scope          = require("core.scope"),
       node           = require("utility.node"),
+      util           = require("utility.util"),
       directive      = require("core.directive"),
       EVENTS         = require("core.event"),
       repeatFilter   = require("directive.repeat"),
@@ -10,19 +11,6 @@ Air.Module("core.scopeTree", function(require){
   var nodeType = node.type,
       key      = directive.key
 
-  function isEmpty(obj) {
-      var isObject = beacon.utility.isType(obj, 'Object');
-      var isArray = beacon.utility.isType(obj, 'Array');
-      if(!isObject && !isArray){
-        return false;
-      }
-      for(var prop in obj) {
-          if(obj.hasOwnProperty(prop)){
-            return false;
-          }
-      }
-      return true;
-  }
 
 beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
   // generateScopeTree(data.dom , data.$scope)
@@ -72,7 +60,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                         var dataPath = markup.replace(/{{|}}/ig,"");
                         // var data = JSON.stringify(Air.NS(dataPath, $scope)).replace(/{}/ig,'')
                         var data = Air.NS(dataPath, $scope);
-                        data = isEmpty(data) ? '' : data;
+                        data = util.isEmpty(data) ? '' : data;
                         text = text.replace(markup, data)
 
 
