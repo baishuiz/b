@@ -40,13 +40,15 @@ Air.Module('core.views', function(require){
 
 
                 viewport.appendChild(view);
-                api.count +=1;
+                api.count += 1;
                 api.active = view;
                 beacon.on(api.EVENTS.SHOWED);
               }
             });
 
-            request.get(config.get("templatePath") + viewName);
+            var sign = router.getSign(viewName);
+            sign = sign && "." + sign;
+            request.get(config.get("templatePath") + viewName + sign);
 
           }
           //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");

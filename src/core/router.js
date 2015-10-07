@@ -7,6 +7,7 @@ Air.Module('core.router', function(){
   //    }
   // ]
 
+  signs = {};
   var routers = [];
 
 
@@ -37,7 +38,12 @@ Air.Module('core.router', function(){
 
   router.set = function(rule){
     routers.push(parseRouter(rule));
+    signs[rule.viewName] = rule.sign;
   };
+
+  router.getSign = function(viewName){
+    return signs[viewName] || '';
+  }
 
 
   router.match = function(pathName){

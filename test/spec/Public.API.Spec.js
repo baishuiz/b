@@ -134,7 +134,7 @@ describe('view切换', function(){
       });
 
 
-      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/detail').andReturn({
+      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/detail.ABCDEFG').andReturn({
         "status": 200,
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",
@@ -203,7 +203,7 @@ describe('view切换', function(){
     b.config.set("templatePath", "http://www.cjia-img.com/template/");
     b.views.router.set({
       viewName : "detail",
-      sign     : "ABCSDFSDF",
+      sign     : "ABCDEFG",
       router   : "/detail/:id"
     })
 
