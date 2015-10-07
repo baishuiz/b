@@ -5,6 +5,7 @@ Air.Module('core.views', function(require){
     EVENTS : {
       SHOWED : beacon.createEvent("view showed")
     },
+    router : require('core.router'),
     count:0,
     goto : function(viewName){
 

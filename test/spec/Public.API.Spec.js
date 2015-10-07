@@ -133,6 +133,12 @@ describe('view切换', function(){
         "responseText": 'Hello from the world'
       });
   });
+
+  afterEach(function() {
+      jasmine.Ajax.uninstall();
+
+  });
+
   it('viewport 初始化', function(done){
     //b.goto()
 
@@ -168,5 +174,38 @@ describe('view切换', function(){
 
     // expect(b.views.count).toEqual(5);
     // expect(b.views.active).toEqual(dom.view5);
+  });
+
+  it('路由匹配', function(){
+    b.config.set("templatePath", "http://www.cjia-img.com/template/");
+    b.views.router.set({
+      viewName : "detail",
+      sign     : "ABCSDFSDF",
+      router   : "/detail/:id"
+    })
+    //b.views.init();
+
+    var result = b.views.router.match("/detail/66");
+    expect(result.params.id).toEqual("66");
+
   })
+
 })
+
+
+// describe('服务请求'， function(){
+//   it('服务存在依赖'， function(done){
+//
+//     b.run('view6', function(require, $scope){
+//       var service1 = require('service.s1')
+//
+//       $scope.$service = {
+//         s1 : service("s1").query(),
+//         s2 : service("s2").quer({
+//           price : $scope.$service.s1.price
+//         })
+//       }
+//
+//     })
+//   })
+// });
