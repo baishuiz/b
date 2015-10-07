@@ -150,13 +150,26 @@
 })
 ;Air.Module('core.views', function(require){
   var Request = require('core.network.request'),
+      router  = require('core.router'),
       config  = require('core.config');
   var api = {
     EVENTS : {
       SHOWED : beacon.createEvent("view showed")
     },
-    router : require('core.router'),
+    router : router,
     count:0,
+    init : function(urlPath){
+      urlPath = urlPath || window.location;
+      var target = document.querySelector("viewport[main='true'] view[active='true']");
+      if(!target){
+        api.count = 0
+        var viewInfo = router.match(urlPath);
+          var viewport = document.createElement("viewport");
+          viewport.setAttribute('main', 'true');
+          document.body.appendChild(viewport);
+          api.goto(viewInfo.viewName);
+      }
+    },
     goto : function(viewName){
 
 
@@ -174,6 +187,8 @@
                 view.setAttribute("active", "true");
                 view.setAttribute("name", viewName);
                 view.innerHTML = data.data;
+
+
                 viewport.appendChild(view);
                 api.count +=1;
                 api.active = view;

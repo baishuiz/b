@@ -130,7 +130,15 @@ describe('view切换', function(){
         "status": 200,
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",
-        "responseText": 'Hello from the world'
+        "responseText": 'Hello from the view5'
+      });
+
+
+      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/detail').andReturn({
+        "status": 200,
+        "contentType": 'text/plain',
+        "Access-Control-Allow-Origin" : "*",
+        "responseText": 'Hello from the detail'
       });
   });
 
@@ -189,17 +197,29 @@ describe('view切换', function(){
 
   });
 
-  // it('view 初始化', function(){
-  //   b.config.set("templatePath", "http://www.cjia-img.com/template/");
-  //   b.views.router.set({
-  //     viewName : "detail",
-  //     sign     : "ABCSDFSDF",
-  //     router   : "/detail/:id"
-  //   })
-  //   b.views.init(url);
-  //
-  //   expect()
-  // })
+  it('view 初始化', function(done){
+    var viewport = document.querySelector('viewport[main="true"]');
+    viewport.parentElement.removeChild(viewport);
+    b.config.set("templatePath", "http://www.cjia-img.com/template/");
+    b.views.router.set({
+      viewName : "detail",
+      sign     : "ABCSDFSDF",
+      router   : "/detail/:id"
+    })
+
+
+    beacon.on(b.views.EVENTS.SHOWED, function(){
+      var dom = {
+        view : document.querySelector('view[name="detail"]')
+      }
+
+      expect(b.views.count).toEqual(1);
+      expect(b.views.active).toEqual(dom.view);
+      done();
+    });
+    var mockURL = "/detail/123";
+    b.views.init(mockURL);
+  })
 
 })
 
