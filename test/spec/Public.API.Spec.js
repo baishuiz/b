@@ -177,7 +177,6 @@ describe('view切换', function(){
   });
 
   it('路由匹配', function(){
-    b.config.set("templatePath", "http://www.cjia-img.com/template/");
     b.views.router.set({
       viewName : "detail",
       sign     : "ABCSDFSDF",
@@ -188,7 +187,19 @@ describe('view切换', function(){
     var result = b.views.router.match("/detail/66");
     expect(result.params.id).toEqual("66");
 
-  })
+  });
+
+  // it('view 初始化', function(){
+  //   b.config.set("templatePath", "http://www.cjia-img.com/template/");
+  //   b.views.router.set({
+  //     viewName : "detail",
+  //     sign     : "ABCSDFSDF",
+  //     router   : "/detail/:id"
+  //   })
+  //   b.views.init(url);
+  //
+  //   expect()
+  // })
 
 })
 
