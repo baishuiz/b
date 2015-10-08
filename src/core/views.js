@@ -1,6 +1,8 @@
 Air.Module('core.views', function(require){
   var Request = require('core.network.request'),
       router  = require('core.router'),
+      scopeList = require('core.scopeList'),
+      generateScopeTree = require("core.scopeTree"),
       config  = require('core.config');
   var api = {
     EVENTS : {
@@ -44,6 +46,9 @@ Air.Module('core.views', function(require){
                 viewport.appendChild(view);
                 api.count += 1;
                 api.active = view;
+
+                // generateScopeTree(view, $scope)
+                scopeList.init(view, generateScopeTree);
 
                 // load controller
                 var scripts = view.querySelectorAll('script');

@@ -16,7 +16,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
   // generateScopeTree(data.dom , data.$scope)
   // beacon.on(EVENTS.REPEAT_DATA_CHANGE);
 
-
+  
   for (var i = 0; i < nodes.length; i++) {
     var repeatNode = nodes[i];
     generateScopeTree(repeatNode.node, repeatNode.$scope);
@@ -86,7 +86,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                      if(isController){
                          var controllerName = child.getAttribute(key.controller)
                          $scope = new Scope($scope);
-                         scopeList[controllerName] = $scope;
+                         scopeList.set(controllerName, $scope);
                      }
                      generateScopeTree(child.attributes, $scope);
                      initModule(child, $scope);

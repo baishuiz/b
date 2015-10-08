@@ -154,79 +154,6 @@
   }
   return router;
 })
-;Air.Module('core.views', function(require){
-  var Request = require('core.network.request'),
-      router  = require('core.router'),
-      config  = require('core.config');
-  var api = {
-    EVENTS : {
-      SHOWED : beacon.createEvent("view showed")
-    },
-    router : router,
-    count:0,
-    init : function(urlPath){
-      urlPath = urlPath || window.location;
-      var target = document.querySelector("viewport[main='true'] view[active='true']");
-      if(!target){
-        api.count = 0
-        var viewInfo = router.match(urlPath);
-          var viewport = document.createElement("viewport");
-          viewport.setAttribute('main', 'true');
-          document.body.appendChild(viewport);
-          api.goto(viewInfo.viewName);
-      }
-    },
-    goto : function(viewName){
-
-
-          var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
-
-          if(target){
-            setActive();
-          } else {
-            var request = new Request();
-            beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
-              if(data.data){
-                api.active && api.active.removeAttribute('active');
-                var viewport = document.querySelector("viewport[main='true']");
-                var view = document.createElement("view");
-                view.setAttribute("active", "true");
-                view.setAttribute("name", viewName);
-                view.innerHTML = data.data;
-
-
-                viewport.appendChild(view);
-                api.count += 1;
-                api.active = view;
-                beacon.on(api.EVENTS.SHOWED);
-              }
-            });
-
-            var sign = router.getSign(viewName);
-            sign = sign && "." + sign;
-            request.get(config.get("templatePath") + viewName + sign);
-
-          }
-          //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");
-          function setActive(){
-            api.active && api.active.removeAttribute('active');
-            target.setAttribute('active','true');
-
-            api.active = target;
-          }
-    },
-    active : null
-  }
-
-  Air.domReady(function(){
-
-      var views = document.querySelectorAll("viewport[main='true'] view");
-      api.count = views.length;
-      api.active = document.querySelector("viewport[main='true'] view[active='true']");
-  });
-
-  return api;
-});
 ;Air.Module("utility.node", function(){
   var node = function(node){
       var api = {
@@ -423,8 +350,43 @@
 	}
 	return api;
 });Air.Module("core.scopeList", function(require){
+    var directive         = require("core.directive"),
+        Scope             = require("core.scope");
     var scopeList = {};
-    return scopeList;
+
+
+    function getApps(target){
+        var apps = target.querySelectorAll("[" + directive.key.app + "]");
+        return apps;
+    }
+
+    function init(target, generateScopeTree){
+    	target = target || document	;
+    	var apps      = getApps(target); // 获取所有App        
+    	// 遍历App 列表
+        var appIndex = 0, appCount = apps.length;
+        for(; appIndex < appCount; appIndex++) {
+            var app       = apps[appIndex],
+                appName   = app.getAttribute(directive.key.app)
+                rootScope = new Scope(); // 初始化应用rootScope
+
+            scopeList[appName] = rootScope;
+            generateScopeTree(app.childNodes, rootScope); // 构建 subScope
+        }
+    }
+
+    var api = {
+    	init : init,
+    	get   : function(key){
+            return scopeList[key];
+    	},
+
+    	set  : function(key, value) {
+    		scopeList[key] = value;
+    	}
+    }
+
+    return api;
 });Air.Module("core.scopeTree", function(require){
   var Scope          = require("core.scope"),
       node           = require("utility.node"),
@@ -443,7 +405,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
   // generateScopeTree(data.dom , data.$scope)
   // beacon.on(EVENTS.REPEAT_DATA_CHANGE);
 
-
+  
   for (var i = 0; i < nodes.length; i++) {
     var repeatNode = nodes[i];
     generateScopeTree(repeatNode.node, repeatNode.$scope);
@@ -513,7 +475,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                      if(isController){
                          var controllerName = child.getAttribute(key.controller)
                          $scope = new Scope($scope);
-                         scopeList[controllerName] = $scope;
+                         scopeList.set(controllerName, $scope);
                      }
                      generateScopeTree(child.attributes, $scope);
                      initModule(child, $scope);
@@ -527,12 +489,101 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
 return generateScopeTree;
 
 })
+;Air.Module('core.views', function(require){
+  var Request = require('core.network.request'),
+      router  = require('core.router'),
+      scopeList = require('core.scopeList'),
+      generateScopeTree = require("core.scopeTree"),
+      config  = require('core.config');
+  var api = {
+    EVENTS : {
+      SHOWED : beacon.createEvent("view showed")
+    },
+    router : router,
+    count:0,
+    init : function(urlPath){
+      urlPath = urlPath || window.location.pathname;
+      var target = document.querySelector("viewport[main='true'] view[active='true']");
+      if(!target){
+        api.count = 0
+        var viewInfo = router.match(urlPath);
+        if(viewInfo){
+          var viewport = document.createElement("viewport");
+          viewport.setAttribute('main', 'true');
+          document.body.appendChild(viewport);
+          api.goto(viewInfo.viewName);
+        }  
+      }
+    },
+    goto : function(viewName){
+
+
+          var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
+
+          if(target){
+            setActive();
+          } else {
+            var request = new Request();
+            beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+              if(data.data){
+                api.active && api.active.removeAttribute('active');
+                var viewport = document.querySelector("viewport[main='true']");
+                var view = document.createElement("view");
+                view.setAttribute("active", "true");
+                view.setAttribute("name", viewName);
+                view.innerHTML = data.data;
+
+
+                viewport.appendChild(view);
+                api.count += 1;
+                api.active = view;
+
+                // generateScopeTree(view, $scope)
+                scopeList.init(view, generateScopeTree);
+
+                // load controller
+                var scripts = view.querySelectorAll('script');
+                scripts = [].slice.call(scripts);
+                for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
+                  var activeScript = scripts[scriptIndex];
+                  activeScript.src && Air.loadJS(activeScript.src);
+                };
+
+                beacon.on(api.EVENTS.SHOWED);
+              }
+            });
+
+            var sign = router.getSign(viewName);
+            sign = sign && "." + sign;
+            request.get(config.get("templatePath") + viewName + sign);
+
+          }
+          //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");
+          function setActive(){
+            api.active && api.active.removeAttribute('active');
+            target.setAttribute('active','true');
+
+            api.active = target;
+          }
+    },
+    active : null
+  }
+
+  Air.domReady(function(){
+
+      var views = document.querySelectorAll("viewport[main='true'] view");
+      api.count = views.length;
+      api.active = document.querySelector("viewport[main='true'] view[active='true']");
+  });
+
+  return api;
+});
 ;Air.Module("core.run", function(require){
     var EVENTS    = require("core.event");
 
     var run = function(controllerName, controller){
     	var scopeList = require("core.scopeList");
-        var scope = scopeList[controllerName];
+        var scope = scopeList.get(controllerName);
         controller(require, scope);
         beacon.on(EVENTS.DATA_CHANGE, scope);
     }
@@ -548,25 +599,14 @@ return generateScopeTree;
     var EVENTS            = require("core.event"),
         FRAMEWORK_NAME    = 'b';
 
-    function getApps(){
-        var apps = document.querySelectorAll("[" + directive.key.app + "]");
-        return apps;
-    }
+
 
     Air.domReady(function(){
-        var apps      = getApps(), // 获取所有App
-            scopeList = require('core.scopeList');
+        
+            var scopeList = require('core.scopeList');
+            scopeList.init(document, generateScopeTree);
+            
 
-        // 遍历App 列表
-        var appIndex = 0, appCount = apps.length;
-        for(; appIndex < appCount; appIndex++) {
-            var app       = apps[appIndex],
-                appName   = app.getAttribute(directive.key.app)
-                rootScope = new Scope(); // 初始化应用rootScope
-
-            scopeList[appName] = rootScope;
-            generateScopeTree(app.childNodes, rootScope); // 构建 subScope
-        }
     });
 
     void function main(){

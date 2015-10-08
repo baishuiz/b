@@ -18,12 +18,14 @@ module.exports = function(grunt){
                         './src/core/config.js',
                         './src/core/network/request.js',
                         './src/core/router.js',
-                        './src/core/views.js',
+                        
                         './src/utility/*.js',
                         './src/directive/*.js',
                         './src/core/scope.js',
                         './src/core/scopeList.js',
                         './src/core/scopeTree.js',
+
+                        './src/core/views.js',
                         './src/core/run.js',
                         './src/*.js'
                       ],
