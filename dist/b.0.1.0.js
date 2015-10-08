@@ -256,6 +256,8 @@
 ;Air.Module("directive.repeat", function(require){
 	var node      = require("utility.node"),
       directive = require("core.directive"),
+
+      Scope     = require("core.scope"),
       EVENTS    = require("core.event");
 
   var key       = directive.signup('repeat', 'ng-repeat');
@@ -308,7 +310,9 @@
               var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
 							var itemName = condition.match(/(\w+)\s+in\s+(\w+)/i)[1];
               //var repeatScope = new Function("$scope", "group","return $scope[group]")($scope, group);
+              var newScope = new Scope($scope);
 							var repeatScope = Air.NS(group, $scope);
+              beacon.utility.blend(newScope,repeatScope);
 							var nodes = [];
 							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
