@@ -64,7 +64,7 @@ Air.Module("directive.repeat", function(require){
 
 								beacon({target:newNode, scope:$scope}).once("cloneNodeRemove", function(e, $scope){
 									if($scope !== this.scope) return;
-                  this.target.parentElement.removeChild(this);
+                  this.target.parentElement.removeChild(this.target);
 								});
 
                 newNode.removeAttribute(key);
