@@ -207,6 +207,11 @@
     var eventParam = eventCMD[1].match(reg)[2]
 
     beacon(target).on(eventName, function (){
+          var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
+    var eventName = eventCMD[0];
+    var eventHandle = eventCMD[1].replace(reg,'');
+    var eventParam = eventCMD[1].match(reg)[2]
+
         $scope.$event[eventHandle].apply(this, eval("["+eventParam+"]"));
         beacon.on(EVENTS.DATA_CHANGE, $scope);
     });
