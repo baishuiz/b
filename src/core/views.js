@@ -14,10 +14,12 @@ Air.Module('core.views', function(require){
       if(!target){
         api.count = 0
         var viewInfo = router.match(urlPath);
+        if(viewInfo){
           var viewport = document.createElement("viewport");
           viewport.setAttribute('main', 'true');
           document.body.appendChild(viewport);
           api.goto(viewInfo.viewName);
+        }  
       }
     },
     goto : function(viewName){
