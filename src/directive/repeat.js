@@ -55,9 +55,9 @@ Air.Module("directive.repeat", function(require){
               var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
 							var itemName = condition.match(/(\w+)\s+in\s+(\w+)/i)[1];
               //var repeatScope = new Function("$scope", "group","return $scope[group]")($scope, group);
-              var newScope = new Scope($scope);
+              //var newScope = new Scope($scope);
 							var repeatScope = Air.NS(group, $scope);
-              beacon.utility.blend(newScope,repeatScope);
+              //beacon.utility.blend(newScope,repeatScope);
 							var nodes = [];
 							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
@@ -67,7 +67,7 @@ Air.Module("directive.repeat", function(require){
 								});
 
                 newNode.removeAttribute(key);
-								var activeScope = {}
+								var activeScope = new Scope($scope);
 								activeScope[itemName] = repeatScope[item]
 								nodes.push({
 									node : newNode.childNodes,

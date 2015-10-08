@@ -253,7 +253,55 @@
   }
   return api;
 })
-;Air.Module("directive.repeat", function(require){
+;Air.Module("core.scope", function(){
+	var Scope = function(parent){
+    
+	}
+
+	var api = function(parent){
+        Scope.prototype = parent || {};
+        return new Scope(parent);    
+	}
+	return api;
+});Air.Module("core.scopeList", function(require){
+    var directive         = require("core.directive"),
+        Scope             = require("core.scope");
+    var scopeList = {};
+
+
+    function getApps(target){
+        var apps = target.querySelectorAll("[" + directive.key.app + "]");
+        return apps;
+    }
+
+    function init(target, generateScopeTree){
+    	target = target || document	;
+    	var apps      = getApps(target); // 获取所有App        
+    	// 遍历App 列表
+        var appIndex = 0, appCount = apps.length;
+        for(; appIndex < appCount; appIndex++) {
+            var app       = apps[appIndex],
+                appName   = app.getAttribute(directive.key.app)
+                rootScope = new Scope(); // 初始化应用rootScope
+
+            scopeList[appName] = rootScope;
+            generateScopeTree(app.childNodes, rootScope); // 构建 subScope
+        }
+    }
+
+    var api = {
+    	init : init,
+    	get   : function(key){
+            return scopeList[key];
+    	},
+
+    	set  : function(key, value) {
+    		scopeList[key] = value;
+    	}
+    }
+
+    return api;
+});Air.Module("directive.repeat", function(require){
 	var node      = require("utility.node"),
       directive = require("core.directive"),
 
@@ -310,9 +358,9 @@
               var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
 							var itemName = condition.match(/(\w+)\s+in\s+(\w+)/i)[1];
               //var repeatScope = new Function("$scope", "group","return $scope[group]")($scope, group);
-              var newScope = new Scope($scope);
+              //var newScope = new Scope($scope);
 							var repeatScope = Air.NS(group, $scope);
-              beacon.utility.blend(newScope,repeatScope);
+              //beacon.utility.blend(newScope,repeatScope);
 							var nodes = [];
 							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
@@ -322,7 +370,7 @@
 								});
 
                 newNode.removeAttribute(key);
-								var activeScope = {}
+								var activeScope = new Scope($scope);
 								activeScope[itemName] = repeatScope[item]
 								nodes.push({
 									node : newNode.childNodes,
@@ -343,55 +391,7 @@
 	}
 	return api;
 })
-;Air.Module("core.scope", function(){
-	var Scope = function(parent){
-    
-	}
-
-	var api = function(parent){
-        Scope.prototype = parent || {};
-        return new Scope(parent);    
-	}
-	return api;
-});Air.Module("core.scopeList", function(require){
-    var directive         = require("core.directive"),
-        Scope             = require("core.scope");
-    var scopeList = {};
-
-
-    function getApps(target){
-        var apps = target.querySelectorAll("[" + directive.key.app + "]");
-        return apps;
-    }
-
-    function init(target, generateScopeTree){
-    	target = target || document	;
-    	var apps      = getApps(target); // 获取所有App        
-    	// 遍历App 列表
-        var appIndex = 0, appCount = apps.length;
-        for(; appIndex < appCount; appIndex++) {
-            var app       = apps[appIndex],
-                appName   = app.getAttribute(directive.key.app)
-                rootScope = new Scope(); // 初始化应用rootScope
-
-            scopeList[appName] = rootScope;
-            generateScopeTree(app.childNodes, rootScope); // 构建 subScope
-        }
-    }
-
-    var api = {
-    	init : init,
-    	get   : function(key){
-            return scopeList[key];
-    	},
-
-    	set  : function(key, value) {
-    		scopeList[key] = value;
-    	}
-    }
-
-    return api;
-});Air.Module("core.scopeTree", function(require){
+;Air.Module("core.scopeTree", function(require){
   var Scope          = require("core.scope"),
       node           = require("utility.node"),
       util           = require("utility.util"),
