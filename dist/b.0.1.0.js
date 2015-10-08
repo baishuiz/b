@@ -613,7 +613,8 @@ return generateScopeTree;
         var api = {
             run : require('core.run'),
             views: require('core.views'),
-            config : require('core.config')
+            config : require('core.config'),
+            EVENTS  : require('core.event')
         };
         window[FRAMEWORK_NAME] = api;
     }();
