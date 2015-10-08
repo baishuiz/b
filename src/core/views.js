@@ -44,6 +44,15 @@ Air.Module('core.views', function(require){
                 viewport.appendChild(view);
                 api.count += 1;
                 api.active = view;
+
+                // load controller
+                var scripts = view.querySelectorAll('script');
+                scripts = [].slice.call(scripts);
+                for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
+                  var activeScript = scripts[scriptIndex];
+                  activeScript.src && Air.loadJS(activeScript.src);
+                };
+
                 beacon.on(api.EVENTS.SHOWED);
               }
             });
