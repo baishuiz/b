@@ -20,11 +20,15 @@ module.exports = function(grunt){
                         './src/core/router.js',
                         
                         './src/utility/*.js',
-
+                        
+                        './src/directive/event.js',
+                        './src/directive/module.js',
+                        
                         './src/core/scope.js',
                         './src/core/scopeList.js',
+                        './src/directive/repeat.js',
                         './src/core/scopeTree.js',
-                        './src/directive/*.js',
+                        
                         './src/core/views.js',
                         './src/core/run.js',
                         './src/*.js'
