@@ -9,7 +9,7 @@ Air.Module('core.views', function(require){
     router : router,
     count:0,
     init : function(urlPath){
-      urlPath = urlPath || window.location;
+      urlPath = urlPath || window.location.pathName;
       var target = document.querySelector("viewport[main='true'] view[active='true']");
       if(!target){
         api.count = 0
