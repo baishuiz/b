@@ -10,27 +10,19 @@ Air.Module('direcitve.event', function(require){
       return;
     }
 
-    var eventCMD = target.getAttribute(directive.key.event).split(/\s/);
-    var eventName = eventCMD[0];
-    var eventHandle = eventCMD[1].replace(reg,'');
-    var eventParam = eventCMD[1].match(reg)[2]
+    var cmd = target.getAttribute(directive.key.event);
+    var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
 
     beacon(target).on(eventName, function (){
-          var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
-    var eventName = eventCMD[0];
-    var eventHandle = eventCMD[1].replace(reg,'');
-    var eventParam = eventCMD[1].match(reg)[2]
+        //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
+        var handleStr = cmd.replace(eventName,'')
+        var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
+        var eventParam = handleStr.match(reg)[2]
 
         $scope.$event[eventHandle].apply(this, eval("["+eventParam+"]"));
         beacon.on(EVENTS.DATA_CHANGE, $scope);
     });
 
-    beacon({target:target, scope:$scope, eventName:eventName, eventHandle:eventHandle})
-    .on(EVENTS.DATA_CHANGE, function(e, $scope){
-      if(this.scope !== $scope) {
-        return;
-      }
-    });
   }
 
   return api;
