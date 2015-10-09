@@ -7,8 +7,9 @@ Air.Module('core.router', function(){
   //    }
   // ]
 
-  signs = {};
+  var signs = {};
   var routers = [];
+  var rules  = {};
 
 
   var router = function(rule){
@@ -31,6 +32,7 @@ Air.Module('core.router', function(){
                     return "(\\w+)"
                   });
     var reg = new RegExp("^" + regStr + "$","i");
+    
     rule.rule = reg;
     rule.params = params;
     return rule;
@@ -39,7 +41,12 @@ Air.Module('core.router', function(){
   router.set = function(rule){
     routers.push(parseRouter(rule));
     signs[rule.viewName] = rule.sign;
+    rules[rule.viewName] = rule.router;
   };
+
+  router.getParams = function(viewName){
+    return rules[viewName];
+  }
 
   router.getSign = function(viewName){
     return signs[viewName] || '';

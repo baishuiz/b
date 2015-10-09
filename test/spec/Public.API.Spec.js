@@ -163,14 +163,16 @@ describe('view切换', function(){
     b.views.goto("name2")
     expect(b.views.count).toEqual(4);
     expect(b.views.active).toEqual(dom.view2);
+
     b.views.goto("name4")
     expect(b.views.count).toEqual(4);
     expect(b.views.active).toEqual(dom.view4);
+
     b.views.goto("name1")
     expect(b.views.count).toEqual(4);
     expect(b.views.active).toEqual(dom.view1);
 
-    beacon.on(b.views.EVENTS.SHOWED, function(){
+    beacon.once(b.views.EVENTS.SHOWED, function(){
       dom.view5 = document.querySelector('view[name="name5"]')
       expect(b.views.count).toEqual(5);
       expect(b.views.active).toEqual(dom.view5);
@@ -208,17 +210,43 @@ describe('view切换', function(){
     })
 
 
-    beacon.on(b.views.EVENTS.SHOWED, function(){
+    beacon.once(b.views.EVENTS.SHOWED, function(){
       var dom = {
         view : document.querySelector('view[name="detail"]')
       }
 
       expect(b.views.count).toEqual(1);
       expect(b.views.active).toEqual(dom.view);
+
       done();
     });
     var mockURL = "/detail/123";
     b.views.init(mockURL);
+  });
+
+  it('url change', function(done){
+    b.views.router.set({
+      viewName : "detail",
+      sign     : "ABCSDFSDF",
+      router   : "/detail/:id"
+    });
+
+    var url;
+    beacon.once(b.EVENTS.URL_CHANGE, function(e, url){
+      // console.log(location.href)
+      console.log(url.to)
+      var urlMatch = /\/detail\/6\/?\?a=1&b=2/i.test(url.to);
+      expect(urlMatch).toEqual(true);
+      done();
+    });
+
+
+    b.views.goto("detail", {
+      params:{
+        id : 6
+      },
+      query : "?a=1&b=2"
+    })
   })
 
 })

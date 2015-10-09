@@ -2,6 +2,7 @@ Air.Module('core.views', function(require){
   var Request = require('core.network.request'),
       router  = require('core.router'),
       scopeList = require('core.scopeList'),
+      url       = require('core.url'),
       generateScopeTree = require("core.scopeTree"),
       config  = require('core.config');
   var api = {
@@ -24,7 +25,7 @@ Air.Module('core.views', function(require){
         }  
       }
     },
-    goto : function(viewName){
+    goto : function(viewName, options){
 
 
           var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
@@ -57,8 +58,8 @@ Air.Module('core.views', function(require){
                   var activeScript = scripts[scriptIndex];
                   activeScript.src && Air.loadJS(activeScript.src);
                 };
-
-                beacon.on(api.EVENTS.SHOWED);
+                url.change(viewName, options);
+                beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
               }
             });
 
@@ -73,6 +74,8 @@ Air.Module('core.views', function(require){
             target.setAttribute('active','true');
 
             api.active = target;
+            url.change(viewName, options);
+            beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
           }
     },
     active : null

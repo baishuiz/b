@@ -22,7 +22,8 @@
   var events = {
     DATA_CHANGE        : beacon.createEvent("data change"),
     REPEAT_DATA_CHANGE : beacon.createEvent("repeat data change"),
-    REPEAT_DONE        : beacon.createEvent("repeat done")
+    REPEAT_DONE        : beacon.createEvent("repeat done"),
+    URL_CHANGE         : beacon.createEvent("url change")
     
   }
   return events;
@@ -98,8 +99,9 @@
   //    }
   // ]
 
-  signs = {};
+  var signs = {};
   var routers = [];
+  var rules  = {};
 
 
   var router = function(rule){
@@ -122,6 +124,7 @@
                     return "(\\w+)"
                   });
     var reg = new RegExp("^" + regStr + "$","i");
+    
     rule.rule = reg;
     rule.params = params;
     return rule;
@@ -130,7 +133,12 @@
   router.set = function(rule){
     routers.push(parseRouter(rule));
     signs[rule.viewName] = rule.sign;
+    rules[rule.viewName] = rule.router;
   };
+
+  router.getParams = function(viewName){
+    return rules[viewName];
+  }
 
   router.getSign = function(viewName){
     return signs[viewName] || '';
@@ -491,10 +499,42 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
 return generateScopeTree;
 
 })
-;Air.Module('core.views', function(require){
+;Air.Module('core.url', function(require){
+	var router = require('core.router');
+	var EVENTS = require('core.event');
+	var api = {
+		change : function(viewName, options){
+			options = options || {};
+            var params = options.params;
+            var query  = options.query || "";
+            // detail/:id/:name/:price
+            var routerRule = router.getParams(viewName);
+
+            if(routerRule && params){
+
+
+	            var urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
+	                      return params[key]
+	            });
+	            
+	            urlPath = location.origin + urlPath + query;
+	            var fromURL  = location.href;
+	            var stateObj = {};
+	            history.pushState(stateObj, "viewName", urlPath);
+	            beacon.on(EVENTS.URL_CHANGE, {
+	            	from : fromURL,
+	            	to   : urlPath
+	            });
+			}
+		}
+	};
+
+	return api;
+});Air.Module('core.views', function(require){
   var Request = require('core.network.request'),
       router  = require('core.router'),
       scopeList = require('core.scopeList'),
+      url       = require('core.url'),
       generateScopeTree = require("core.scopeTree"),
       config  = require('core.config');
   var api = {
@@ -517,7 +557,7 @@ return generateScopeTree;
         }  
       }
     },
-    goto : function(viewName){
+    goto : function(viewName, options){
 
 
           var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
@@ -550,8 +590,8 @@ return generateScopeTree;
                   var activeScript = scripts[scriptIndex];
                   activeScript.src && Air.loadJS(activeScript.src);
                 };
-
-                beacon.on(api.EVENTS.SHOWED);
+                url.change(viewName, options);
+                beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
               }
             });
 
@@ -566,6 +606,8 @@ return generateScopeTree;
             target.setAttribute('active','true');
 
             api.active = target;
+            url.change(viewName, options);
+            beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
           }
     },
     active : null
