@@ -15,7 +15,7 @@ Air.run(function(require){
             var scopeList = require('core.scopeList');
             scopeList.init(document, generateScopeTree);
             beacon(window).on('popstate', function(e){
-                b.views.goto(e.viewName);
+                b.views.goto(e.state.viewName);
             })
             
 
