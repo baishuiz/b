@@ -106,7 +106,7 @@ describe('事件绑定', function(){
   it('dom 原生事件', function(){
     b.run("f4", function(require, $scope){
       $scope.$event = {
-        addResult : function(num, msg){
+        addResult : function(e, num, msg){
           $scope.result = $scope.result + num;
           $scope.msg = msg;
         }

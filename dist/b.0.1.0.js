@@ -220,14 +220,15 @@
     var cmd = target.getAttribute(directive.key.event);
     var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
 
-    beacon(target).on(eventName, function (){
+    beacon(target).on(eventName, function (e){
         //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
         var cmd = this.getAttribute(directive.key.event);
         var handleStr = cmd.replace(eventName,'')
         var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
         var eventParam = handleStr.match(reg)[2]
-
-        $scope.$event[eventHandle].apply(this, eval("["+eventParam+"]"));
+        var params = eval("["+eventParam+"]");
+        params.unshift(e);
+        $scope.$event[eventHandle].apply(this, params);
         beacon.on(EVENTS.DATA_CHANGE, $scope);
     });
 
@@ -559,7 +560,7 @@ return generateScopeTree;
     count:0,
     init : function(urlPath){
       urlPath = urlPath || window.location.pathname;
-      var params = util.enums(urlPath.split("/"))
+      var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
       var target = document.querySelector("viewport[main='true'] view[active='true']");
       if(!target){
         api.count = 0
@@ -569,7 +570,7 @@ return generateScopeTree;
           viewport.setAttribute('main', 'true');
           document.body.appendChild(viewport);
           api.goto(viewInfo.viewName, {params:params});
-        }  
+        }
       }
     },
     goto : function(viewName, options){
