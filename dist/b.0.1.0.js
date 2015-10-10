@@ -564,7 +564,7 @@ return generateScopeTree;
     },
     goto : function(viewName, options){
 
-
+          options = options || {};
           var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
 
           if(target){
@@ -595,7 +595,7 @@ return generateScopeTree;
                   var activeScript = scripts[scriptIndex];
                   activeScript.src && Air.loadJS(activeScript.src);
                 };
-                url.change(viewName, options);
+                options.popstate || url.change(viewName, options);
                 beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
               }
             });
@@ -611,7 +611,7 @@ return generateScopeTree;
             target.setAttribute('active','true');
 
             api.active = target;
-            url.change(viewName, options);
+            options.popstate || url.change(viewName, options);
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
           }
     },
@@ -656,7 +656,7 @@ return generateScopeTree;
             var scopeList = require('core.scopeList');
             scopeList.init(document, generateScopeTree);
             beacon(window).on('popstate', function(e){
-                b.views.goto(e.state.viewName);
+                b.views.goto(e.state.viewName, {popstate:true});
             })
             
 
