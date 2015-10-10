@@ -193,7 +193,15 @@
               }
           }
           return true;
-      }
+      },
+
+    enums : function(keys){
+      var result = {};
+      for (var i = keys.length - 1; i >= 0; i--) {
+        result[keys[i]]=keys[i];
+      };
+      return result;
+    }  
   };
   return util;
 });
@@ -540,6 +548,7 @@ return generateScopeTree;
       router  = require('core.router'),
       scopeList = require('core.scopeList'),
       url       = require('core.url'),
+      util      = require('utility.util'),
       generateScopeTree = require("core.scopeTree"),
       config  = require('core.config');
   var api = {
@@ -550,6 +559,7 @@ return generateScopeTree;
     count:0,
     init : function(urlPath){
       urlPath = urlPath || window.location.pathname;
+      var params = util.enums(urlPath.split("/"))
       var target = document.querySelector("viewport[main='true'] view[active='true']");
       if(!target){
         api.count = 0
@@ -558,7 +568,7 @@ return generateScopeTree;
           var viewport = document.createElement("viewport");
           viewport.setAttribute('main', 'true');
           document.body.appendChild(viewport);
-          api.goto(viewInfo.viewName);
+          api.goto(viewInfo.viewName, {params:params});
         }  
       }
     },

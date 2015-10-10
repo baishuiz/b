@@ -12,7 +12,15 @@ Air.Module('utility.util', function(){
               }
           }
           return true;
-      }
+      },
+
+    enums : function(keys){
+      var result = {};
+      for (var i = keys.length - 1; i >= 0; i--) {
+        result[keys[i]]=keys[i];
+      };
+      return result;
+    }  
   };
   return util;
 });
