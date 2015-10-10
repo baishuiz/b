@@ -19,7 +19,7 @@ Air.Module('core.url', function(require){
 		                      return params[key]
 		            });
 	            } else {
-	            	urlPath = viewName;
+	            	urlPath = "/" + viewName;
 	            }
 	            
 	            urlPath = location.origin + urlPath + query;
