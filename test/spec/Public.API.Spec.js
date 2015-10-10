@@ -112,6 +112,7 @@ describe('事件绑定', function(){
       }
 
       $scope.result = 1;
+      $scope.step = 1;
     });
 
     var dom = {

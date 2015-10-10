@@ -1,6 +1,9 @@
 Air.Module('core.url', function(require){
 	var router = require('core.router');
 	var EVENTS = require('core.event');
+
+	//window.onpopstate = function(event) {
+
 	var api = {
 		change : function(viewName, options){
 			options = options || {};
@@ -18,12 +21,14 @@ Air.Module('core.url', function(require){
 	            
 	            urlPath = location.origin + urlPath + query;
 	            var fromURL  = location.href;
-	            var stateObj = {};
+	            var stateObj = {viewName: viewName};
 	            history.pushState(stateObj, "viewName", urlPath);
 	            beacon.on(EVENTS.URL_CHANGE, {
 	            	from : fromURL,
 	            	to   : urlPath
 	            });
+
+
 			}
 		}
 	};

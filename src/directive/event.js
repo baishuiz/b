@@ -15,6 +15,7 @@ Air.Module('direcitve.event', function(require){
 
     beacon(target).on(eventName, function (){
         //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
+        var cmd = this.getAttribute(directive.key.event);
         var handleStr = cmd.replace(eventName,'')
         var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
         var eventParam = handleStr.match(reg)[2]

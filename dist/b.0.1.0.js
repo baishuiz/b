@@ -214,6 +214,7 @@
 
     beacon(target).on(eventName, function (){
         //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
+        var cmd = this.getAttribute(directive.key.event);
         var handleStr = cmd.replace(eventName,'')
         var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
         var eventParam = handleStr.match(reg)[2]
@@ -502,6 +503,9 @@ return generateScopeTree;
 ;Air.Module('core.url', function(require){
 	var router = require('core.router');
 	var EVENTS = require('core.event');
+
+	//window.onpopstate = function(event) {
+
 	var api = {
 		change : function(viewName, options){
 			options = options || {};
@@ -519,12 +523,14 @@ return generateScopeTree;
 	            
 	            urlPath = location.origin + urlPath + query;
 	            var fromURL  = location.href;
-	            var stateObj = {};
+	            var stateObj = {viewName: viewName};
 	            history.pushState(stateObj, "viewName", urlPath);
 	            beacon.on(EVENTS.URL_CHANGE, {
 	            	from : fromURL,
 	            	to   : urlPath
 	            });
+
+
 			}
 		}
 	};
@@ -638,6 +644,7 @@ return generateScopeTree;
     var Scope             = require("core.scope"),
         node              = require("utility.node"),
         generateScopeTree = require("core.scopeTree"),
+        view              = require('core.views')
         directive         = require("core.directive");
 
     var EVENTS            = require("core.event"),
@@ -649,6 +656,9 @@ return generateScopeTree;
         
             var scopeList = require('core.scopeList');
             scopeList.init(document, generateScopeTree);
+            // beacon(window).on('popstate', function(e){
+            //     view.goto(state.viewName);
+            // })
             
 
     });
@@ -656,7 +666,7 @@ return generateScopeTree;
     void function main(){
         var api = {
             run : require('core.run'),
-            views: require('core.views'),
+            views: view,
             config : require('core.config'),
             EVENTS  : require('core.event')
         };
