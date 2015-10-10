@@ -514,12 +514,15 @@ return generateScopeTree;
             // detail/:id/:name/:price
             var routerRule = router.getParams(viewName);
 
-            if(routerRule && params){
-
-
-	            var urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
-	                      return params[key]
-	            });
+            if(routerRule){
+                var urlPath
+                if(params){
+		            urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
+		                      return params[key]
+		            });
+	            } else {
+	            	urlPath = viewName;
+	            }
 	            
 	            urlPath = location.origin + urlPath + query;
 	            var fromURL  = location.href;

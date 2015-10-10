@@ -1,3 +1,4 @@
+history.pushState = function(){}
 describe("模版数据绑定", function () {
 
     it("模版存在", function () {
