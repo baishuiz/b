@@ -14,7 +14,7 @@ Air.Module('core.views', function(require){
     count:0,
     init : function(urlPath){
       urlPath = urlPath || window.location.pathname;
-      var params = util.enums(urlPath.split("/"))
+      var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
       var target = document.querySelector("viewport[main='true'] view[active='true']");
       if(!target){
         api.count = 0
@@ -24,7 +24,7 @@ Air.Module('core.views', function(require){
           viewport.setAttribute('main', 'true');
           document.body.appendChild(viewport);
           api.goto(viewInfo.viewName, {params:params});
-        }  
+        }
       }
     },
     goto : function(viewName, options){
