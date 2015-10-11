@@ -256,14 +256,40 @@ describe('view切换', function(){
 
 // describe('服务请求'， function(){
 //   it('服务存在依赖'， function(done){
+//     b.config.set("service",{
+//       select : {
+//         host : "service.cjia.com",
+//         method : "GET",
+//         protocol : "HTTP",
+//         head : {}
+//       },
+//
+//       order : {
+//         host : "service.cjia.com",
+//         method : "POST",
+//         protocol : "HTTPS",
+//         head : {}
+//       }
+//     });
+//
+//     b.Module("biz.service.H5.list", function(){
+//       var service = b.service("select").set({
+//         path : "/list/",
+//         params : {}
+//       });
+//       return service;
+//     })
+//
 //
 //     b.run('view6', function(require, $scope){
-//       var service1 = require('service.s1')
+//      var service = {
+//        list : require("biz.service.H5.list")
+//      }
 //
 //       $scope.$service = {
-//         s1 : service("s1").query(),
-//         s2 : service("s2").quer({
-//           price : $scope.$service.s1.price
+//         s1 : service.list.query(),
+//         s2 : service.tag.query({
+//           price : $scope.$service.s1.datas.price
 //         })
 //       }
 //
