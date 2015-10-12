@@ -5,13 +5,11 @@ Air.Module("core.run", function(require){
         var scopeList = require("core.scopeList");
         var scope = scopeList.get(controllerName);
     	  try{
-
           controller(require, scope);
-
+          beacon.on(EVENTS.DATA_CHANGE, scope);
         }catch(e){
           // console.log(e);
         }
-        beacon.on(EVENTS.DATA_CHANGE, scope);
     }
 
     return run;
