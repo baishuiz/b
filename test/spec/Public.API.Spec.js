@@ -280,10 +280,11 @@ describe('服务请求', function(){
       return service;
     })
 
-    b.Module("biz.service.H5.tag", function(){
+    b.Module("biz.service.H5.tag", function(require){
       var service = b.service("select").set({
         path : "/list/",
-        params : {}
+        params : {},
+        dependencies : require("biz.service.H5.list")
       });
       return service;
     })
