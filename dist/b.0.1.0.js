@@ -642,7 +642,7 @@ return generateScopeTree;
     var EVENTS    = require("core.event");
 
     var run = function(controllerName, controller){
-    	var scopeList = require("core.scopeList");
+    	  var scopeList = require("core.scopeList");
         var scope = scopeList.get(controllerName);
         controller(require, scope);
         beacon.on(EVENTS.DATA_CHANGE, scope);
@@ -650,6 +650,20 @@ return generateScopeTree;
 
     return run;
 });
+;Air.Module('core.service', function(){
+
+
+  var service = function(configKey){
+      return {
+        set : function(){
+          return {
+            query : function(){}
+          }
+        }
+      }
+  };
+  return service;
+})
 ;Air.run(function(require){
     var Scope             = require("core.scope"),
         node              = require("utility.node"),
@@ -663,13 +677,13 @@ return generateScopeTree;
 
 
     Air.domReady(function(){
-        
+
             var scopeList = require('core.scopeList');
             scopeList.init(document, generateScopeTree);
             beacon(window).on('popstate', function(e){
                 b.views.goto(e.state.viewName, {popstate:true});
             })
-            
+
 
     });
 
@@ -678,7 +692,9 @@ return generateScopeTree;
             run : require('core.run'),
             views: view,
             config : require('core.config'),
-            EVENTS  : require('core.event')
+            EVENTS  : require('core.event'),
+            Module  : Air.Module,
+            service : require('core.service')
         };
         window[FRAMEWORK_NAME] = api;
     }();

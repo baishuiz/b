@@ -11,13 +11,13 @@ Air.run(function(require){
 
 
     Air.domReady(function(){
-        
+
             var scopeList = require('core.scopeList');
             scopeList.init(document, generateScopeTree);
             beacon(window).on('popstate', function(e){
                 b.views.goto(e.state.viewName, {popstate:true});
             })
-            
+
 
     });
 
@@ -26,7 +26,9 @@ Air.run(function(require){
             run : require('core.run'),
             views: view,
             config : require('core.config'),
-            EVENTS  : require('core.event')
+            EVENTS  : require('core.event'),
+            Module  : Air.Module,
+            service : require('core.service')
         };
         window[FRAMEWORK_NAME] = api;
     }();
