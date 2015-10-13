@@ -11,9 +11,15 @@ Air.Module("core.run", function(require){
         });
 
     	  // try{
-          controller(require, scope);
-          beacon.on(EVENTS.DATA_CHANGE, scope);
-          beacon.on("hi", scope);
+          Air.justRequire(true);
+          Air.run(controller);
+          Air.run(function(){
+            Air.justRequire(false);
+            controller(require, scope);
+            beacon.on(EVENTS.DATA_CHANGE, scope);
+            beacon.on("hi", scope);
+          })
+          
         // }catch(e){
         //   // console.log(e);
         // }

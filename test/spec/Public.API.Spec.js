@@ -341,10 +341,15 @@ describe('服务请求', function(){
         list : service.list.query()
       }
 
-      
 
     })
 
 
   })
 });
+
+
+b.run('fffff',function(require, $scope){
+     var test = require("demo.test.hi");
+     console.log(test,$scope)
+})
