@@ -49,6 +49,9 @@ viewport view[active="true"]{display:block}
   </view>
   
 </viewport>
+    <div id="app6" ng-app="f6">
+        {{hi}}{{$service.list.data.msg}}
+    </div>
 
 <% with (scripts) { %>
   <% [].concat(polyfills, jasmine, boot, vendor, helpers, src, specs,reporters).forEach(function(script){ %>

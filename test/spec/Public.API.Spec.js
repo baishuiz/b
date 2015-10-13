@@ -255,7 +255,29 @@ describe('view切换', function(){
 
 
 describe('服务请求', function(){
-  it('服务存在依赖', function(done){
+
+  beforeEach(function() {
+      jasmine.Ajax.install();
+      jasmine.Ajax.stubRequest('HTTP://service.cjia.com/list/').andReturn({
+        "status": 200,
+        "contentType": 'text/plain',
+        "Access-Control-Allow-Origin" : "*",
+        "responseText": {msg:"list"}
+      });
+
+
+      jasmine.Ajax.stubRequest('HTTP://service.cjia.com/tag/').andReturn({
+        "status": 200,
+        "contentType": 'text/plain',
+        "Access-Control-Allow-Origin" : "*",
+        "responseText": {msg:"tag"}
+      });
+
+
+  });
+
+  it('服务存在依赖', function(){
+
     b.config.set("service",{
       select : {
         host : "service.cjia.com",
@@ -282,26 +304,46 @@ describe('服务请求', function(){
 
     b.Module("biz.service.H5.tag", function(require){
       var service = b.service("select").set({
-        path : "/list/",
+        path : "/tag/",
         params : {},
         dependencies : require("biz.service.H5.list")
       });
       return service;
-    })
+    });
 
-    b.run('view6', function(require, $scope){
+    beacon.on("hi", function(e, scope){
+      var dom = {
+        app6 : document.querySelector('#app6')
+      }
+      
+      
+      //if(scope === $scope){
+        expect(dom.app6.innerText).toEqual("abclist");
+      //}
+      //done();
+    });
+
+
+    b.run('f6', function(require, $scope){
      var service = {
-       list : require("biz.service.H5.list"),
-       tag  : require("biz.service.H5.tag")
+       list : require("biz.service.H5.list")
      }
 
+
+
+
+
+     $scope.hi = "abc";
+     
+
       $scope.$service = {
-        s1 : service.list.query(),
-        s2 : service.tag.query({
-          price : $scope.$service.s1.datas.price
-        })
+        list : service.list.query()
       }
 
+      
+
     })
+
+
   })
 });

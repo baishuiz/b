@@ -30,8 +30,9 @@ module.exports = function(grunt){
                         './src/core/scopeTree.js',
                         './src/core/url.js',
                         './src/core/views.js',
-                        './src/core/run.js',
                         './src/core/service.js',
+                        './src/core/run.js',
+                        
                         './src/*.js'
                       ],
                 dest: './dist/<%= output.fileName %>'

@@ -638,38 +638,81 @@ return generateScopeTree;
 
   return api;
 });
+;Air.Module('core.service', function(require){
+  var Request = require('core.network.request');
+  var config  = require('core.config');
+  
+  var serviceConfigs = {
+   
+  }
+
+  function getURL(configs){
+      var url = configs.protocol + "://" + configs.host + configs.path;
+      return url;
+  }
+
+  var serviceEvents = {
+    COMPLETE : beacon.createEvent("service response complete")
+  }
+
+  var service = function(configKey){
+      var baseConfigs = b.config.get("service");
+      var baseCofig = baseConfigs[configKey];
+      
+
+      serviceAPI =  {
+        set : function(configs){
+              //serviceConfig[configKey]
+              beacon.utility.blend(configs, baseCofig, {cover:false});
+              var request = new Request();
+              var api = {
+                query : function(params){
+                  var result = {}
+                  beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+                      result.data = data.data
+                      beacon.on(serviceEvents.COMPLETE, data);
+                  });
+
+                  request.request({
+                        method: configs.method,
+                        url   : getURL(configs),
+                        data  : params
+                  });
+                  return result
+              }
+            }
+            return api;
+        }
+      }
+      return serviceAPI;
+  };
+
+  service.EVENTS = serviceEvents;
+  return service;
+})
 ;Air.Module("core.run", function(require){
     var EVENTS    = require("core.event");
+    var service   = require("core.service");
 
     var run = function(controllerName, controller){
         var scopeList = require("core.scopeList");
         var scope = scopeList.get(controllerName);
-    	  try{
 
+        beacon.on(service.EVENTS.COMPLETE, function(e, data){
+          beacon.on(EVENTS.DATA_CHANGE, scope);
+        });
+
+    	  // try{
           controller(require, scope);
-
-        }catch(e){
-          // console.log(e);
-        }
-        beacon.on(EVENTS.DATA_CHANGE, scope);
+          beacon.on(EVENTS.DATA_CHANGE, scope);
+          beacon.on("hi", scope);
+        // }catch(e){
+        //   // console.log(e);
+        // }
     }
 
     return run;
 });
-;Air.Module('core.service', function(){
-
-
-  var service = function(configKey){
-      return {
-        set : function(){
-          return {
-            query : function(){}
-          }
-        }
-      }
-  };
-  return service;
-})
 ;Air.run(function(require){
     var Scope             = require("core.scope"),
         node              = require("utility.node"),
