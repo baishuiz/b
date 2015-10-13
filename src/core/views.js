@@ -23,7 +23,7 @@ Air.Module('core.views', function(require){
           var viewport = document.createElement("viewport");
           viewport.setAttribute('main', 'true');
           document.body.appendChild(viewport);
-          api.goto(viewInfo.viewName, {params:params});
+          api.goto(viewInfo.viewName, {params:params, replace:true});
         }
       }
     },
