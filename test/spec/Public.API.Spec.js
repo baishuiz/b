@@ -129,7 +129,7 @@ describe('事件绑定', function(){
 describe('view切换', function(){
   beforeEach(function() {
       jasmine.Ajax.install();
-      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/name5').andReturn({
+      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/name5.html').andReturn({
         "status": 200,
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",
@@ -137,7 +137,7 @@ describe('view切换', function(){
       });
 
 
-      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/detail.ABCDEFG').andReturn({
+      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/detail.ABCDEFG.html').andReturn({
         "status": 200,
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",

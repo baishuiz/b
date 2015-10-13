@@ -574,7 +574,7 @@ return generateScopeTree;
           var viewport = document.createElement("viewport");
           viewport.setAttribute('main', 'true');
           document.body.appendChild(viewport);
-          api.goto(viewInfo.viewName, {params:params, replace:true});
+          api.goto(viewInfo.viewName, {params:viewInfo.params, replace:true});
         }
       }
     },
@@ -618,7 +618,7 @@ return generateScopeTree;
 
             var sign = router.getSign(viewName);
             sign = sign && "." + sign;
-            request.get(config.get("templatePath") + viewName + sign);
+            request.get(config.get("templatePath") + viewName + sign + ".html");
 
           }
           //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");
