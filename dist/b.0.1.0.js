@@ -532,7 +532,12 @@ return generateScopeTree;
 	            urlPath = location.origin + urlPath + query;
 	            var fromURL  = location.href;
 	            var stateObj = {viewName: viewName};
-	            history.pushState(stateObj, "viewName", urlPath);
+	            if(options.replace==true){
+                    history.replaceState(stateObj, "viewName", urlPath);
+	            }else{
+	                history.pushState(stateObj, "viewName", urlPath);	
+	            }
+	            
 	            beacon.on(EVENTS.URL_CHANGE, {
 	            	from : fromURL,
 	            	to   : urlPath
@@ -569,7 +574,7 @@ return generateScopeTree;
           var viewport = document.createElement("viewport");
           viewport.setAttribute('main', 'true');
           document.body.appendChild(viewport);
-          api.goto(viewInfo.viewName, {params:params});
+          api.goto(viewInfo.viewName, {params:params, replace:true});
         }
       }
     },
