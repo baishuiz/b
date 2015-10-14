@@ -75,7 +75,7 @@ describe("模版数据绑定", function () {
             var dom = {
                 booklist : document.querySelector("#booklist")
             }
-            expect(dom.booklist.childElementCount).toEqual(3);
+            expect(dom.booklist.childElementCount).toEqual(6);
             expect(dom.booklist.children[0].innerText).toEqual("瓦尔登湖Airme");
             expect(dom.booklist.children[1].innerText).toEqual("瓦尔登湖2xmf");
             expect(dom.booklist.children[2].innerText).toEqual("瓦尔登湖3xmf");

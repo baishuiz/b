@@ -220,7 +220,7 @@
     var cmd = target.getAttribute(directive.key.event);
     var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
 
-    beacon(target).once(eventName, function (e){
+    beacon(target).on(eventName, function (e){
         //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
         var cmd = this.getAttribute(directive.key.event);
         var handleStr = cmd.replace(eventName,'')
@@ -354,7 +354,7 @@
                  needRepeat = node(this.oldNode).hasAttribute(key);
              needRepeat && repeat(this);
 						 function repeat(target){
-							   beacon.on('cloneNodeRemove', $scope)
+							   //beacon.on('cloneNodeRemove', $scope)
                  var node = target.oldNode;
                  var dom = target.target;
                  parseScope(dom.getAttribute(key));

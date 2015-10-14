@@ -36,7 +36,7 @@ Air.Module("directive.repeat", function(require){
                  needRepeat = node(this.oldNode).hasAttribute(key);
              needRepeat && repeat(this);
 						 function repeat(target){
-							   beacon.on('cloneNodeRemove', $scope)
+							   //beacon.on('cloneNodeRemove', $scope)
                  var node = target.oldNode;
                  var dom = target.target;
                  parseScope(dom.getAttribute(key));
