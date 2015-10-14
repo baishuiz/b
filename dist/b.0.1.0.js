@@ -354,7 +354,7 @@
                  needRepeat = node(this.oldNode).hasAttribute(key);
              needRepeat && repeat(this);
 						 function repeat(target){
-							   //beacon.on('cloneNodeRemove', $scope)
+							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
                  var node = target.oldNode;
                  var dom = target.target;
                  parseScope(dom.getAttribute(key));
@@ -380,8 +380,9 @@
 							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
 
-								beacon({target:newNode, scope:$scope}).once("cloneNodeRemove", function(e, $scope){
-									if($scope !== this.scope) return;
+								beacon({target:newNode, scope:$scope}).once("cloneNodeRemove", function(e, data){
+									if(data.$scope !== this.scope) return;
+                  if(data.target !== this.target) return;
                   this.target.parentElement.removeChild(this.target);
 								});
 
