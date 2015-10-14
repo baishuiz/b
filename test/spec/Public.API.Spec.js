@@ -333,7 +333,6 @@ describe('服务请求', function(){
 
 
 
-
      $scope.hi = "abc";
      
 
@@ -349,7 +348,7 @@ describe('服务请求', function(){
 });
 
 
-b.run('fffff',function(require, $scope){
-     var test = require("demo.test.hi");
-     console.log(test,$scope)
-})
+// b.run('fffff',function(require, $scope){
+//      var test = require("demo.test.hi");
+//      console.log(test,$scope)
+// })
