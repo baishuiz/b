@@ -79,6 +79,9 @@ describe("模版数据绑定", function () {
             expect(dom.booklist.children[0].innerText).toEqual("瓦尔登湖Airme");
             expect(dom.booklist.children[1].innerText).toEqual("瓦尔登湖2xmf");
             expect(dom.booklist.children[2].innerText).toEqual("瓦尔登湖3xmf");
+            // expect(dom.booklist.children[3].innerText).toEqual("瓦尔登湖Airme");
+            // expect(dom.booklist.children[4].innerText).toEqual("瓦尔登湖2xmf");
+            // expect(dom.booklist.children[5].innerText).toEqual("瓦尔登湖3xmf");
             expect(dom.booklist.getAttribute("type")).toEqual("story");
 
         });

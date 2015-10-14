@@ -21,6 +21,7 @@ viewport view[active="true"]{display:block}
         <div class="name"> {{user.name}}</div>
         <ul id="booklist" type="{{books.type}}" ng-controller="booklist">
         	book : <li ng-repeat="book in books">{{book.name}}<span ng-repeat="author in book.author">{{author}}</span></li>
+          <li ng-repeat="book in books">{{book.name}}<span ng-repeat="author in book.author">{{author}}</span></li>
         </ul>
 
         <ul ng-controller="userInfo">

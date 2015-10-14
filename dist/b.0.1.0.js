@@ -220,7 +220,7 @@
     var cmd = target.getAttribute(directive.key.event);
     var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
 
-    beacon(target).on(eventName, function (e){
+    beacon(target).once(eventName, function (e){
         //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
         var cmd = this.getAttribute(directive.key.event);
         var handleStr = cmd.replace(eventName,'')
