@@ -32,7 +32,7 @@ Air.Module('core.network.request', function(){
 
          request : function(options){
             this.xhr.open(options.method, options.url, true);
-            this.xhr.send(null);
+            this.xhr.send(options.data);
          },
 
          get  : function(url,data){

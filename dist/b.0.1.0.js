@@ -76,7 +76,7 @@
 
          request : function(options){
             this.xhr.open(options.method, options.url, true);
-            this.xhr.send(null);
+            this.xhr.send(options.data);
          },
 
          get  : function(url,data){
@@ -710,7 +710,7 @@ return generateScopeTree;
     	  // try{
           Air.run(controller, false, scope);
           Air.run(function(){
-              beacon.on(EVENTS.DATA_CHANGE, scope);
+            beacon.on(EVENTS.DATA_CHANGE, scope);
             beacon.on("hi", scope);          
           })
 
