@@ -610,7 +610,16 @@ return generateScopeTree;
                 scripts = [].slice.call(scripts);
                 for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
                   var activeScript = scripts[scriptIndex];
-                  activeScript.src && Air.loadJS(activeScript.src);
+
+                  if (activeScript.src) {
+                    Air.loadJS(activeScript.src);
+                  } else {
+                    var tmpScript = document.createElement('script');
+                    tmpScript.text = activeScript.text;
+                    document.getElementsByTagName('head')[0].appendChild(tmpScript);
+                  }
+
+                  activeScript.parentNode.removeChild(activeScript);
                 };
                 options.popstate || url.change(viewName, options);
                 beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
