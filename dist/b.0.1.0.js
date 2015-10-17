@@ -694,7 +694,9 @@ return generateScopeTree;
   }
 
   var serviceEvents = {
-    COMPLETE : beacon.createEvent("service response complete")
+    COMPLETE : beacon.createEvent("service response complete"),
+    SUCCESS : beacon.createEvent("service response success"),
+    ERROR : beacon.createEvent("service response error")
   }
 
   var service = function(configKey){
@@ -709,23 +711,30 @@ return generateScopeTree;
               var request = new Request();
               var api = {
                 query : function(params){
-                  var result = {}
-                  beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
-                      try {
-                          result.data = JSON.parse(data.data);
-                      } catch (e) {
-                          result.data = data.data; // TODO 解析错误应走错误回调
-                      }
-                      beacon.on(serviceEvents.COMPLETE, data);
-                  });
+                    var result = {}
+                    beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+                        try {
+                            result.data = JSON.parse(data.data);
+                            beacon.on(serviceEvents.SUCCESS, result.data);
+                        } catch (e) {
+                            beacon.on(serviceEvents.ERROR, {
+                              error: 'parse Error',
+                              data: data.data
+                            });
+                        }
+                        beacon.on(serviceEvents.COMPLETE, result.data);
+                    });
 
-                  request.request({
-                        method: configs.method,
-                        url   : getURL(configs),
-                        data  : params && JSON.stringify(params)
-                  });
-                  return result
-              }
+                    request.request({
+                          method: configs.method,
+                          url   : getURL(configs),
+                          data  : params && JSON.stringify(params) || null
+                    });
+                    return result
+                },
+                on : beacon.on,
+                off : beacon.off,
+                EVENTS  : serviceEvents
             }
             return api;
         }
@@ -799,7 +808,8 @@ return generateScopeTree;
             config : require('core.config'),
             EVENTS  : require('core.event'),
             Module  : Air.Module,
-            service : require('core.service')
+            service : require('core.service'),
+            loadJS: Air.loadJS
         };
         window[FRAMEWORK_NAME] = api;
     }();
