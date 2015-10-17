@@ -33,14 +33,15 @@ Air.Module('core.service', function(require){
                     beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
                         try {
                             result.data = JSON.parse(data.data);
-                            beacon.on(serviceEvents.SUCCESS, result.data);
+                            beacon.on(serviceEvents.SUCCESS, result);
                         } catch (e) {
+                            result.data = data.data;
                             beacon.on(serviceEvents.ERROR, {
                               error: 'parse Error',
-                              data: data.data
+                              data: data
                             });
                         }
-                        beacon.on(serviceEvents.COMPLETE, result.data);
+                        beacon.on(serviceEvents.COMPLETE, result);
                     });
 
                     request.request({
