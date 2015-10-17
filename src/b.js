@@ -28,7 +28,8 @@ Air.run(function(require){
             config : require('core.config'),
             EVENTS  : require('core.event'),
             Module  : Air.Module,
-            service : require('core.service')
+            service : require('core.service'),
+            loadJS : Air.loadJS
         };
         window[FRAMEWORK_NAME] = api;
     }();
