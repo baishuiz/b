@@ -270,7 +270,6 @@
 })
 ;Air.Module("core.scope", function(){
 	var Scope = function(parent){
-    
 	}
 
 	var api = function(parent){
@@ -282,6 +281,7 @@
     var directive         = require("core.directive"),
         Scope             = require("core.scope");
     var scopeList = {};
+    var shadowScopeList = {};
 
 
     function getApps(target){
@@ -295,11 +295,13 @@
     	// 遍历App 列表
         var appIndex = 0, appCount = apps.length;
         for(; appIndex < appCount; appIndex++) {
-            var app       = apps[appIndex],
-                appName   = app.getAttribute(directive.key.app)
-                rootScope = new Scope(); // 初始化应用rootScope
+            var app         = apps[appIndex],
+                appName     = app.getAttribute(directive.key.app)
+                rootScope   = new Scope(); // 初始化应用rootScope
+                shadowScope = new Scope();
 
             scopeList[appName] = rootScope;
+            shadowScopeList[appName] = shadowScope;
             generateScopeTree(app.childNodes, rootScope); // 构建 subScope
         }
     }
@@ -310,16 +312,27 @@
             return scopeList[key];
     	},
 
-    	set  : function(key, value) {
-    		scopeList[key] = value;
-    	}
+    	set  : function(key, parentScope) {
+            var scope = new Scope(parentScope);
+    		scopeList[key] = scope;
+            scope.__$shadowScope__ = shadowScope;
+            //shadowScopeList[key] = shadowScope;
+            
+
+            return scope
+    	},
+
+        dirtyCheck : function(dataPath, $scope){
+            var value = Air.NS(dataPath, $scope);
+            var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
+            return value === shadowValue;
+        }
     }
 
     return api;
 });Air.Module("directive.repeat", function(require){
 	var node      = require("utility.node"),
       directive = require("core.directive"),
-
       Scope     = require("core.scope"),
       EVENTS    = require("core.event");
 
@@ -331,7 +344,7 @@
 						 cloneNode,
 						 container;
 
-				 needRepeat && init();
+         needRepeat && init();
 
          function init(){
 					 placeholder.start = document.createComment("repeat");
@@ -344,7 +357,6 @@
          }
 
          function bind(cloneNode){
-
            beacon({target:target, oldNode:cloneNode, scope:$scope})
            .on(EVENTS.DATA_CHANGE, function(e, $scope){
 							 if(this.scope !== $scope){
@@ -470,12 +482,17 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                         var dataPath = markup.replace(/{{|}}/ig,"");
                         var data = Air.NS(dataPath, $scope);
                         data = util.isEmpty(data) ? '' : data;
+
                         text = text.replace(markup, data)
 
 
                     };
                     //text.replace(/{{.*?}}/ig, '');
-                     textNode.nodeValue = text
+
+                     
+                     if( textNode.nodeValue != text){
+                         textNode.nodeValue = text 
+                     }
 
                 }
            } else if (child.nodeType == nodeType.HTML) {
@@ -495,8 +512,8 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                      var isController = child.attributes.getNamedItem(key.controller);
                      if(isController){
                          var controllerName = child.getAttribute(key.controller)
-                         $scope = new Scope($scope);
-                         scopeList.set(controllerName, $scope);
+                         
+                         $scope = scopeList.set(controllerName, $scope);
                      }
                      generateScopeTree(child.attributes, $scope);
                      initModule(child, $scope);
@@ -656,9 +673,9 @@ return generateScopeTree;
 ;Air.Module('core.service', function(require){
   var Request = require('core.network.request');
   var config  = require('core.config');
-  
+
   var serviceConfigs = {
-   
+
   }
 
   function getURL(configs){
@@ -673,7 +690,7 @@ return generateScopeTree;
   var service = function(configKey){
       var baseConfigs = b.config.get("service");
       var baseCofig = baseConfigs[configKey];
-      
+
 
       serviceAPI =  {
         set : function(configs){
@@ -684,14 +701,18 @@ return generateScopeTree;
                 query : function(params){
                   var result = {}
                   beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
-                      result.data = data.data
+                      try {
+                          result.data = JSON.parse(data.data);
+                      } catch (e) {
+                          result.data = data.data; // TODO 解析错误应走错误回调
+                      }
                       beacon.on(serviceEvents.COMPLETE, data);
                   });
 
                   request.request({
                         method: configs.method,
                         url   : getURL(configs),
-                        data  : params
+                        data  : params && JSON.stringify(params)
                   });
                   return result
               }

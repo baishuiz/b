@@ -1,7 +1,6 @@
 Air.Module("directive.repeat", function(require){
 	var node      = require("utility.node"),
       directive = require("core.directive"),
-
       Scope     = require("core.scope"),
       EVENTS    = require("core.event");
 
@@ -13,7 +12,7 @@ Air.Module("directive.repeat", function(require){
 						 cloneNode,
 						 container;
 
-				 needRepeat && init();
+         needRepeat && init();
 
          function init(){
 					 placeholder.start = document.createComment("repeat");
@@ -26,7 +25,6 @@ Air.Module("directive.repeat", function(require){
          }
 
          function bind(cloneNode){
-
            beacon({target:target, oldNode:cloneNode, scope:$scope})
            .on(EVENTS.DATA_CHANGE, function(e, $scope){
 							 if(this.scope !== $scope){

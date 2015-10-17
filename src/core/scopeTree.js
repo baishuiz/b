@@ -60,12 +60,17 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                         var dataPath = markup.replace(/{{|}}/ig,"");
                         var data = Air.NS(dataPath, $scope);
                         data = util.isEmpty(data) ? '' : data;
+
                         text = text.replace(markup, data)
 
 
                     };
                     //text.replace(/{{.*?}}/ig, '');
-                     textNode.nodeValue = text
+
+                     
+                     if( textNode.nodeValue != text){
+                         textNode.nodeValue = text 
+                     }
 
                 }
            } else if (child.nodeType == nodeType.HTML) {
@@ -85,8 +90,8 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                      var isController = child.attributes.getNamedItem(key.controller);
                      if(isController){
                          var controllerName = child.getAttribute(key.controller)
-                         $scope = new Scope($scope);
-                         scopeList.set(controllerName, $scope);
+                         
+                         $scope = scopeList.set(controllerName, $scope);
                      }
                      generateScopeTree(child.attributes, $scope);
                      initModule(child, $scope);

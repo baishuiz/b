@@ -2,6 +2,7 @@ Air.Module("core.scopeList", function(require){
     var directive         = require("core.directive"),
         Scope             = require("core.scope");
     var scopeList = {};
+    var shadowScopeList = {};
 
 
     function getApps(target){
@@ -15,11 +16,13 @@ Air.Module("core.scopeList", function(require){
     	// 遍历App 列表
         var appIndex = 0, appCount = apps.length;
         for(; appIndex < appCount; appIndex++) {
-            var app       = apps[appIndex],
-                appName   = app.getAttribute(directive.key.app)
-                rootScope = new Scope(); // 初始化应用rootScope
+            var app         = apps[appIndex],
+                appName     = app.getAttribute(directive.key.app)
+                rootScope   = new Scope(); // 初始化应用rootScope
+                shadowScope = new Scope();
 
             scopeList[appName] = rootScope;
+            shadowScopeList[appName] = shadowScope;
             generateScopeTree(app.childNodes, rootScope); // 构建 subScope
         }
     }
@@ -30,9 +33,21 @@ Air.Module("core.scopeList", function(require){
             return scopeList[key];
     	},
 
-    	set  : function(key, value) {
-    		scopeList[key] = value;
-    	}
+    	set  : function(key, parentScope) {
+            var scope = new Scope(parentScope);
+    		scopeList[key] = scope;
+            scope.__$shadowScope__ = shadowScope;
+            //shadowScopeList[key] = shadowScope;
+            
+
+            return scope
+    	},
+
+        dirtyCheck : function(dataPath, $scope){
+            var value = Air.NS(dataPath, $scope);
+            var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
+            return value === shadowValue;
+        }
     }
 
     return api;
