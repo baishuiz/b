@@ -37,12 +37,13 @@ Air.Module("directive.repeat", function(require){
 
              var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
              var dataChange = scopeList.dirtyCheck(group, $scope);    
-             needRepeat && dataChange && repeat(this);
+             (needRepeat && dataChange) || !target.repeaded && repeat(this);
 						 function repeat(target){
 							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
                  var node = target.oldNode;
                  var dom = target.target;
                  parseScope(dom.getAttribute(key));
+                 dom.repeaded = true;
 						 }
            })
          }
@@ -50,6 +51,7 @@ Air.Module("directive.repeat", function(require){
          function clone($scope){
            var cloneNode = target.cloneNode(true);
            bind(cloneNode);
+           
            return cloneNode;
          }
 

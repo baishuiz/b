@@ -325,7 +325,8 @@
         dirtyCheck : function(dataPath, $scope){
             var value = Air.NS(dataPath, $scope);
             var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
-            return JSON.stringify(value) === JSON.stringify(shadowValue);
+            var result = JSON.stringify(value) === JSON.stringify(shadowValue);
+            return !result
         },
 
         updateShadow : function(scope){
@@ -374,12 +375,13 @@
 
              var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
              var dataChange = scopeList.dirtyCheck(group, $scope);    
-             needRepeat && dataChange && repeat(this);
+             (needRepeat && dataChange) || !target.repeaded && repeat(this);
 						 function repeat(target){
 							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
                  var node = target.oldNode;
                  var dom = target.target;
                  parseScope(dom.getAttribute(key));
+                 dom.repeaded = true;
 						 }
            })
          }
@@ -387,6 +389,7 @@
          function clone($scope){
            var cloneNode = target.cloneNode(true);
            bind(cloneNode);
+           
            return cloneNode;
          }
 
@@ -809,7 +812,7 @@ return generateScopeTree;
             EVENTS  : require('core.event'),
             Module  : Air.Module,
             service : require('core.service'),
-            loadJS: Air.loadJS
+            loadJS : Air.loadJS
         };
         window[FRAMEWORK_NAME] = api;
     }();
