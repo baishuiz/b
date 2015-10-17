@@ -325,7 +325,12 @@
         dirtyCheck : function(dataPath, $scope){
             var value = Air.NS(dataPath, $scope);
             var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
-            return value === shadowValue;
+            return JSON.stringify(value) === JSON.stringify(shadowValue);
+        },
+
+        updateShadow : function(scope){
+            var scopeStr = JSON.stringify(scope);
+            scope.__$shadowScope__ = JSON.parse(scopeStr);
         }
     }
 
@@ -334,6 +339,7 @@
 	var node      = require("utility.node"),
       directive = require("core.directive"),
       Scope     = require("core.scope"),
+      scopeList = require("core.scopeList"),
       EVENTS    = require("core.event");
 
   var key       = directive.signup('repeat', 'ng-repeat');
@@ -363,8 +369,12 @@
 								return ;
 							}
 						 var node       = require("utility.node"),
+                 condition  = this.target.getAttribute(key),
                  needRepeat = node(this.oldNode).hasAttribute(key);
-             needRepeat && repeat(this);
+
+             var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
+             var dataChange = scopeList.dirtyCheck(group, $scope);    
+             needRepeat && dataChange && repeat(this);
 						 function repeat(target){
 							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
                  var node = target.oldNode;
@@ -729,6 +739,7 @@ return generateScopeTree;
 ;Air.Module("core.run", function(require){
     var EVENTS    = require("core.event");
     var service   = require("core.service");
+    var scopeList = require("core.scopeList");
 
     var run = function(controllerName, controller){
         var scopeList = require("core.scopeList");
@@ -741,6 +752,7 @@ return generateScopeTree;
     	  // try{
           Air.run(controller, false, scope);
           Air.run(function(){
+            scopeList.updateShadow(scope);
             beacon.on(EVENTS.DATA_CHANGE, scope);
             beacon.on("hi", scope);          
           })

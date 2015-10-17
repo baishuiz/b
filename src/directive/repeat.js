@@ -2,6 +2,7 @@ Air.Module("directive.repeat", function(require){
 	var node      = require("utility.node"),
       directive = require("core.directive"),
       Scope     = require("core.scope"),
+      scopeList = require("core.scopeList"),
       EVENTS    = require("core.event");
 
   var key       = directive.signup('repeat', 'ng-repeat');
@@ -31,8 +32,12 @@ Air.Module("directive.repeat", function(require){
 								return ;
 							}
 						 var node       = require("utility.node"),
+                 condition  = this.target.getAttribute(key),
                  needRepeat = node(this.oldNode).hasAttribute(key);
-             needRepeat && repeat(this);
+
+             var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
+             var dataChange = scopeList.dirtyCheck(group, $scope);    
+             needRepeat && dataChange && repeat(this);
 						 function repeat(target){
 							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
                  var node = target.oldNode;

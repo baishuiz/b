@@ -46,7 +46,12 @@ Air.Module("core.scopeList", function(require){
         dirtyCheck : function(dataPath, $scope){
             var value = Air.NS(dataPath, $scope);
             var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
-            return value === shadowValue;
+            return JSON.stringify(value) === JSON.stringify(shadowValue);
+        },
+
+        updateShadow : function(scope){
+            var scopeStr = JSON.stringify(scope);
+            scope.__$shadowScope__ = JSON.parse(scopeStr);
         }
     }
 
