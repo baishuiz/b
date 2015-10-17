@@ -374,13 +374,8 @@
                  needRepeat = node(this.oldNode).hasAttribute(key);
 
              var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
-<<<<<<< HEAD
              var dataChange = scopeList.dirtyCheck(group, $scope);    
              (needRepeat && dataChange) || !target.repeaded && repeat(this);
-=======
-             var dataChange = scopeList.dirtyCheck(group, $scope);
-             needRepeat && dataChange && repeat(this);
->>>>>>> 5fc44dcaf2de527a4f1abd09166431689d28f716
 						 function repeat(target){
 							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
                  var node = target.oldNode;
