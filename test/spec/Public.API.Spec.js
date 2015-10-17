@@ -266,7 +266,7 @@ describe('服务请求', function(){
         "status": 200,
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",
-        "responseText": {msg:"list"}
+        "responseText": '{"msg":"list"}'
       });
 
 
@@ -274,7 +274,7 @@ describe('服务请求', function(){
         "status": 200,
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",
-        "responseText": {msg:"tag"}
+        "responseText": '{"msg":"tag"}'
       });
 
 
@@ -319,8 +319,7 @@ describe('服务请求', function(){
       var dom = {
         app6 : document.querySelector('#app6')
       }
-      
-      
+
       //if(scope === $scope){
         expect(dom.app6.innerText).toEqual("abclist");
       //}
@@ -337,7 +336,7 @@ describe('服务请求', function(){
 
 
      $scope.hi = "abc";
-     
+
 
       $scope.$service = {
         list : service.list.query()

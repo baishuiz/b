@@ -36,7 +36,7 @@ Air.Module("directive.repeat", function(require){
                  needRepeat = node(this.oldNode).hasAttribute(key);
 
              var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
-             var dataChange = scopeList.dirtyCheck(group, $scope);    
+             var dataChange = scopeList.dirtyCheck(group, $scope);
              needRepeat && dataChange && repeat(this);
 						 function repeat(target){
 							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
@@ -55,8 +55,8 @@ Air.Module("directive.repeat", function(require){
 
          function parseScope(condition){
               var container = document.createDocumentFragment();
-              var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
-							var itemName = condition.match(/(\w+)\s+in\s+(\w+)/i)[1];
+              var group = condition.replace(/\S+\s+in\s+(\S+)/ig, "$1");
+							var itemName = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
               //var repeatScope = new Function("$scope", "group","return $scope[group]")($scope, group);
               //var newScope = new Scope($scope);
 							var repeatScope = Air.NS(group, $scope);

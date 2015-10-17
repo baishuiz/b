@@ -373,7 +373,7 @@
                  needRepeat = node(this.oldNode).hasAttribute(key);
 
              var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
-             var dataChange = scopeList.dirtyCheck(group, $scope);    
+             var dataChange = scopeList.dirtyCheck(group, $scope);
              needRepeat && dataChange && repeat(this);
 						 function repeat(target){
 							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
@@ -392,8 +392,8 @@
 
          function parseScope(condition){
               var container = document.createDocumentFragment();
-              var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
-							var itemName = condition.match(/(\w+)\s+in\s+(\w+)/i)[1];
+              var group = condition.replace(/\S+\s+in\s+(\S+)/ig, "$1");
+							var itemName = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
               //var repeatScope = new Function("$scope", "group","return $scope[group]")($scope, group);
               //var newScope = new Scope($scope);
 							var repeatScope = Air.NS(group, $scope);
@@ -715,14 +715,15 @@ return generateScopeTree;
                     beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
                         try {
                             result.data = JSON.parse(data.data);
-                            beacon.on(serviceEvents.SUCCESS, result.data);
+                            beacon.on(serviceEvents.SUCCESS, result);
                         } catch (e) {
+                            result.data = data.data;
                             beacon.on(serviceEvents.ERROR, {
                               error: 'parse Error',
-                              data: data.data
+                              data: data
                             });
                         }
-                        beacon.on(serviceEvents.COMPLETE, result.data);
+                        beacon.on(serviceEvents.COMPLETE, result);
                     });
 
                     request.request({
@@ -809,7 +810,7 @@ return generateScopeTree;
             EVENTS  : require('core.event'),
             Module  : Air.Module,
             service : require('core.service'),
-            loadJS: Air.loadJS
+            loadJS : Air.loadJS
         };
         window[FRAMEWORK_NAME] = api;
     }();
