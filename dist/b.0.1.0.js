@@ -325,7 +325,10 @@
         dirtyCheck : function(dataPath, $scope){
             var value = Air.NS(dataPath, $scope);
             var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
-            var result = JSON.stringify(value) === JSON.stringify(shadowValue);
+
+            var valueStr       = JSON.stringify(value).replace(/\{\}/g,'""');
+            var shadowValueStr = JSON.stringify(shadowValue);
+            var result = (valueStr === shadowValueStr);
             return !result
         },
 
@@ -762,7 +765,7 @@ return generateScopeTree;
           beacon.on(EVENTS.DATA_CHANGE, scope);
         });
 
-    	  // try{
+    	  // try{  // TODO: 服务依赖需要Try来屏蔽错误
           Air.run(controller, false, scope);
           Air.run(function(){
             scopeList.updateShadow(scope);

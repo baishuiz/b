@@ -11,7 +11,7 @@ Air.Module("core.run", function(require){
           beacon.on(EVENTS.DATA_CHANGE, scope);
         });
 
-    	  // try{
+    	  // try{  // TODO: 服务依赖需要Try来屏蔽错误
           Air.run(controller, false, scope);
           Air.run(function(){
             scopeList.updateShadow(scope);
