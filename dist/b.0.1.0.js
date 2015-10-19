@@ -723,25 +723,20 @@ return generateScopeTree;
               var request = new Request();
               var api = {
                 query : function(params){
-                    var result = {}
+                    var resultData = {};
                     beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
                         try {
-                            result.data = JSON.parse(data.data);
-                            beacon.on(curServiceEvents.SUCCESS, result);
-                            beacon.on(serviceEvents.SUCCESS, result);
+                            resultData = JSON.parse(data.data);
+                            beacon.on(curServiceEvents.SUCCESS, resultData);
+                            beacon.on(serviceEvents.SUCCESS, resultData);
                         } catch (e) {
-                            result.data = data.data;
-                            beacon.on(curServiceEvents.ERROR, {
-                              error: 'parse Error',
-                              data: data
-                            });
-                            beacon.on(serviceEvents.ERROR, {
-                              error: 'parse Error',
-                              data: data
-                            });
+                            resultData = data.data;
+                            resultData.error = 'parse Error';
+                            beacon.on(curServiceEvents.ERROR, resultData);
+                            beacon.on(serviceEvents.ERROR, resultData);
                         }
-                        beacon.on(curServiceEvents.COMPLETE, result);
-                        beacon.on(serviceEvents.COMPLETE, result);
+                        beacon.on(curServiceEvents.COMPLETE, resultData);
+                        beacon.on(serviceEvents.COMPLETE, resultData);
                     });
 
                     request.request({
@@ -749,7 +744,7 @@ return generateScopeTree;
                           url   : getURL(configs),
                           data  : params && JSON.stringify(params) || null
                     });
-                    return result
+                    return resultData
                 },
                 on : beacon.on,
                 off : beacon.off,
