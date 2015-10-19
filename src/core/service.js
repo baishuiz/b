@@ -24,6 +24,12 @@ Air.Module('core.service', function(require){
 
       serviceAPI =  {
         set : function(configs){
+              var curServiceEvents = {
+                COMPLETE : beacon.createEvent("service response complete"),
+                SUCCESS : beacon.createEvent("service response success"),
+                ERROR : beacon.createEvent("service response error")
+              }
+
               //serviceConfig[configKey]
               beacon.utility.blend(configs, baseCofig, {cover:false});
               var request = new Request();
@@ -33,14 +39,20 @@ Air.Module('core.service', function(require){
                     beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
                         try {
                             result.data = JSON.parse(data.data);
+                            beacon.on(curServiceEvents.SUCCESS, result);
                             beacon.on(serviceEvents.SUCCESS, result);
                         } catch (e) {
                             result.data = data.data;
+                            beacon.on(curServiceEvents.ERROR, {
+                              error: 'parse Error',
+                              data: data
+                            });
                             beacon.on(serviceEvents.ERROR, {
                               error: 'parse Error',
                               data: data
                             });
                         }
+                        beacon.on(curServiceEvents.COMPLETE, result);
                         beacon.on(serviceEvents.COMPLETE, result);
                     });
 
@@ -53,7 +65,7 @@ Air.Module('core.service', function(require){
                 },
                 on : beacon.on,
                 off : beacon.off,
-                EVENTS  : serviceEvents
+                EVENTS  : curServiceEvents
             }
             return api;
         }
