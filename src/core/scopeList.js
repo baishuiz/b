@@ -23,7 +23,14 @@ Air.Module("core.scopeList", function(require){
 
             scopeList[appName] = rootScope;
             shadowScopeList[appName] = shadowScope;
-            generateScopeTree(app.childNodes, rootScope); // 构建 subScope
+            // generateScopeTree(app.childNodes, rootScope); // 构建 subScope
+        }
+                var appIndex = 0, appCount = apps.length;
+        for(; appIndex < appCount; appIndex++) {
+            var app         = apps[appIndex],
+                appName     = app.getAttribute(directive.key.app)
+
+             generateScopeTree(app.childNodes, scopeList[appName]); // 构建 subScope
         }
     }
 

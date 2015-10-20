@@ -20,9 +20,9 @@ Air.Module("directive.repeat", function(require){
 					 placeholder.end   = document.createComment(" end repeat ");
            cloneNode         = clone();
            container         = document.createDocumentFragment();
-           target.parentElement.insertBefore(placeholder.start, target);
-           target.parentElement.insertBefore(placeholder.end, target);
-           placeholder.end.parentElement.removeChild(target);
+           target.parentNode.insertBefore(placeholder.start, target);
+           target.parentNode.insertBefore(placeholder.end, target);
+           placeholder.end.parentNode.removeChild(target);
          }
 
          function bind(cloneNode){
@@ -70,7 +70,7 @@ Air.Module("directive.repeat", function(require){
 								beacon({target:newNode, scope:$scope}).once("cloneNodeRemove", function(e, data){
 									if(data.$scope !== this.scope) return;
                   if(data.target !== this.target) return;
-                  this.target.parentElement.removeChild(this.target);
+                  this.target.parentNode.removeChild(this.target);
 								});
 
                 newNode.removeAttribute(key);
@@ -82,7 +82,7 @@ Air.Module("directive.repeat", function(require){
 								});
                 container.appendChild(newNode);
               }
-              placeholder.end.parentElement.insertBefore(container,placeholder.end);
+              placeholder.end.parentNode.insertBefore(container,placeholder.end);
 
 							beacon.on(EVENTS.REPEAT_DONE, nodes)
 
