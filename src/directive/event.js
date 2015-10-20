@@ -22,6 +22,7 @@ Air.Module('direcitve.event', function(require){
         var params = eval("["+eventParam+"]");
         params.unshift(e);
         this.$index = $scope.$index;
+        $scope = $scope.$parentScope || $scope;
         $scope.$event[eventHandle].apply(this, params);
         beacon.on(EVENTS.DATA_CHANGE, $scope);
     });

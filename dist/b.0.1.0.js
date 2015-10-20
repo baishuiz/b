@@ -234,6 +234,7 @@
         var params = eval("["+eventParam+"]");
         params.unshift(e);
         this.$index = $scope.$index;
+        $scope = $scope.$parentScope || $scope;
         $scope.$event[eventHandle].apply(this, params);
         beacon.on(EVENTS.DATA_CHANGE, $scope);
     });
@@ -433,6 +434,7 @@
 								var activeScope = new Scope($scope);
 								activeScope[itemName] = repeatScope[item];
                 activeScope.$index = item;
+                activeScope.$parentScope = $scope;
 								nodes.push({
 									node : newNode.childNodes,
 									$scope : activeScope
