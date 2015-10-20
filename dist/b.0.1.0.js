@@ -124,7 +124,7 @@
                     return "(\\w+)"
                   });
     var reg = new RegExp("^" + regStr + "$","i");
-    
+
     rule.rule = reg;
     rule.params = params;
     return rule;
@@ -136,7 +136,12 @@
     rules[rule.viewName] = rule.router;
   };
 
-  router.getParams = function(viewName){
+  router.getParams = function(){
+    var matchedRouter = router.match(location.pathname) || {};
+    return matchedRouter.params || {};
+  }
+
+  router.getRule = function(viewName){
     return rules[viewName];
   }
 
@@ -228,6 +233,7 @@
         var eventParam = handleStr.match(reg)[2]
         var params = eval("["+eventParam+"]");
         params.unshift(e);
+        this.$index = $scope.$index;
         $scope.$event[eventHandle].apply(this, params);
         beacon.on(EVENTS.DATA_CHANGE, $scope);
     });
@@ -377,7 +383,7 @@
                  needRepeat = node(this.oldNode).hasAttribute(key);
 
              var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
-             var dataChange = scopeList.dirtyCheck(group, $scope);    
+             var dataChange = scopeList.dirtyCheck(group, $scope);
              (needRepeat && dataChange) || !target.repeaded && repeat(this);
 						 function repeat(target){
 							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
@@ -392,7 +398,7 @@
          function clone($scope){
            var cloneNode = target.cloneNode(true);
            bind(cloneNode);
-           
+
            return cloneNode;
          }
 
@@ -416,7 +422,8 @@
 
                 newNode.removeAttribute(key);
 								var activeScope = new Scope($scope);
-								activeScope[itemName] = repeatScope[item]
+								activeScope[itemName] = repeatScope[item];
+                activeScope.$index = item;
 								nodes.push({
 									node : newNode.childNodes,
 									$scope : activeScope
@@ -555,7 +562,7 @@ return generateScopeTree;
             var params = options.params || {};
             var query  = options.query || "";
             // detail/:id/:name/:price
-            var routerRule = router.getParams(viewName);
+            var routerRule = router.getRule(viewName);
 
             if(routerRule){
 		        var urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
@@ -569,9 +576,9 @@ return generateScopeTree;
 	            if(options.replace==true){
                     history.replaceState(stateObj, "viewName", urlPath);
 	            }else{
-	                history.pushState(stateObj, "viewName", urlPath);	
+	                history.pushState(stateObj, "viewName", urlPath);
 	            }
-	            
+
 	            beacon.on(EVENTS.URL_CHANGE, {
 	            	from : fromURL,
 	            	to   : urlPath
@@ -583,7 +590,8 @@ return generateScopeTree;
 	};
 
 	return api;
-});Air.Module('core.views', function(require){
+})
+;Air.Module('core.views', function(require){
   var Request = require('core.network.request'),
       router  = require('core.router'),
       scopeList = require('core.scopeList'),

@@ -32,7 +32,7 @@ Air.Module('core.router', function(){
                     return "(\\w+)"
                   });
     var reg = new RegExp("^" + regStr + "$","i");
-    
+
     rule.rule = reg;
     rule.params = params;
     return rule;
@@ -44,7 +44,12 @@ Air.Module('core.router', function(){
     rules[rule.viewName] = rule.router;
   };
 
-  router.getParams = function(viewName){
+  router.getParams = function(){
+    var matchedRouter = router.match(location.pathname) || {};
+    return matchedRouter.params || {};
+  }
+
+  router.getRule = function(viewName){
     return rules[viewName];
   }
 
