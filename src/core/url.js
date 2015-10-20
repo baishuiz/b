@@ -10,7 +10,7 @@ Air.Module('core.url', function(require){
             var params = options.params || {};
             var query  = options.query || "";
             // detail/:id/:name/:price
-            var routerRule = router.getParams(viewName);
+            var routerRule = router.getRule(viewName);
 
             if(routerRule){
 		        var urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
@@ -24,9 +24,9 @@ Air.Module('core.url', function(require){
 	            if(options.replace==true){
                     history.replaceState(stateObj, "viewName", urlPath);
 	            }else{
-	                history.pushState(stateObj, "viewName", urlPath);	
+	                history.pushState(stateObj, "viewName", urlPath);
 	            }
-	            
+
 	            beacon.on(EVENTS.URL_CHANGE, {
 	            	from : fromURL,
 	            	to   : urlPath

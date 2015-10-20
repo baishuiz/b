@@ -48,10 +48,10 @@ viewport view[active="true"]{display:block}
         <h1 id="eventResult" ng-event="click addResult({{step}},'ok')" >{{result}}{{msg}}</h1>
     </div>
   </view>
-  
+
 </viewport>
     <div id="app6" ng-app="f6">
-        {{hi}}{{$service.list.data.msg}}
+        {{hi}}{{$service.list.msg}}
     </div>
 
 
@@ -68,11 +68,9 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/b.0.1.0.js"></script>
+  <script src="dist/b.0.1.0.min.js"></script>
   
   <script src="test/spec/Public.API.Spec.js"></script>
-  
-  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   
