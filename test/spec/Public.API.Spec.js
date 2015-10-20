@@ -78,10 +78,10 @@ describe("模版数据绑定", function () {
             var dom = {
                 booklist : document.querySelector("#booklist")
             }
-            expect(dom.booklist.childElementCount).toEqual(6);
-            expect(dom.booklist.children[0].innerText).toEqual("瓦尔登湖Airme");
-            expect(dom.booklist.children[1].innerText).toEqual("瓦尔登湖2xmf");
-            expect(dom.booklist.children[2].innerText).toEqual("瓦尔登湖3xmf");
+            expect(dom.booklist.querySelectorAll('li').length).toEqual(6);
+            expect(dom.booklist.querySelectorAll('li')[0].innerText).toEqual("瓦尔登湖Airme");
+            expect(dom.booklist.querySelectorAll('li')[1].innerText).toEqual("瓦尔登湖2xmf");
+            expect(dom.booklist.querySelectorAll('li')[2].innerText).toEqual("瓦尔登湖3xmf");
             // expect(dom.booklist.children[3].innerText).toEqual("瓦尔登湖Airme");
             // expect(dom.booklist.children[4].innerText).toEqual("瓦尔登湖2xmf");
             // expect(dom.booklist.children[5].innerText).toEqual("瓦尔登湖3xmf");
@@ -211,7 +211,7 @@ describe('view切换', function(){
 
   it('view 初始化', function(done){
     var viewport = document.querySelector('viewport[main="true"]');
-    viewport.parentElement.removeChild(viewport);
+    viewport.parentNode.removeChild(viewport);
     b.config.set("templatePath", "http://www.cjia-img.com/template/");
     b.views.router.set({
       viewName : "detail",
