@@ -12,7 +12,7 @@ Air.Module("core.scopeList", function(require){
 
     function init(target, generateScopeTree){
     	target = target || document	;
-    	var apps      = getApps(target); // 获取所有App        
+    	var apps      = getApps(target); // 获取所有App
     	// 遍历App 列表
         var appIndex = 0, appCount = apps.length;
         for(; appIndex < appCount; appIndex++) {
@@ -38,7 +38,7 @@ Air.Module("core.scopeList", function(require){
     		scopeList[key] = scope;
             scope.__$shadowScope__ = shadowScope;
             //shadowScopeList[key] = shadowScope;
-            
+
 
             return scope
     	},
@@ -54,6 +54,7 @@ Air.Module("core.scopeList", function(require){
         },
 
         updateShadow : function(scope){
+            if(!scope) return;
             var scopeStr = JSON.stringify(scope);
             scope.__$shadowScope__ = JSON.parse(scopeStr);
         }

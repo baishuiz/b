@@ -297,7 +297,7 @@
 
     function init(target, generateScopeTree){
     	target = target || document	;
-    	var apps      = getApps(target); // 获取所有App        
+    	var apps      = getApps(target); // 获取所有App
     	// 遍历App 列表
         var appIndex = 0, appCount = apps.length;
         for(; appIndex < appCount; appIndex++) {
@@ -323,7 +323,7 @@
     		scopeList[key] = scope;
             scope.__$shadowScope__ = shadowScope;
             //shadowScopeList[key] = shadowScope;
-            
+
 
             return scope
     	},
@@ -339,13 +339,15 @@
         },
 
         updateShadow : function(scope){
+            if(!scope) return;
             var scopeStr = JSON.stringify(scope);
             scope.__$shadowScope__ = JSON.parse(scopeStr);
         }
     }
 
     return api;
-});Air.Module("directive.repeat", function(require){
+})
+;Air.Module("directive.repeat", function(require){
 	var node      = require("utility.node"),
       directive = require("core.directive"),
       Scope     = require("core.scope"),
