@@ -353,7 +353,7 @@
             var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
 
             var valueStr       = JSON.stringify(value).replace(/\{\}/g,'""');
-            var shadowValueStr = JSON.stringify(shadowValue);
+            var shadowValueStr = JSON.stringify(shadowValue).replace(/\{\}/g,'""');
             var result = (valueStr === shadowValueStr);
             return !result
         },
@@ -379,6 +379,7 @@
   var api = function(target, $scope){
 		     var placeholder = {start : null, end : null},
              needRepeat  = node(target).hasAttribute(key),
+             removeEvent = beacon.createEvent("cloneNodeRemove"),
 						 cloneNode,
 						 container;
 
@@ -404,11 +405,13 @@
                  condition  = this.target.getAttribute(key),
                  needRepeat = node(this.oldNode).hasAttribute(key);
 
-             var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
+             var group = condition.replace(/\S+\s+in\s+(\S+)/ig, "$1");
              var dataChange = scopeList.dirtyCheck(group, $scope);
-             (needRepeat && dataChange) || !target.repeaded && repeat(this);
+             if((needRepeat && dataChange) || !target.repeaded){
+               repeat(this);
+             }
 						 function repeat(target){
-							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
+							   beacon.on(removeEvent, {$scope:$scope})
                  var node = target.oldNode;
                  var dom = target.target;
                  parseScope(dom.getAttribute(key));
@@ -436,9 +439,8 @@
 							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
 
-								beacon({target:newNode, scope:$scope}).once("cloneNodeRemove", function(e, data){
+								beacon({target:newNode, scope:$scope}).once(removeEvent, function(e, data){
 									if(data.$scope !== this.scope) return;
-                  if(data.target !== this.target) return;
                   this.target.parentNode.removeChild(this.target);
 								});
 
@@ -484,7 +486,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
   // generateScopeTree(data.dom , data.$scope)
   // beacon.on(EVENTS.REPEAT_DATA_CHANGE);
 
-  
+
   for (var i = 0; i < nodes.length; i++) {
     var repeatNode = nodes[i];
     generateScopeTree(repeatNode.node, repeatNode.$scope);
@@ -505,6 +507,32 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
 
 
               var text = child.nodeValue;
+              function txtNodeDataChange(e, $scope){
+                  if(this.scope !== $scope){
+                    return ;
+                  }
+                  // console.log(this.target.nodeValue,this.oldvalue)
+                  var textNode = this.target;
+                  var text     = this.oldvalue;
+                  var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
+                  for (var i = markups.length - 1; i >= 0; i--) {
+                      var markup   = markups[i];
+                      var dataPath = markup.replace(/{{|}}/ig,"");
+                      var data = Air.NS(dataPath, $scope);
+                      data = util.isEmpty(data) ? '' : data;
+
+                      text = text.replace(markup, data)
+
+
+                  };
+                  //text.replace(/{{.*?}}/ig, '');
+
+
+                   if( textNode.nodeValue != text){
+                       textNode.nodeValue = text
+                   }
+
+              }
 
               if(text.match(regMarkup)){
 
@@ -515,32 +543,6 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                 beacon({target:child, oldvalue:child.nodeValue, scope:$scope})
                 .on(EVENTS.REPEAT_DATA_CHANGE, txtNodeDataChange);
               }
-                function txtNodeDataChange(e, $scope){
-                    if(this.scope !== $scope){
-                      return ;
-                    }
-                    // console.log(this.target.nodeValue,this.oldvalue)
-                    var textNode = this.target;
-                    var text     = this.oldvalue;
-                    var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
-                    for (var i = markups.length - 1; i >= 0; i--) {
-                        var markup   = markups[i];
-                        var dataPath = markup.replace(/{{|}}/ig,"");
-                        var data = Air.NS(dataPath, $scope);
-                        data = util.isEmpty(data) ? '' : data;
-
-                        text = text.replace(markup, data)
-
-
-                    };
-                    //text.replace(/{{.*?}}/ig, '');
-
-                     
-                     if( textNode.nodeValue != text){
-                         textNode.nodeValue = text 
-                     }
-
-                }
            } else if (child.nodeType == nodeType.HTML) {
 
               generateScopeTree(child.attributes, $scope);
@@ -558,7 +560,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                      var isController = child.attributes.getNamedItem(key.controller);
                      if(isController){
                          var controllerName = child.getAttribute(key.controller)
-                         
+
                          $scope = scopeList.set(controllerName, $scope);
                      }
                      generateScopeTree(child.attributes, $scope);
@@ -762,18 +764,23 @@ return generateScopeTree;
                     }
                     beacon.utility.blend(options, defaultOptions, {cover:false});
                     var resultData = {};
-                    beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+                    beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+                        var paseError = false;
                         try {
-                            resultData = JSON.parse(data.data);
-
-                            beacon.on(curServiceEvents.SUCCESS, resultData);
-                            beacon.on(serviceEvents.SUCCESS, resultData);
+                            resultData.data = JSON.parse(data.data);
                         } catch (e) {
-                            resultData = data.data;
+                            paseError = true;
+                            resultData.data = data.data;
                             resultData.error = 'parse Error';
                             beacon.on(curServiceEvents.ERROR, resultData);
                             beacon.on(serviceEvents.ERROR, resultData);
                         }
+
+                        if (!paseError) {
+                          beacon.on(curServiceEvents.SUCCESS, resultData);
+                          beacon.on(serviceEvents.SUCCESS, resultData);
+                        }
+
                         beacon.on(curServiceEvents.COMPLETE, resultData);
                         beacon.on(serviceEvents.COMPLETE, resultData);
                         options.scope && beacon.on(EVENTS.DATA_CHANGE, options.scope);
@@ -812,19 +819,23 @@ return generateScopeTree;
           beacon.on(EVENTS.DATA_CHANGE, scope);
         });
 
+        beacon.on(EVENTS.DATA_CHANGE, function(e, scope){
+          scopeList.updateShadow(scope);
+        });
+
     	  // try{  // TODO: 服务依赖需要Try来屏蔽错误
           Air.run(controller, false, scope);
           Air.run(function(){
             scopeList.updateShadow(scope);
             beacon.on(EVENTS.DATA_CHANGE, scope);
-            beacon.on("hi", scope);          
+            beacon.on("hi", scope); // TODO: 换名
           })
 
           // })
 
 
-  
-          
+
+
         // }catch(e){
         //   // console.log(e);
         // }

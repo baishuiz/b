@@ -10,6 +10,7 @@ Air.Module("directive.repeat", function(require){
   var api = function(target, $scope){
 		     var placeholder = {start : null, end : null},
              needRepeat  = node(target).hasAttribute(key),
+             removeEvent = beacon.createEvent("cloneNodeRemove"),
 						 cloneNode,
 						 container;
 
@@ -35,11 +36,13 @@ Air.Module("directive.repeat", function(require){
                  condition  = this.target.getAttribute(key),
                  needRepeat = node(this.oldNode).hasAttribute(key);
 
-             var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
+             var group = condition.replace(/\S+\s+in\s+(\S+)/ig, "$1");
              var dataChange = scopeList.dirtyCheck(group, $scope);
-             (needRepeat && dataChange) || !target.repeaded && repeat(this);
+             if((needRepeat && dataChange) || !target.repeaded){
+               repeat(this);
+             }
 						 function repeat(target){
-							   beacon.on('cloneNodeRemove', {$scope:$scope, target:target})
+							   beacon.on(removeEvent, {$scope:$scope})
                  var node = target.oldNode;
                  var dom = target.target;
                  parseScope(dom.getAttribute(key));
@@ -67,9 +70,8 @@ Air.Module("directive.repeat", function(require){
 							for(var item=0; item< repeatScope.length; item++) {
                 var newNode = cloneNode.cloneNode(true);
 
-								beacon({target:newNode, scope:$scope}).once("cloneNodeRemove", function(e, data){
+								beacon({target:newNode, scope:$scope}).once(removeEvent, function(e, data){
 									if(data.$scope !== this.scope) return;
-                  if(data.target !== this.target) return;
                   this.target.parentNode.removeChild(this.target);
 								});
 

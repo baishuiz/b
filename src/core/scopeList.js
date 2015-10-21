@@ -55,7 +55,7 @@ Air.Module("core.scopeList", function(require){
             var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
 
             var valueStr       = JSON.stringify(value).replace(/\{\}/g,'""');
-            var shadowValueStr = JSON.stringify(shadowValue);
+            var shadowValueStr = JSON.stringify(shadowValue).replace(/\{\}/g,'""');
             var result = (valueStr === shadowValueStr);
             return !result
         },
