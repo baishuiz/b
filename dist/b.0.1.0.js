@@ -223,20 +223,30 @@
     }
 
     var cmd = target.getAttribute(directive.key.event);
-    var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
+    var cmdList = cmd.split(";")
 
-    beacon(target).on(eventName, function (e){
-        //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
-        var cmd = target.getAttribute(directive.key.event);
-        var handleStr = cmd.replace(eventName,'')
-        var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
-        var eventParam = handleStr.match(reg)[2]
-        var params = eval("["+eventParam+"]");
-        params.unshift(e);
-        this.$index = $scope.$index;
-        $scope.$event[eventHandle].apply(this, params);
-        beacon.on(EVENTS.DATA_CHANGE, $scope);
-    });
+    for (var i = 0; i < cmdList.length; i++) {
+      bind(cmdList[i], i);
+    };
+
+
+    function bind(cmd, eventIndex){
+      var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
+
+      beacon(target).on(eventName, function (e){
+          //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
+          var cmd = target.getAttribute(directive.key.event);
+          var cmdList = cmd.split(";")
+          var handleStr = cmdList[eventIndex].replace(eventName,'')
+          var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
+          var eventParam = handleStr.match(reg)[2]
+          var params = eval("["+eventParam+"]");
+          params.unshift(e);
+          this.$index = $scope.$index;
+          $scope.$event[eventHandle].apply(this, params);
+          beacon.on(EVENTS.DATA_CHANGE, $scope);
+      });
+    }
 
   }
 

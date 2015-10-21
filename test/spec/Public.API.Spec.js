@@ -89,23 +89,23 @@ describe("模版数据绑定", function () {
 
         });
 
-        // it("module 绑定输入控件", function(){
-        //   b.run("f3", function(require, $scope){
-        //     $scope.name = "baby";
-        //     $scope.result = "123";
+        it("module 绑定输入控件", function(){
+          b.run("f3", function(require, $scope){
+            $scope.name = "baby";
+            $scope.result = "123";
 
-        //   })
-        //   var dom = {
-        //     input : document.querySelector('#ipt'),
-        //     h1    : document.querySelector('#hh')
+          })
+          var dom = {
+            input : document.querySelector('#ipt'),
+            h1    : document.querySelector('#hh')
 
-        //   }
-        //   expect(dom.input.value).toEqual('baby');
-        //   dom.input.value += ". How are you?"
-        //   //beacon(dom.input).on('input');
-        //   beacon(dom.input).on('propertychange');
-        //   expect(dom.h1.innerText).toEqual('Hello, baby. How are you? 123');
-        // });
+          }
+          expect(dom.input.value).toEqual('baby');
+          dom.input.value += ". How are you?"
+          beacon(dom.input).on('input');
+          //beacon(dom.input).on('propertychange');
+          expect(dom.h1.innerText).toEqual('Hello, baby. How are you? 123');
+        });
 
 });
 
@@ -117,6 +117,10 @@ describe('事件绑定', function(){
         addResult : function(e, num, msg){
           $scope.result = $scope.result + num;
           $scope.msg = msg;
+        },
+
+        add : function(){
+          $scope.msg2 = 668;
         }
       }
 
@@ -125,11 +129,13 @@ describe('事件绑定', function(){
     });
 
     var dom = {
-      result : document.querySelector('#eventResult')
+      result : document.querySelector('#eventResult'),
+      result2 : document.querySelector('#eventResult2')
     }
     expect(dom.result.innerText).toEqual("1");
     beacon(dom.result).on('click');
     expect(dom.result.innerText).toEqual("2ok");
+    expect(dom.result2.innerText).toEqual('668');
   })
 });
 
