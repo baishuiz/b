@@ -223,6 +223,7 @@
     }
 
     var cmd = target.getAttribute(directive.key.event);
+<<<<<<< HEAD
     var cmdList = cmd.split(";")
 
     for (var i = 0; i < cmdList.length; i++) {
@@ -247,6 +248,23 @@
           beacon.on(EVENTS.DATA_CHANGE, $scope);
       });
     }
+=======
+    var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
+
+    beacon(target).on(eventName, function (e){
+        //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
+        var cmd = target.getAttribute(directive.key.event);
+        var handleStr = cmd.replace(eventName,'')
+        var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
+        var eventParam = handleStr.match(reg)[2]
+        var params = eval("["+eventParam+"]");
+        params.unshift(e);
+        this.$index = $scope.$index;
+        $scope = $scope.$parentScope || $scope;
+        $scope.$event[eventHandle].apply(this, params);
+        beacon.on(EVENTS.DATA_CHANGE, $scope);
+    });
+>>>>>>> 07180ca60dfddb6db1bc8c057a1328a8c6e3763e
 
   }
 
@@ -443,6 +461,7 @@
 								var activeScope = new Scope($scope);
 								activeScope[itemName] = repeatScope[item];
                 activeScope.$index = item;
+                activeScope.$parentScope = $scope;
 								nodes.push({
 									node : newNode.childNodes,
 									$scope : activeScope
