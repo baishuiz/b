@@ -11,19 +11,23 @@ Air.Module("core.run", function(require){
           beacon.on(EVENTS.DATA_CHANGE, scope);
         });
 
+        beacon.on(EVENTS.DATA_CHANGE, function(e, scope){
+          scopeList.updateShadow(scope);
+        });
+
     	  // try{  // TODO: 服务依赖需要Try来屏蔽错误
           Air.run(controller, false, scope);
           Air.run(function(){
             scopeList.updateShadow(scope);
             beacon.on(EVENTS.DATA_CHANGE, scope);
-            beacon.on("hi", scope);          
+            beacon.on("hi", scope); // TODO: 换名
           })
 
           // })
 
 
-  
-          
+
+
         // }catch(e){
         //   // console.log(e);
         // }

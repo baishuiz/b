@@ -43,7 +43,7 @@ Air.Module('core.service', function(require){
                     }
                     beacon.utility.blend(options, defaultOptions, {cover:false});
                     var resultData = {};
-                    beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+                    beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
                         try {
                             resultData.data = JSON.parse(data.data);
 
