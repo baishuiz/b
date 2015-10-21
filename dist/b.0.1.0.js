@@ -404,7 +404,7 @@
                  condition  = this.target.getAttribute(key),
                  needRepeat = node(this.oldNode).hasAttribute(key);
 
-             var group = condition.replace(/\w+\s+in\s+(\w+)/ig, "$1");
+             var group = condition.replace(/\S+\s+in\s+(\S+)/ig, "$1");
              var dataChange = scopeList.dirtyCheck(group, $scope);
              (needRepeat && dataChange) || !target.repeaded && repeat(this);
 						 function repeat(target){
