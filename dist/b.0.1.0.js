@@ -223,7 +223,7 @@
     }
 
     var cmd = target.getAttribute(directive.key.event);
-<<<<<<< HEAD
+
     var cmdList = cmd.split(";")
 
     for (var i = 0; i < cmdList.length; i++) {
@@ -244,27 +244,12 @@
           var params = eval("["+eventParam+"]");
           params.unshift(e);
           this.$index = $scope.$index;
+          $scope = $scope.$parentScope || $scope;
           $scope.$event[eventHandle].apply(this, params);
           beacon.on(EVENTS.DATA_CHANGE, $scope);
       });
     }
-=======
-    var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
 
-    beacon(target).on(eventName, function (e){
-        //var eventCMD = this.getAttribute(directive.key.event).split(/\s/);
-        var cmd = target.getAttribute(directive.key.event);
-        var handleStr = cmd.replace(eventName,'')
-        var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
-        var eventParam = handleStr.match(reg)[2]
-        var params = eval("["+eventParam+"]");
-        params.unshift(e);
-        this.$index = $scope.$index;
-        $scope = $scope.$parentScope || $scope;
-        $scope.$event[eventHandle].apply(this, params);
-        beacon.on(EVENTS.DATA_CHANGE, $scope);
-    });
->>>>>>> 07180ca60dfddb6db1bc8c057a1328a8c6e3763e
 
   }
 
@@ -734,6 +719,7 @@ return generateScopeTree;
 });
 ;Air.Module('core.service', function(require){
   var Request = require('core.network.request');
+  var EVENTS    = require("core.event");
   var config  = require('core.config');
 
   var serviceConfigs = {
@@ -768,11 +754,18 @@ return generateScopeTree;
               beacon.utility.blend(configs, baseCofig, {cover:false});
               var request = new Request();
               var api = {
-                query : function(params){
+                query : function(params, options){
+                    options = options || {};
+                    var defaultOptions = {
+                      preserve : false,  // 保存历史数据
+                      scope    : null
+                    }
+                    beacon.utility.blend(options, defaultOptions, {cover:false});
                     var resultData = {};
                     beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
                         try {
                             resultData = JSON.parse(data.data);
+
                             beacon.on(curServiceEvents.SUCCESS, resultData);
                             beacon.on(serviceEvents.SUCCESS, resultData);
                         } catch (e) {
@@ -783,6 +776,7 @@ return generateScopeTree;
                         }
                         beacon.on(curServiceEvents.COMPLETE, resultData);
                         beacon.on(serviceEvents.COMPLETE, resultData);
+                        options.scope && beacon.on(EVENTS.DATA_CHANGE, options.scope);
                     });
 
                     request.request({

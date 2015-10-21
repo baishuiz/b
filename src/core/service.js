@@ -1,5 +1,6 @@
 Air.Module('core.service', function(require){
   var Request = require('core.network.request');
+  var EVENTS    = require("core.event");
   var config  = require('core.config');
 
   var serviceConfigs = {
@@ -34,11 +35,18 @@ Air.Module('core.service', function(require){
               beacon.utility.blend(configs, baseCofig, {cover:false});
               var request = new Request();
               var api = {
-                query : function(params){
+                query : function(params, options){
+                    options = options || {};
+                    var defaultOptions = {
+                      preserve : false,  // 保存历史数据
+                      scope    : null
+                    }
+                    beacon.utility.blend(options, defaultOptions, {cover:false});
                     var resultData = {};
                     beacon(request).on(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
                         try {
                             resultData = JSON.parse(data.data);
+
                             beacon.on(curServiceEvents.SUCCESS, resultData);
                             beacon.on(serviceEvents.SUCCESS, resultData);
                         } catch (e) {
@@ -49,6 +57,7 @@ Air.Module('core.service', function(require){
                         }
                         beacon.on(curServiceEvents.COMPLETE, resultData);
                         beacon.on(serviceEvents.COMPLETE, resultData);
+                        options.scope && beacon.on(EVENTS.DATA_CHANGE, options.scope);
                     });
 
                     request.request({
