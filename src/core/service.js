@@ -44,17 +44,22 @@ Air.Module('core.service', function(require){
                     beacon.utility.blend(options, defaultOptions, {cover:false});
                     var resultData = {};
                     beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+                        var paseError = false;
                         try {
                             resultData.data = JSON.parse(data.data);
-
-                            beacon.on(curServiceEvents.SUCCESS, resultData);
-                            beacon.on(serviceEvents.SUCCESS, resultData);
                         } catch (e) {
+                            paseError = true;
                             resultData.data = data.data;
                             resultData.error = 'parse Error';
                             beacon.on(curServiceEvents.ERROR, resultData);
                             beacon.on(serviceEvents.ERROR, resultData);
                         }
+
+                        if (!paseError) {
+                          beacon.on(curServiceEvents.SUCCESS, resultData);
+                          beacon.on(serviceEvents.SUCCESS, resultData);
+                        }
+
                         beacon.on(curServiceEvents.COMPLETE, resultData);
                         beacon.on(serviceEvents.COMPLETE, resultData);
                         options.scope && beacon.on(EVENTS.DATA_CHANGE, options.scope);

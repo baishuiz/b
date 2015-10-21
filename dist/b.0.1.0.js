@@ -486,7 +486,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
   // generateScopeTree(data.dom , data.$scope)
   // beacon.on(EVENTS.REPEAT_DATA_CHANGE);
 
-  
+
   for (var i = 0; i < nodes.length; i++) {
     var repeatNode = nodes[i];
     generateScopeTree(repeatNode.node, repeatNode.$scope);
@@ -507,6 +507,32 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
 
 
               var text = child.nodeValue;
+              function txtNodeDataChange(e, $scope){
+                  if(this.scope !== $scope){
+                    return ;
+                  }
+                  // console.log(this.target.nodeValue,this.oldvalue)
+                  var textNode = this.target;
+                  var text     = this.oldvalue;
+                  var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
+                  for (var i = markups.length - 1; i >= 0; i--) {
+                      var markup   = markups[i];
+                      var dataPath = markup.replace(/{{|}}/ig,"");
+                      var data = Air.NS(dataPath, $scope);
+                      data = util.isEmpty(data) ? '' : data;
+
+                      text = text.replace(markup, data)
+
+
+                  };
+                  //text.replace(/{{.*?}}/ig, '');
+
+
+                   if( textNode.nodeValue != text){
+                       textNode.nodeValue = text
+                   }
+
+              }
 
               if(text.match(regMarkup)){
 
@@ -517,32 +543,6 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                 beacon({target:child, oldvalue:child.nodeValue, scope:$scope})
                 .on(EVENTS.REPEAT_DATA_CHANGE, txtNodeDataChange);
               }
-                function txtNodeDataChange(e, $scope){
-                    if(this.scope !== $scope){
-                      return ;
-                    }
-                    // console.log(this.target.nodeValue,this.oldvalue)
-                    var textNode = this.target;
-                    var text     = this.oldvalue;
-                    var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
-                    for (var i = markups.length - 1; i >= 0; i--) {
-                        var markup   = markups[i];
-                        var dataPath = markup.replace(/{{|}}/ig,"");
-                        var data = Air.NS(dataPath, $scope);
-                        data = util.isEmpty(data) ? '' : data;
-
-                        text = text.replace(markup, data)
-
-
-                    };
-                    //text.replace(/{{.*?}}/ig, '');
-
-                     
-                     if( textNode.nodeValue != text){
-                         textNode.nodeValue = text 
-                     }
-
-                }
            } else if (child.nodeType == nodeType.HTML) {
 
               generateScopeTree(child.attributes, $scope);
@@ -560,7 +560,7 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
                      var isController = child.attributes.getNamedItem(key.controller);
                      if(isController){
                          var controllerName = child.getAttribute(key.controller)
-                         
+
                          $scope = scopeList.set(controllerName, $scope);
                      }
                      generateScopeTree(child.attributes, $scope);
@@ -765,17 +765,22 @@ return generateScopeTree;
                     beacon.utility.blend(options, defaultOptions, {cover:false});
                     var resultData = {};
                     beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+                        var paseError = false;
                         try {
                             resultData.data = JSON.parse(data.data);
-
-                            beacon.on(curServiceEvents.SUCCESS, resultData);
-                            beacon.on(serviceEvents.SUCCESS, resultData);
                         } catch (e) {
+                            paseError = true;
                             resultData.data = data.data;
                             resultData.error = 'parse Error';
                             beacon.on(curServiceEvents.ERROR, resultData);
                             beacon.on(serviceEvents.ERROR, resultData);
                         }
+
+                        if (!paseError) {
+                          beacon.on(curServiceEvents.SUCCESS, resultData);
+                          beacon.on(serviceEvents.SUCCESS, resultData);
+                        }
+
                         beacon.on(curServiceEvents.COMPLETE, resultData);
                         beacon.on(serviceEvents.COMPLETE, resultData);
                         options.scope && beacon.on(EVENTS.DATA_CHANGE, options.scope);
