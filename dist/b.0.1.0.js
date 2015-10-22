@@ -76,6 +76,9 @@
 
          request : function(options){
             this.xhr.open(options.method, options.url, true);
+            for (var key in options.header){
+              this.xhr.setRequestHeader(key, options.header[key]);
+            }
             this.xhr.send(options.data);
          },
 
@@ -789,7 +792,10 @@ return generateScopeTree;
                     request.request({
                           method: configs.method,
                           url   : getURL(configs),
-                          data  : params && JSON.stringify(params) || null
+                          data  : params && JSON.stringify(params) || null,
+                          header: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                          }
                     });
                     return resultData
                 },

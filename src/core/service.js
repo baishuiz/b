@@ -68,7 +68,10 @@ Air.Module('core.service', function(require){
                     request.request({
                           method: configs.method,
                           url   : getURL(configs),
-                          data  : params && JSON.stringify(params) || null
+                          data  : params && JSON.stringify(params) || null,
+                          header: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                          }
                     });
                     return resultData
                 },

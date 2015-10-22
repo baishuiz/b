@@ -32,6 +32,9 @@ Air.Module('core.network.request', function(){
 
          request : function(options){
             this.xhr.open(options.method, options.url, true);
+            for (var key in options.header){
+              this.xhr.setRequestHeader(key, options.header[key]);
+            }
             this.xhr.send(options.data);
          },
 
