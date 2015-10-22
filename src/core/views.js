@@ -38,6 +38,12 @@ Air.Module('core.views', function(require){
             var request = new Request();
             beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
               if(data.data){
+                // replace resource
+                data.data = data.data.replace(/(href|src)=([\"])([^'"]+)\2/ig, function(src){
+                    var result = src.replace("{{resourceUrl}}", config.get("resourceUrl") || "");
+                    return result
+                });
+
                 api.active && api.active.removeAttribute('active');
                 var viewport = document.querySelector("viewport[main='true']");
                 var view = document.createElement("view");
@@ -75,7 +81,7 @@ Air.Module('core.views', function(require){
             });
 
             var sign = router.getSign(viewName);
-            sign = sign && "." + sign;
+            sign = sign && "_" + sign;
             request.get(config.get("templatePath") + viewName + sign + ".html");
 
           }

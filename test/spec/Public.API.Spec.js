@@ -150,7 +150,7 @@ describe('view切换', function(){
       });
 
 
-      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/detail.ABCDEFG.html').andReturn({
+      jasmine.Ajax.stubRequest('http://www.cjia-img.com/template/detail_ABCDEFG.html').andReturn({
         "status": 200,
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",
