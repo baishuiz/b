@@ -15,14 +15,17 @@ Air.Module('core.views', function(require){
     init : function(urlPath){
       urlPath = urlPath || window.location.pathname;
       var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
-      var target = document.querySelector("viewport[main='true'] view[active='true']");
+      var viewport = document.querySelector("viewport[main='true']");
+      if (!viewport) {
+          viewport = document.createElement("viewport");
+          viewport.setAttribute('main', 'true');
+          document.body.appendChild(viewport);
+      }
+      var target = viewport.querySelector("view[active='true']");
       if(!target){
         api.count = 0
         var viewInfo = router.match(urlPath);
         if(viewInfo){
-          var viewport = document.createElement("viewport");
-          viewport.setAttribute('main', 'true');
-          document.body.appendChild(viewport);
           api.goto(viewInfo.viewName, {params:viewInfo.params, replace:true});
         }
       }
