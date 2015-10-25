@@ -655,6 +655,11 @@ return generateScopeTree;
 
           options = options || {};
           var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
+          var scrollTop = function () {
+            setTimeout(function(){
+              window.scrollTo(0, 0);
+            }, 0);
+          };
 
           if(target){
             setActive();
@@ -700,7 +705,7 @@ return generateScopeTree;
                   activeScript.parentNode.removeChild(activeScript);
                 };
                 options.popstate || url.change(viewName, options);
-                window.scrollTo(0, 0);
+                scrollTop();
                 beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
               }
             });
@@ -717,7 +722,7 @@ return generateScopeTree;
 
             api.active = target;
             options.popstate || url.change(viewName, options);
-            window.scrollTo(0, 0);
+            scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
           }
     },

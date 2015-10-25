@@ -34,6 +34,11 @@ Air.Module('core.views', function(require){
 
           options = options || {};
           var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
+          var scrollTop = function () {
+            setTimeout(function(){
+              window.scrollTo(0, 0);
+            }, 0);
+          };
 
           if(target){
             setActive();
@@ -79,7 +84,7 @@ Air.Module('core.views', function(require){
                   activeScript.parentNode.removeChild(activeScript);
                 };
                 options.popstate || url.change(viewName, options);
-                window.scrollTo(0, 0);
+                scrollTop();
                 beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
               }
             });
@@ -96,7 +101,7 @@ Air.Module('core.views', function(require){
 
             api.active = target;
             options.popstate || url.change(viewName, options);
-            window.scrollTo(0, 0);
+            scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
           }
     },
