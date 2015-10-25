@@ -79,6 +79,7 @@ Air.Module('core.views', function(require){
                   activeScript.parentNode.removeChild(activeScript);
                 };
                 options.popstate || url.change(viewName, options);
+                window.scrollTo(0, 0);
                 beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
               }
             });
@@ -95,6 +96,7 @@ Air.Module('core.views', function(require){
 
             api.active = target;
             options.popstate || url.change(viewName, options);
+            window.scrollTo(0, 0);
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
           }
     },
