@@ -8,10 +8,10 @@ Air.Module("core.run", function(require){
         var scope = scopeList.get(controllerName);
 
         beacon.on(service.EVENTS.COMPLETE, function(e, data){
-          beacon.on(EVENTS.DATA_CHANGE, scope);
+          beacon(scope).on(EVENTS.DATA_CHANGE, scope);
         });
 
-        beacon.on(EVENTS.DATA_CHANGE, function(e, scope){
+        beacon(scope).on(EVENTS.DATA_CHANGE, function(e, scope){
           scopeList.updateShadow(scope);
         });
 
@@ -19,7 +19,7 @@ Air.Module("core.run", function(require){
           Air.run(controller, false, scope);
           Air.run(function(){
             scopeList.updateShadow(scope);
-            beacon.on(EVENTS.DATA_CHANGE, scope);
+            beacon(scope).on(EVENTS.DATA_CHANGE, scope);
             beacon.on("hi", scope); // TODO: 换名
           })
 

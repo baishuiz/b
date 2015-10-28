@@ -17,15 +17,19 @@ Air.Module('direcitve.module', function(require){
         var target = this;
         new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
 
-        beacon.on(EVENTS.DATA_CHANGE, $scope);
+        beacon($scope).on(EVENTS.DATA_CHANGE, $scope);
+        // beacon(target).on(EVENTS.DATA_CHANGE, $scope);
       });
 
-      beacon({target:target, scope:$scope}).on(EVENTS.DATA_CHANGE, function(e, $scope){
-        if(this.scope !== $scope) {
-          return;
-        }
+      var eventHandle = (function(target){
+
+      })(target);
+      
+
+      beacon($scope).on(EVENTS.DATA_CHANGE, function(e, $scope){
+        
         var value = Air.NS(dataPath, $scope);
-        this.target.value = !util.isEmpty(value) ? value : "";
+        target.value = !util.isEmpty(value) ? value : "";
       });
   }
   return api;

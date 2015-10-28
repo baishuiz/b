@@ -34,7 +34,7 @@ Air.Module('direcitve.event', function(require){
           this.$index = $scope.$index;
           var scope = $scope.$parentScope || $scope;
           scope.$event[eventHandle].apply(this, params);
-          beacon.on(EVENTS.DATA_CHANGE, scope);
+          beacon(scope).on(EVENTS.DATA_CHANGE, scope);
       });
     }
 

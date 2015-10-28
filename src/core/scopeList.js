@@ -25,7 +25,8 @@ Air.Module("core.scopeList", function(require){
             shadowScopeList[appName] = shadowScope;
             // generateScopeTree(app.childNodes, rootScope); // 构建 subScope
         }
-                var appIndex = 0, appCount = apps.length;
+        
+        var appIndex = 0, appCount = apps.length;
         for(; appIndex < appCount; appIndex++) {
             var app         = apps[appIndex],
                 appName     = app.getAttribute(directive.key.app)

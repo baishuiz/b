@@ -12,17 +12,18 @@ Air.Module("core.scopeTree", function(require){
       key      = directive.key
 
 
-beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
-  // generateScopeTree(data.dom , data.$scope)
-  // beacon.on(EVENTS.REPEAT_DATA_CHANGE);
 
 
-  for (var i = 0; i < nodes.length; i++) {
-    var repeatNode = nodes[i];
-    generateScopeTree(repeatNode.node, repeatNode.$scope);
-    beacon.on(EVENTS.REPEAT_DATA_CHANGE, repeatNode.$scope);
-  }
-})
+function bindRepeatDone($scope){
+ beacon($scope).on(EVENTS.REPEAT_DONE, function(e, nodes){
+
+    for (var i = 0; i < nodes.length; i++) {
+      var repeatNode = nodes[i];
+      generateScopeTree(repeatNode.node, repeatNode.$scope);
+      beacon(repeatNode.$scope).on(EVENTS.REPEAT_DATA_CHANGE, repeatNode.$scope);
+    }
+  }) 
+}
 
   var regMarkup = /{{.*?}}/ig;
   function generateScopeTree(childNodes , $scope){
@@ -37,53 +38,40 @@ beacon.on(EVENTS.REPEAT_DONE, function(e, nodes){
 
 
               var text = child.nodeValue;
-              function txtNodeDataChange(e, $scope){
-                  if(this.scope !== $scope){
-                    return ;
-                  }
-                  // console.log(this.target.nodeValue,this.oldvalue)
-                  var textNode = this.target;
-                  var text     = this.oldvalue;
+              var txtNodeDataChange = (function(child, template){
+
+                return function(e, $scope){
+                  var textNode = child;
+                  var text     = template;
                   var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
+
                   for (var i = markups.length - 1; i >= 0; i--) {
                       var markup   = markups[i];
                       var dataPath = markup.replace(/{{|}}/ig,"");
                       var data = Air.NS(dataPath, $scope);
                       data = util.isEmpty(data) ? '' : data;
-
-                      text = text.replace(markup, data)
-
-
+                      text = text.replace(markup, data);
                   };
-                  //text.replace(/{{.*?}}/ig, '');
 
 
-                   if( textNode.nodeValue != text){
-                       textNode.nodeValue = text
-                   }
-
-              }
+                  if( textNode.nodeValue != text){
+                     textNode.nodeValue = text
+                  }
+                }
+              })(child, child.nodeValue);
 
               if(text.match(regMarkup)){
-
-
-                beacon({target:child, oldvalue:child.nodeValue, scope:$scope})
-                .on(EVENTS.DATA_CHANGE, txtNodeDataChange);
-
-                beacon({target:child, oldvalue:child.nodeValue, scope:$scope})
-                .on(EVENTS.REPEAT_DATA_CHANGE, txtNodeDataChange);
+                beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
+                beacon($scope).on(EVENTS.REPEAT_DATA_CHANGE, txtNodeDataChange);
               }
            } else if (child.nodeType == nodeType.HTML) {
 
-              generateScopeTree(child.attributes, $scope);
-              //initModule(child, $scope);
-              //  for (var attrIndex = 0; attrIndex < child.attributes.length; attrIndex++) {
-              //    var activeAttribute = child.attributes[attrIndex];
-              //    generateScopeTree(activeAttribute, $scope);
-              //  }
+              // generateScopeTree(child.attributes, $scope);
                var needRepeat = node(child).hasAttribute(key.repeat);
                if(needRepeat) {
+                   bindRepeatDone($scope)
                    var  result = repeatFilter(child, $scope);
+                   // bindRepeatDone($scope)
 
                } else {
 
