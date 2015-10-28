@@ -252,6 +252,9 @@ describe('view切换', function(){
       // console.log(location.href)
       console.log(url.to)
       var urlMatch = /\/detail\/6\/?\?a=1&b=2/i.test(url.to);
+      var query = b.views.router.getQuerys(url.to);
+      expect(query.a).toEqual('1');
+      expect(query.b).toEqual('2');
       expect(urlMatch).toEqual(true);
       done();
     });
@@ -262,7 +265,8 @@ describe('view切换', function(){
         id : 6
       },
       query : "?a=1&b=2"
-    })
+    });
+
   })
 
 })

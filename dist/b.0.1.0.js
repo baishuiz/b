@@ -93,7 +93,73 @@
     XHR.EVENTS  = events
     return XHR;
 });
-;Air.Module('core.router', function(){
+;Air.Module("utility.node", function(){
+  var node = function(node){
+      var api = {
+        hasAttribute : function(attributeName){
+          return node.attributes.getNamedItem(attributeName);
+        }
+      };
+      return api;
+  };
+
+  node.type = {
+      TEXT : 3,
+      HTML : 1,
+      ATTR : 2
+  }
+  return node;
+});
+;Air.Module('utility.query', function(require) {
+    var query = {
+        getQuerys: function (url) {
+            var regex = /[?&]([^=#]+)=([^&#]*)/g,
+            params = {},
+            match;
+            while(match = regex.exec(url)) {
+                params[match[1]] = match[2];
+            }
+            return params;
+        },
+        getQueryString: function (url) {
+            var queryObj = query.getQuerys(url);
+            var queryString = [];
+            for (var key in queryObj) {
+                queryString.push(key + '=' + queryObj[key]);
+            }
+            return queryString.length ? ('?' + queryString.join('&')) : '';
+        }
+    };
+
+    return query;
+});
+;Air.Module('utility.util', function(){
+  var util = {
+    isEmpty :   function (obj) {
+          var isObject = beacon.utility.isType(obj, 'Object');
+          var isArray = beacon.utility.isType(obj, 'Array');
+          if(!isObject && !isArray){
+            return false;
+          }
+          for(var prop in obj) {
+              if(obj.hasOwnProperty(prop)){
+                return false;
+              }
+          }
+          return true;
+      },
+
+    enums : function(keys){
+      var result = {};
+      for (var i = keys.length - 1; i >= 0; i--) {
+        result[keys[i]]=keys[i];
+      };
+      return result;
+    }  
+  };
+  return util;
+});
+;Air.Module('core.router', function(require){
   // var routers = [
   //    {
   //       rule: reg,
@@ -105,6 +171,8 @@
   var signs = {};
   var routers = [];
   var rules  = {};
+  var query = require('utility.query');
+
 
 
   var router = function(rule){
@@ -139,9 +207,17 @@
     rules[rule.viewName] = rule.router;
   };
 
-  router.getParams = function(){
-    var matchedRouter = router.match(location.pathname) || {};
+  router.getParams = function(pathname){
+    var matchedRouter = router.match(pathname || location.pathname) || {};
     return matchedRouter.params || {};
+  }
+
+  router.getQuerys = function (url) {
+    return query.getQuerys(url || location.href);
+  }
+
+  router.getQueryString = function (url) {
+    return query.getQueryString(url || location.href);
   }
 
   router.getRule = function(viewName){
@@ -170,49 +246,6 @@
   }
   return router;
 })
-;Air.Module("utility.node", function(){
-  var node = function(node){
-      var api = {
-        hasAttribute : function(attributeName){
-          return node.attributes.getNamedItem(attributeName);
-        }
-      };
-      return api;
-  };
-
-  node.type = {
-      TEXT : 3,
-      HTML : 1,
-      ATTR : 2
-  }
-  return node;
-});
-;Air.Module('utility.util', function(){
-  var util = {
-    isEmpty :   function (obj) {
-          var isObject = beacon.utility.isType(obj, 'Object');
-          var isArray = beacon.utility.isType(obj, 'Array');
-          if(!isObject && !isArray){
-            return false;
-          }
-          for(var prop in obj) {
-              if(obj.hasOwnProperty(prop)){
-                return false;
-              }
-          }
-          return true;
-      },
-
-    enums : function(keys){
-      var result = {};
-      for (var i = keys.length - 1; i >= 0; i--) {
-        result[keys[i]]=keys[i];
-      };
-      return result;
-    }  
-  };
-  return util;
-});
 ;Air.Module('direcitve.event', function(require){
   var directive = require('core.directive'),
       node      = require('utility.node'),
@@ -636,6 +669,7 @@ return generateScopeTree;
     init : function(urlPath){
       urlPath = urlPath || window.location.pathname;
       var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
+      var query = router.getQueryString();
       var viewport = document.querySelector("viewport[main='true']");
       if (!viewport) {
           viewport = document.createElement("viewport");
@@ -647,7 +681,11 @@ return generateScopeTree;
         api.count = 0
         var viewInfo = router.match(urlPath);
         if(viewInfo){
-          api.goto(viewInfo.viewName, {params:viewInfo.params, replace:true});
+          api.goto(viewInfo.viewName, {
+            params:viewInfo.params,
+            query:query,
+            replace:true
+          });
         }
       }
     },
