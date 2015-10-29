@@ -393,9 +393,11 @@
             var value = Air.NS(dataPath, $scope);
             var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
 
-            var valueStr       = JSON.stringify(value).replace(/\{\}/g,'""');
-            var shadowValueStr = JSON.stringify(shadowValue).replace(/\{\}/g,'""');
-            var result = (valueStr === shadowValueStr);
+            // var valueStr       = JSON.stringify(value).replace(/\{\}/g,'""');
+            // var shadowValueStr = JSON.stringify(shadowValue).replace(/\{\}/g,'""');
+            // var result = (valueStr === shadowValueStr);
+            var result = value.length == shadowValue.length;
+
             return !result
         },
 
