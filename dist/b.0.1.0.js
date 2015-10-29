@@ -387,25 +387,25 @@
 
 
             return scope
-    	},
+    	}
 
-        dirtyCheck : function(dataPath, $scope){
-            var value = Air.NS(dataPath, $scope);
-            var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
+        // dirtyCheck : function(dataPath, $scope){
+        //     var value = Air.NS(dataPath, $scope);
+        //     var shadowValue = Air.NS(dataPath, $scope.__$shadowScope__);
 
-            // var valueStr       = JSON.stringify(value).replace(/\{\}/g,'""');
-            // var shadowValueStr = JSON.stringify(shadowValue).replace(/\{\}/g,'""');
-            // var result = (valueStr === shadowValueStr);
-            var result = value.length == shadowValue.length;
+        //     // var valueStr       = JSON.stringify(value).replace(/\{\}/g,'""');
+        //     // var shadowValueStr = JSON.stringify(shadowValue).replace(/\{\}/g,'""');
+        //     // var result = (valueStr === shadowValueStr);
+        //     var result = value.length == shadowValue.length;
 
-            return !result
-        },
+        //     return !result
+        // },
 
-        updateShadow : function(scope){
-            if(!scope) return;
-            var scopeStr = JSON.stringify(scope);
-            scope.__$shadowScope__ = JSON.parse(scopeStr);
-        }
+        // updateShadow : function(scope){
+        //     if(!scope) return;
+        //     var scopeStr = JSON.stringify(scope);
+        //     scope.__$shadowScope__ = JSON.parse(scopeStr);
+        // }
     }
 
     return api;
@@ -447,7 +447,8 @@
          condition  = target.getAttribute(key);
          needRepeat = !!condition,
          group      = condition.replace(/\S+\s+in\s+(\S+)/ig, "$1"),
-         dataChange = scopeList.dirtyCheck(group, $scope);
+         // dataChange = scopeList.dirtyCheck(group, $scope);
+         dataChange = Air.NS(group, $scope).length === target.cloneNodes.length;
 
       if((needRepeat && dataChange) || (needRepeat && !target.repeaded)){
        repeat(target, $scope);
@@ -876,14 +877,14 @@ return generateScopeTree;
           beacon(scope).on(EVENTS.DATA_CHANGE, scope);
         });
 
-        beacon(scope).on(EVENTS.DATA_CHANGE, function(e, scope){
-          scopeList.updateShadow(scope);
-        });
+        // beacon(scope).on(EVENTS.DATA_CHANGE, function(e, scope){
+        //   scopeList.updateShadow(scope);
+        // });
 
     	  // try{  // TODO: 服务依赖需要Try来屏蔽错误
           Air.run(controller, false, scope);
           Air.run(function(){
-            scopeList.updateShadow(scope);
+            // scopeList.updateShadow(scope);
             beacon(scope).on(EVENTS.DATA_CHANGE, scope);
             beacon.on("hi", scope); // TODO: 换名
           })

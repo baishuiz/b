@@ -11,14 +11,14 @@ Air.Module("core.run", function(require){
           beacon(scope).on(EVENTS.DATA_CHANGE, scope);
         });
 
-        beacon(scope).on(EVENTS.DATA_CHANGE, function(e, scope){
-          scopeList.updateShadow(scope);
-        });
+        // beacon(scope).on(EVENTS.DATA_CHANGE, function(e, scope){
+        //   scopeList.updateShadow(scope);
+        // });
 
     	  // try{  // TODO: 服务依赖需要Try来屏蔽错误
           Air.run(controller, false, scope);
           Air.run(function(){
-            scopeList.updateShadow(scope);
+            // scopeList.updateShadow(scope);
             beacon(scope).on(EVENTS.DATA_CHANGE, scope);
             beacon.on("hi", scope); // TODO: 换名
           })
