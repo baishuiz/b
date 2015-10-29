@@ -448,7 +448,7 @@
          needRepeat = !!condition,
          group      = condition.replace(/\S+\s+in\s+(\S+)/ig, "$1"),
          // dataChange = scopeList.dirtyCheck(group, $scope);
-         dataChange = Air.NS(group, $scope).length === target.cloneNodes.length;
+         dataChange = Air.NS(group, $scope).length !== target.cloneNodes.length;
 
       if((needRepeat && dataChange) || (needRepeat && !target.repeaded)){
        repeat(target, $scope);
