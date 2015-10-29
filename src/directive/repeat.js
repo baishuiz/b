@@ -46,7 +46,8 @@ Air.Module("directive.repeat", function(require){
 
   function repeat(target, $scope){
     // remove old clone node
-    beacon(target).on(removeEvent, {$scope:$scope});
+    beacon(target.cloneNodes).on(removeEvent, {$scope:$scope});
+    target.cloneNodes = [];
     parseScope(target, $scope);
     target.repeaded = true;
   }
@@ -61,13 +62,14 @@ Air.Module("directive.repeat", function(require){
       var itemName    = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
       var repeatScope = Air.NS(group, $scope);
       var nodes = [];
-
+      
+      target.cloneNodes = target.cloneNodes || [];
       for(var item=0; item< repeatScope.length; item++) {
         var newNode = target.cloneNode(true);
-
-        beacon({target:newNode, scope:$scope}).once(removeEvent, function(e, data){
-          if(data.$scope !== this.scope) return;
-          this.target.parentNode.removeChild(this.target);
+        target.cloneNodes.push(newNode);
+        beacon(newNode).once(removeEvent, function(e, data){
+          // if(data.$scope !== this.scope) return;
+          this.parentNode.removeChild(this);
         });
 
         newNode.removeAttribute(key);
