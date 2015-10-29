@@ -1,4 +1,4 @@
-Air.Module('core.router', function(){
+Air.Module('core.router', function(require){
   // var routers = [
   //    {
   //       rule: reg,
@@ -10,6 +10,8 @@ Air.Module('core.router', function(){
   var signs = {};
   var routers = [];
   var rules  = {};
+  var query = require('utility.query');
+
 
 
   var router = function(rule){
@@ -44,9 +46,17 @@ Air.Module('core.router', function(){
     rules[rule.viewName] = rule.router;
   };
 
-  router.getParams = function(){
-    var matchedRouter = router.match(location.pathname) || {};
+  router.getParams = function(pathname){
+    var matchedRouter = router.match(pathname || location.pathname) || {};
     return matchedRouter.params || {};
+  }
+
+  router.getQuerys = function (url) {
+    return query.getQuerys(url || location.href);
+  }
+
+  router.getQueryString = function (url) {
+    return query.getQueryString(url || location.href);
   }
 
   router.getRule = function(viewName){

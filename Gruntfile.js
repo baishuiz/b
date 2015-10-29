@@ -17,9 +17,10 @@ module.exports = function(grunt){
                         './src/core/event.js',
                         './src/core/config.js',
                         './src/core/network/request.js',
-                        './src/core/router.js',
 
                         './src/utility/*.js',
+
+                        './src/core/router.js',
 
                         './src/directive/event.js',
                         './src/directive/module.js',
@@ -32,7 +33,7 @@ module.exports = function(grunt){
                         './src/core/views.js',
                         './src/core/service.js',
                         './src/core/run.js',
-                        
+
                         './src/*.js'
                       ],
                 dest: './dist/<%= output.fileName %>'
