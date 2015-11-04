@@ -462,7 +462,7 @@
     beacon(target.cloneNodes).on(removeEvent, {$scope:$scope});
     target.cloneNodes = [];
     parseScope(target, $scope);
-    target.repeaded = true;
+    
   }
 
 
@@ -507,7 +507,7 @@
 
       placeholder.end.parentNode.insertBefore(container,placeholder.end);
       beacon($scope).on(EVENTS.REPEAT_DONE, nodes)
-
+      target.repeaded = true;
       return {
             scope : repeatScope,
             nodes : nodes
