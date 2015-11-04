@@ -78,6 +78,14 @@ Air.Module("directive.repeat", function(require){
         activeScope[itemName] = repeatScope[item];
         activeScope.$index = item;
         activeScope.$parentScope = $scope;
+        activeScope.$update = (function(item){
+          
+          return function(){
+            var repeatScope = Air.NS(group, $scope);
+            this[itemName] = repeatScope[item];
+            return repeatScope[item]
+          }
+        }(item))
         nodes.push({
           node : newNode.childNodes,
           $scope : activeScope

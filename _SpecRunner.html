@@ -20,8 +20,8 @@ viewport view[active="true"]{display:block}
         <div class="age">{{user.feeling}}{{user.age}}</div>
         <div class="name"> {{user.name}}</div>
         <ul id="booklist" type="{{books.type}}" ng-controller="booklist">
-        	book : <li ng-repeat="book in books">{{book.name}}<span ng-repeat="author in book.author">{{author}}</span></li>
-          <li ng-repeat="book in books">{{book.name}}<span ng-repeat="author in book.author">{{author}}</span></li>
+        	book : <li ng-event="click changeName()" ng-repeat="book in books">{{book.name}}<span ng-repeat="author in book.author">{{author}}</span></li>
+          <li  ng-repeat="book in books">{{book.name}}<span ng-event="click changeName()" ng-repeat="author in book.author">{{author}}</span></li>
         </ul>
 
         <ul ng-controller="userInfo">
@@ -69,9 +69,11 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/b.0.1.0.min.js"></script>
+  <script src="dist/b.0.1.0.js"></script>
   
   <script src="test/spec/Public.API.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   

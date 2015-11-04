@@ -490,6 +490,14 @@
         activeScope[itemName] = repeatScope[item];
         activeScope.$index = item;
         activeScope.$parentScope = $scope;
+        activeScope.$update = (function(item){
+          
+          return function(){
+            var repeatScope = Air.NS(group, $scope);
+            this[itemName] = repeatScope[item];
+            return repeatScope[item]
+          }
+        }(item))
         nodes.push({
           node : newNode.childNodes,
           $scope : activeScope
@@ -560,7 +568,7 @@ function bindRepeatDone($scope){
                   var textNode = child;
                   var text     = template;
                   var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
-
+                  $scope = $scope || this;
                   for (var i = markups.length - 1; i >= 0; i--) {
                       var markup   = markups[i];
                       var dataPath = markup.replace(/{{|}}/ig,"");
@@ -577,6 +585,13 @@ function bindRepeatDone($scope){
               })(child, child.nodeValue);
 
               if(text.match(regMarkup)){
+                // $scope.$parentScope && beacon($scope.$parentScope).on(b.EVENTS.DATA_CHANGE, txtNodeDataChange)
+                if($scope.$parentScope){
+                  beacon($scope.$parentScope).on(EVENTS.DATA_CHANGE, function(){
+                    $scope.$update();
+                    beacon($scope).on(EVENTS.DATA_CHANGE)
+                  })
+                }
                 beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
                 beacon($scope).on(EVENTS.REPEAT_DATA_CHANGE, txtNodeDataChange);
               }
@@ -617,7 +632,7 @@ return generateScopeTree;
 
 	var api = {
 		change : function(viewName, options){
-			options = options || {};
+			options    = options || {};
             var params = options.params || {};
             var query  = options.query || "";
             // detail/:id/:name/:price
@@ -751,7 +766,7 @@ return generateScopeTree;
             request.get(config.get("templatePath") + viewName + sign + ".html");
 
           }
-          //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");
+          //target ? setActive : request.get("http://m.cjia.com/webapp/hotel/");
           function setActive(){
             api.active && api.active.removeAttribute('active');
             target.setAttribute('active','true');

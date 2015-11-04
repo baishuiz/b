@@ -44,7 +44,7 @@ function bindRepeatDone($scope){
                   var textNode = child;
                   var text     = template;
                   var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
-
+                  $scope = $scope || this;
                   for (var i = markups.length - 1; i >= 0; i--) {
                       var markup   = markups[i];
                       var dataPath = markup.replace(/{{|}}/ig,"");
@@ -61,6 +61,13 @@ function bindRepeatDone($scope){
               })(child, child.nodeValue);
 
               if(text.match(regMarkup)){
+                // $scope.$parentScope && beacon($scope.$parentScope).on(b.EVENTS.DATA_CHANGE, txtNodeDataChange)
+                if($scope.$parentScope){
+                  beacon($scope.$parentScope).on(EVENTS.DATA_CHANGE, function(){
+                    $scope.$update();
+                    beacon($scope).on(EVENTS.DATA_CHANGE)
+                  })
+                }
                 beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
                 beacon($scope).on(EVENTS.REPEAT_DATA_CHANGE, txtNodeDataChange);
               }

@@ -6,7 +6,7 @@ Air.Module('core.url', function(require){
 
 	var api = {
 		change : function(viewName, options){
-			options = options || {};
+			options    = options || {};
             var params = options.params || {};
             var query  = options.query || "";
             // detail/:id/:name/:price

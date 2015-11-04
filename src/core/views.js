@@ -99,7 +99,7 @@ Air.Module('core.views', function(require){
             request.get(config.get("templatePath") + viewName + sign + ".html");
 
           }
-          //target ? setActive : request.get("http://m.ctrip.com/webapp/hotel/");
+          //target ? setActive : request.get("http://m.cjia.com/webapp/hotel/");
           function setActive(){
             api.active && api.active.removeAttribute('active');
             target.setAttribute('active','true');
