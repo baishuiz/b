@@ -31,10 +31,10 @@ describe("模版数据绑定", function () {
 
         b.run("f2", function(require, $scope){
             $scope.name = "yet?";
-            $scope.result = "Yes!"
+            $scope.result = 0
         })
 
-        expect(dom.app2.innerText.replace(/^\s+|\s+$/ig,'')).toEqual('Hello, yet? Yes!');
+        expect(dom.app2.innerText.replace(/^\s+|\s+$/ig,'')).toEqual('Hello, yet? 0');
     });
 
 
