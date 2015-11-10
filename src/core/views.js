@@ -15,6 +15,7 @@ Air.Module('core.views', function(require){
       var viewTemplate = data.data
       viewTemplate && viewManage.append(viewName, viewTemplate, options);
       beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
+      style.show();
       options.popstate || url.change(viewName, options);
     });
 
@@ -30,6 +31,30 @@ Air.Module('core.views', function(require){
     }, 0);
   };
 
+
+   var  style = (function(){
+        var css = '[ng-app] { text-indent: -100%; background-color: #eee; }',
+        head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style');
+
+        style.type = 'text/css';
+        if (style.styleSheet){
+          style.styleSheet.cssText = css;
+        } else {
+          style.appendChild(document.createTextNode(css));
+        }
+
+        head.appendChild(style);   
+        return  {
+            show : function(){
+              style.disabled = false;
+            },
+
+            hidden : function() {
+              style.disabled = true;
+            }
+        } 
+   }());
 
 
   var api = {
@@ -67,12 +92,14 @@ Air.Module('core.views', function(require){
     goto : function(viewName, options){
           options = options || {};
           beacon.on(api.EVENTS.SHOWEBEFOR, {viewName : viewName});
+          style.hidden();
           // var urlPath = url.getURLPath(viewName, options);
           var targetView = viewManage.show(viewName, options)
           if(targetView){
             options.popstate || url.change(viewName, options);
             scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
+            style.show();
           } else {
             getTemplate(viewName, options);
           }
