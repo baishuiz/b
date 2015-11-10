@@ -34,7 +34,7 @@ Air.Module('core.views', function(require){
 
   var api = {
     EVENTS : {
-      SHOWED : beacon.createEvent("")，
+      SHOWED : beacon.createEvent(""),
       SHOWEBEFOR : beacon.createEvent("")
     },
 

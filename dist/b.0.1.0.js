@@ -856,7 +856,8 @@ return generateScopeTree;
 
   var api = {
     EVENTS : {
-      SHOWED : beacon.createEvent("view showed")
+      SHOWED : beacon.createEvent(""),
+      SHOWEBEFOR : beacon.createEvent("")
     },
 
     router : router,
@@ -887,6 +888,7 @@ return generateScopeTree;
 
     goto : function(viewName, options){
           options = options || {};
+          beacon.on(api.EVENTS.SHOWEBEFOR, {viewName : viewName});
           // var urlPath = url.getURLPath(viewName, options);
           var targetView = viewManage.show(viewName, options)
           if(targetView){
