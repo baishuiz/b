@@ -5,6 +5,7 @@ Air.Module('core.views', function(require){
       url               = require('core.url'),
       util              = require('utility.util'),
       generateScopeTree = require("core.scopeTree"),
+      EVENTS            = require("core.event"),
       config            = require('core.config'),
       viewManage        = require('core.viewManager');
 
@@ -85,7 +86,10 @@ Air.Module('core.views', function(require){
             query:query,
             replace:true
           });
+        } else {
+          beacon.on(EVENTS.PAGE404);
         }
+
       }
     },
 

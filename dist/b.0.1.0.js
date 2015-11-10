@@ -23,7 +23,8 @@
     DATA_CHANGE        : beacon.createEvent("data change"),
     REPEAT_DATA_CHANGE : beacon.createEvent("repeat data change"),
     REPEAT_DONE        : beacon.createEvent("repeat done"),
-    URL_CHANGE         : beacon.createEvent("url change")
+    URL_CHANGE         : beacon.createEvent("url change"),
+    PAGE404            : beacon.createEvent("")
     
   }
   return events;
@@ -827,6 +828,7 @@ return generateScopeTree;
       url               = require('core.url'),
       util              = require('utility.util'),
       generateScopeTree = require("core.scopeTree"),
+      EVENTS            = require("core.event"),
       config            = require('core.config'),
       viewManage        = require('core.viewManager');
 
@@ -907,7 +909,10 @@ return generateScopeTree;
             query:query,
             replace:true
           });
+        } else {
+          beacon.on(EVENTS.PAGE404);
         }
+
       }
     },
 
