@@ -1,17 +1,44 @@
 Air.Module('core.views', function(require){
-  var Request = require('core.network.request'),
-      router  = require('core.router'),
-      scopeList = require('core.scopeList'),
-      url       = require('core.url'),
-      util      = require('utility.util'),
+  var Request           = require('core.network.request'),
+      router            = require('core.router'),
+      scopeList         = require('core.scopeList'),
+      url               = require('core.url'),
+      util              = require('utility.util'),
       generateScopeTree = require("core.scopeTree"),
-      config  = require('core.config');
+      config            = require('core.config'),
+      viewManage        = require('core.viewManager');
+
+
+  function getTemplate (viewName, options){
+    var request = new Request();
+    beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+      var viewTemplate = data.data
+      viewTemplate && viewManage.append(viewName, viewTemplate, options);
+      beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
+      options.popstate || url.change(viewName, options);
+    });
+
+    var sign = router.getSign(viewName);
+    sign = sign && "_" + sign;
+    request.get(config.get("templatePath") + viewName + sign + ".html");
+  }
+
+
+  function scrollTop () {
+    setTimeout(function(){
+      window.scrollTo(0, 0);
+    }, 0);
+  };
+
+
+
   var api = {
     EVENTS : {
       SHOWED : beacon.createEvent("view showed")
     },
+
     router : router,
-    count:0,
+    
     init : function(urlPath){
       urlPath = urlPath || window.location.pathname;
       var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
@@ -24,7 +51,7 @@ Air.Module('core.views', function(require){
       }
       var target = viewport.querySelector("view[active='true']");
       if(!target){
-        api.count = 0
+        api.getCount(0);
         var viewInfo = router.match(urlPath);
         if(viewInfo){
           api.goto(viewInfo.viewName, {
@@ -35,90 +62,24 @@ Air.Module('core.views', function(require){
         }
       }
     },
+
     goto : function(viewName, options){
-
           options = options || {};
-          var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
-          var scrollTop = function () {
-            setTimeout(function(){
-              window.scrollTo(0, 0);
-            }, 0);
-          };
-
-          if(target){
-            setActive();
-          } else {
-            var request = new Request();
-            beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
-              if(data.data){
-                // replace resource
-                data.data = data.data.replace(/(href|src)=([\"])([^'"]+)\2/ig, function(src){
-                    var result = src.replace("{{resourceUrl}}", config.get("resourceUrl") || "");
-                    return result
-                });
-
-                api.active && api.active.removeAttribute('active');
-                var viewport = document.querySelector("viewport[main='true']");
-                var view = document.createElement("view");
-                view.setAttribute("active", "true");
-                view.setAttribute("name", viewName);
-                view.innerHTML = data.data;
-
-
-                viewport.appendChild(view);
-                api.count += 1;
-                api.active = view;
-
-                // generateScopeTree(view, $scope)
-                scopeList.init(view, generateScopeTree);
-
-                // load controller
-                var scripts = view.querySelectorAll('script');
-                scripts = [].slice.call(scripts);
-                for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
-                  var activeScript = scripts[scriptIndex];
-
-                  if (activeScript.src) {
-                    Air.loadJS(activeScript.src);
-                  } else {
-                    var tmpScript = document.createElement('script');
-                    tmpScript.text = activeScript.text;
-                    document.getElementsByTagName('head')[0].appendChild(tmpScript);
-                  }
-
-                  activeScript.parentNode.removeChild(activeScript);
-                };
-                options.popstate || url.change(viewName, options);
-                scrollTop();
-                beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
-              }
-            });
-
-            var sign = router.getSign(viewName);
-            sign = sign && "_" + sign;
-            request.get(config.get("templatePath") + viewName + sign + ".html");
-
-          }
-          //target ? setActive : request.get("http://m.cjia.com/webapp/hotel/");
-          function setActive(){
-            api.active && api.active.removeAttribute('active');
-            target.setAttribute('active','true');
-
-            api.active = target;
+          // var urlPath = url.getURLPath(viewName, options);
+          var targetView = viewManage.show(viewName, options)
+          if(targetView){
             options.popstate || url.change(viewName, options);
             scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
+          } else {
+            getTemplate(viewName, options);
           }
     },
-    active : null
+
+    remove   : viewManage.remove,    
+    getCount : viewManage.getCount,
+    getActive: viewManage.getActive
   }
-
-  Air.domReady(function(){
-
-      var views = document.querySelectorAll("viewport[main='true'] view");
-      api.count = views.length;
-      api.active = document.querySelector("viewport[main='true'] view[active='true']");
-  });
 
   return api;
 });

@@ -7,18 +7,8 @@ Air.Module('core.url', function(require){
 	var api = {
 		change : function(viewName, options){
 			options    = options || {};
-            var params = options.params || {};
-            var query  = options.query || "";
-            // detail/:id/:name/:price
-            var routerRule = router.getRule(viewName);
-
-            if(routerRule){
-		        var urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
-		                      return params[key] || ""
-		            });
-
-	            urlPath = urlPath.replace(/\/\/+/g,"/");
-	            urlPath = location.origin + urlPath + query;
+			var urlPath = api.getURLPath(viewName, options);
+            if(urlPath){
 	            var fromURL  = location.href;
 	            var stateObj = {viewName: viewName};
 	            if(options.replace==true){
@@ -34,6 +24,26 @@ Air.Module('core.url', function(require){
 
 
 			}
+		},
+
+		getURLPath : function(viewName, options){
+			options    = options || {};
+            var params = options.params || {};
+            var query  = options.query || "";
+            var url;
+            // detail/:id/:name/:price
+            var routerRule = router.getRule(viewName);
+
+            if(routerRule){
+		        var urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
+		                      return params[key] || ""
+		            });
+
+	            urlPath = urlPath.replace(/\/\/+/g,"/");
+	            url = location.origin + urlPath + query;
+	            
+			}
+			return url;
 		}
 	};
 

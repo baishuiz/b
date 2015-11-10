@@ -30,6 +30,7 @@ module.exports = function(grunt){
                         './src/directive/repeat.js',
                         './src/core/scopeTree.js',
                         './src/core/url.js',
+                        './src/core/viewManager.js',
                         './src/core/views.js',
                         './src/core/service.js',
                         './src/core/run.js',

@@ -633,18 +633,8 @@ return generateScopeTree;
 	var api = {
 		change : function(viewName, options){
 			options    = options || {};
-            var params = options.params || {};
-            var query  = options.query || "";
-            // detail/:id/:name/:price
-            var routerRule = router.getRule(viewName);
-
-            if(routerRule){
-		        var urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
-		                      return params[key] || ""
-		            });
-
-	            urlPath = urlPath.replace(/\/\/+/g,"/");
-	            urlPath = location.origin + urlPath + query;
+			var urlPath = api.getURLPath(viewName, options);
+            if(urlPath){
 	            var fromURL  = location.href;
 	            var stateObj = {viewName: viewName};
 	            if(options.replace==true){
@@ -660,85 +650,51 @@ return generateScopeTree;
 
 
 			}
+		},
+
+		getURLPath : function(viewName, options){
+			options    = options || {};
+            var params = options.params || {};
+            var query  = options.query || "";
+            var url;
+            // detail/:id/:name/:price
+            var routerRule = router.getRule(viewName);
+
+            if(routerRule){
+		        var urlPath = routerRule.replace(/:(\w+)/ig, function(param, key){
+		                      return params[key] || ""
+		            });
+
+	            urlPath = urlPath.replace(/\/\/+/g,"/");
+	            url = location.origin + urlPath + query;
+	            
+			}
+			return url;
 		}
 	};
 
 	return api;
 })
-;Air.Module('core.views', function(require){
-  var Request = require('core.network.request'),
-      router  = require('core.router'),
-      scopeList = require('core.scopeList'),
-      url       = require('core.url'),
-      util      = require('utility.util'),
-      generateScopeTree = require("core.scopeTree"),
-      config  = require('core.config');
-  var api = {
-    EVENTS : {
-      SHOWED : beacon.createEvent("view showed")
-    },
-    router : router,
-    count:0,
-    init : function(urlPath){
-      urlPath = urlPath || window.location.pathname;
-      var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
-      var query = router.getQueryString();
-      var viewport = document.querySelector("viewport[main='true']");
-      if (!viewport) {
-          viewport = document.createElement("viewport");
-          viewport.setAttribute('main', 'true');
-          document.body.appendChild(viewport);
-      }
-      var target = viewport.querySelector("view[active='true']");
-      if(!target){
-        api.count = 0
-        var viewInfo = router.match(urlPath);
-        if(viewInfo){
-          api.goto(viewInfo.viewName, {
-            params:viewInfo.params,
-            query:query,
-            replace:true
-          });
-        }
-      }
-    },
-    goto : function(viewName, options){
+;Air.Module('core.viewManager', function(require){
+	var config     = require('core.config'),
+	    scopeList  = require('core.scopeList'),
+	    generateScopeTree = require("core.scopeTree"),
+	    url        = require('core.url');
+	var viewList   = {};
+	var viewStatus = {
+		active : null,
+		count  : 0
+	}
 
-          options = options || {};
-          var target = document.querySelector("viewport[main='true'] view[name='"+ viewName + "']");
-          var scrollTop = function () {
-            setTimeout(function(){
-              window.scrollTo(0, 0);
-            }, 0);
-          };
+	function parseResource (template){
+		var content = template.replace(/(href|src)=([\"])([^'"]+)\2/ig, function(src){
+		    var result = src.replace("{{resourceUrl}}", config.get("resourceUrl") || "");
+		    return result
+		});
+		return content;
+	}
 
-          if(target){
-            setActive();
-          } else {
-            var request = new Request();
-            beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
-              if(data.data){
-                // replace resource
-                data.data = data.data.replace(/(href|src)=([\"])([^'"]+)\2/ig, function(src){
-                    var result = src.replace("{{resourceUrl}}", config.get("resourceUrl") || "");
-                    return result
-                });
-
-                api.active && api.active.removeAttribute('active');
-                var viewport = document.querySelector("viewport[main='true']");
-                var view = document.createElement("view");
-                view.setAttribute("active", "true");
-                view.setAttribute("name", viewName);
-                view.innerHTML = data.data;
-
-
-                viewport.appendChild(view);
-                api.count += 1;
-                api.active = view;
-
-                // generateScopeTree(view, $scope)
-                scopeList.init(view, generateScopeTree);
-
+	function loadController(view){
                 // load controller
                 var scripts = view.querySelectorAll('script');
                 scripts = [].slice.call(scripts);
@@ -754,38 +710,198 @@ return generateScopeTree;
                   }
 
                   activeScript.parentNode.removeChild(activeScript);
-                };
-                options.popstate || url.change(viewName, options);
-                scrollTop();
-                beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
-              }
-            });
+                };		
+	}
 
-            var sign = router.getSign(viewName);
-            sign = sign && "_" + sign;
-            request.get(config.get("templatePath") + viewName + sign + ".html");
+	function append(viewName, template, options){
+        var viewport = document.querySelector("viewport[main='true']");
+        var view     = document.createElement("view");
+        var template = parseResource(template);   
 
-          }
-          //target ? setActive : request.get("http://m.cjia.com/webapp/hotel/");
-          function setActive(){
-            api.active && api.active.removeAttribute('active');
-            target.setAttribute('active','true');
+        regist(viewName, view, template, options)
+       
+        viewStatus.active && viewStatus.active.removeAttribute('active');
+        view.setAttribute("active", "true");
+        view.setAttribute("name", viewName);
+        view.innerHTML = template;
+        viewport.appendChild(view);
+        viewStatus.count += 1;
+        viewStatus.active = view;
+		scopeList.init(view, generateScopeTree);
+        loadController(view);
+              
+	}
 
-            api.active = target;
+	function regist(viewName, view, template, options){
+        options = options || {};
+        viewList[viewName] = {
+        	template : template,
+        	view     : view,
+        	url      : url.getURLPath(viewName, options)       	
+        }
+	}
+
+	function init(){
+		var views  = document.querySelectorAll("viewport[main='true'] view");
+		for (var viewIndex = 0; viewIndex < views.length; viewIndex++) {
+			var view = views[viewIndex];
+			var viewName = view.getAttribute('name') || 'view' + viewIndex;
+			var template = view.innerHTML;
+			regist(viewName, view, template);
+		};
+
+      	viewStatus.count  = views.length;
+      	viewStatus.active = document.querySelector("viewport[main='true'] view[active='true']");
+	}
+
+	function setActive(target){
+		viewStatus.active && viewStatus.active.removeAttribute('active');
+		target.setAttribute('active','true');
+		viewStatus.active = target;
+	}
+
+	function show(viewName, options){
+        var urlPath = url.getURLPath(viewName, options);
+        var targetView = viewList[viewName];
+        // return targetView;
+        if (targetView && targetView.url === urlPath){
+        	setActive(targetView.view);
+            return targetView;
+        } else if(targetView && targetView.url !== urlPath){
+          loadController(targetView.view);
+          return targetView;
+        }
+        
+	}
+
+    function removeAll(){
+        for(var viewName in viewList){
+        	removeSingle(viewName)
+        }
+        viewStatus.active = null;
+        viewStatus.count  = 0;
+    }
+
+    function removeSingle(viewName){
+    	var view =  viewList[viewName].view;
+    	view.parentNode.removeChild(view);
+    	delete viewList[viewName];
+    	viewStatus.count -= 1;
+        if(	view.getAttribute("active")==="true"){
+        	viewStatus.active = null;
+        }
+    }
+	
+
+
+    Air.domReady(function(){
+    	init();
+    });
+
+	var api = {
+		append : append,
+		show   : show,
+		getCount : function(num){
+			viewStatus.count = num || viewStatus.count;
+			return viewStatus.count
+		},
+
+		getActive : function(){
+			return viewStatus.active
+		},
+
+		remove : function(viewName){
+			var view = viewList[viewName];
+            viewName ? removeSingle(viewName) : removeAll()
+		}
+
+
+	}
+
+
+	return api;
+});;Air.Module('core.views', function(require){
+  var Request           = require('core.network.request'),
+      router            = require('core.router'),
+      scopeList         = require('core.scopeList'),
+      url               = require('core.url'),
+      util              = require('utility.util'),
+      generateScopeTree = require("core.scopeTree"),
+      config            = require('core.config'),
+      viewManage        = require('core.viewManager');
+
+
+  function getTemplate (viewName, options){
+    var request = new Request();
+    beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
+      var viewTemplate = data.data
+      viewTemplate && viewManage.append(viewName, viewTemplate, options);
+      beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
+      options.popstate || url.change(viewName, options);
+    });
+
+    var sign = router.getSign(viewName);
+    sign = sign && "_" + sign;
+    request.get(config.get("templatePath") + viewName + sign + ".html");
+  }
+
+
+  function scrollTop () {
+    setTimeout(function(){
+      window.scrollTo(0, 0);
+    }, 0);
+  };
+
+
+
+  var api = {
+    EVENTS : {
+      SHOWED : beacon.createEvent("view showed")
+    },
+
+    router : router,
+    
+    init : function(urlPath){
+      urlPath = urlPath || window.location.pathname;
+      var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
+      var query = router.getQueryString();
+      var viewport = document.querySelector("viewport[main='true']");
+      if (!viewport) {
+          viewport = document.createElement("viewport");
+          viewport.setAttribute('main', 'true');
+          document.body.appendChild(viewport);
+      }
+      var target = viewport.querySelector("view[active='true']");
+      if(!target){
+        api.getCount(0);
+        var viewInfo = router.match(urlPath);
+        if(viewInfo){
+          api.goto(viewInfo.viewName, {
+            params:viewInfo.params,
+            query:query,
+            replace:true
+          });
+        }
+      }
+    },
+
+    goto : function(viewName, options){
+          options = options || {};
+          // var urlPath = url.getURLPath(viewName, options);
+          var targetView = viewManage.show(viewName, options)
+          if(targetView){
             options.popstate || url.change(viewName, options);
             scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
+          } else {
+            getTemplate(viewName, options);
           }
     },
-    active : null
+
+    remove   : viewManage.remove,    
+    getCount : viewManage.getCount,
+    getActive: viewManage.getActive
   }
-
-  Air.domReady(function(){
-
-      var views = document.querySelectorAll("viewport[main='true'] view");
-      api.count = views.length;
-      api.active = document.querySelector("viewport[main='true'] view[active='true']");
-  });
 
   return api;
 });

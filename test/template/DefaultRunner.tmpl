@@ -55,6 +55,11 @@ viewport view[active="true"]{display:block}
         {{hi}}{{$service.list.data.msg}}
     </div>
 
+    <script>
+// history.pushState = function(){}
+// history.replaceState = function(){}
+    </script>
+
 <% with (scripts) { %>
   <% [].concat(polyfills, jasmine, boot, vendor, helpers, src, specs,reporters).forEach(function(script){ %>
   <script src="<%= script %>"></script>
