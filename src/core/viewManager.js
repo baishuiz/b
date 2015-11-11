@@ -91,11 +91,14 @@ Air.Module('core.viewManager', function(require){
         	setActive(targetView.view);
             return targetView;
         } else if(targetView && targetView.url !== urlPath){
-          loadController(targetView.view);
-          return targetView;
+            removeSingle(viewName);
+            // loadController(targetView.view);
+            return targetView;
         }
         
 	}
+
+	
 
     function removeAll(){
         for(var viewName in viewList){

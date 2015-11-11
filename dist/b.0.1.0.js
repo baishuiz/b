@@ -769,11 +769,14 @@ return generateScopeTree;
         	setActive(targetView.view);
             return targetView;
         } else if(targetView && targetView.url !== urlPath){
-          loadController(targetView.view);
-          return targetView;
+            removeSingle(viewName);
+            // loadController(targetView.view);
+            return targetView;
         }
         
 	}
+
+	
 
     function removeAll(){
         for(var viewName in viewList){
@@ -857,7 +860,7 @@ return generateScopeTree;
 
 
    var  style = (function(){
-        var css = '[ng-app] { text-indent: -100%; background-color: #eee; }',
+        var css = '[ng-app] { text-indent: -10000%; background-color: #eee; }',
         head = document.head || document.getElementsByTagName('head')[0],
         style = document.createElement('style');
 
@@ -871,11 +874,11 @@ return generateScopeTree;
         head.appendChild(style);   
         return  {
             show : function(){
-              style.disabled = false;
+              style.disabled = true;
             },
 
             hidden : function() {
-              style.disabled = true;
+              style.disabled = false;
             }
         } 
    }());
