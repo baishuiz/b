@@ -14,8 +14,8 @@ Air.Module("core.scopeTree", function(require){
 
 
 
-function bindRepeatDone($scope){
- beacon($scope).on(EVENTS.REPEAT_DONE, function(e, nodes){
+function bindRepeatDone(target){
+ beacon(target).on(EVENTS.REPEAT_DONE, function(e, nodes){
 
     for (var i = 0; i < nodes.length; i++) {
       var repeatNode = nodes[i];
