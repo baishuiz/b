@@ -50,20 +50,20 @@ Air.Module("directive.repeat", function(require){
     beacon(target.cloneNodes).on(removeEvent, {$scope:$scope});
     target.cloneNodes = [];
     parseScope(target, $scope);
-    
+
   }
 
 
   function parseScope(target, $scope, placeholder){
       var condition   = target.getAttribute(key),
-          needRepeat  = node(target).hasAttribute(key); 
+          needRepeat  = node(target).hasAttribute(key);
       placeholder = target.placeholder;
       var container   = document.createDocumentFragment();
       var group       = condition.replace(/\S+\s+in\s+(\S+)/ig, "$1");
       var itemName    = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
       var repeatScope = Air.NS(group, $scope);
       var nodes = [];
-      
+
       target.cloneNodes = target.cloneNodes || [];
       for(var item=0; item< repeatScope.length; item++) {
         var newNode = target.cloneNode(true);
@@ -79,7 +79,7 @@ Air.Module("directive.repeat", function(require){
         activeScope.$index = item;
         activeScope.$parentScope = $scope;
         activeScope.$update = (function(item){
-          
+
           return function(){
             var repeatScope = Air.NS(group, $scope);
             this[itemName] = repeatScope[item];
@@ -94,17 +94,17 @@ Air.Module("directive.repeat", function(require){
       }
 
       placeholder.end.parentNode.insertBefore(container,placeholder.end);
-      beacon($scope).on(EVENTS.REPEAT_DONE, nodes)
+      beacon(target).on(EVENTS.REPEAT_DONE, nodes)
       target.repeaded = true;
       return {
             scope : repeatScope,
             nodes : nodes
       };
-  }     
+  }
 
-  
+
   var api = function(target, $scope){
-      var needRepeat  = node(target).hasAttribute(key); 
+      var needRepeat  = node(target).hasAttribute(key);
           target.placeholder = needRepeat && init(target, $scope);
           parseScope(target, $scope)
   }

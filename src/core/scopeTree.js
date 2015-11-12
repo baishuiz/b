@@ -22,7 +22,7 @@ function bindRepeatDone($scope){
       generateScopeTree(repeatNode.node, repeatNode.$scope);
       beacon(repeatNode.$scope).on(EVENTS.REPEAT_DATA_CHANGE, repeatNode.$scope);
     }
-  }) 
+  })
 }
 
   var regMarkup = /{{.*?}}/ig;
@@ -76,7 +76,7 @@ function bindRepeatDone($scope){
               // generateScopeTree(child.attributes, $scope);
                var needRepeat = node(child).hasAttribute(key.repeat);
                if(needRepeat) {
-                   bindRepeatDone($scope)
+                   bindRepeatDone(child)
                    var  result = repeatFilter(child, $scope);
                    // bindRepeatDone($scope)
 
