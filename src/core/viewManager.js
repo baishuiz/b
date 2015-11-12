@@ -1,8 +1,8 @@
 Air.Module('core.viewManager', function(require){
-	var config     = require('core.config'),
-	    scopeList  = require('core.scopeList'),
+	var config            = require('core.config'),
+	    scopeList         = require('core.scopeList'),
 	    generateScopeTree = require("core.scopeTree"),
-	    url        = require('core.url');
+	    url               = require('core.url');
 	var viewList   = {};
 	var viewStatus = {
 		active : null,
@@ -52,7 +52,6 @@ Air.Module('core.viewManager', function(require){
         viewStatus.active = view;
 		scopeList.init(view, generateScopeTree);
         loadController(view);
-
 	}
 
 	function regist(viewName, view, template, options){

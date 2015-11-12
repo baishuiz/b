@@ -134,6 +134,33 @@
 
     return query;
 });
+;Air.Module('utility.switchStyle', function(require) {
+    var switchStyle = (function(){
+        var css = '[ng-app] { text-indent: -10000%; background-color: #eee; }',
+        head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style');
+
+        style.type = 'text/css';
+        if (style.styleSheet){
+          style.styleSheet.cssText = css;
+        } else {
+          style.appendChild(document.createTextNode(css));
+        }
+
+        head.appendChild(style);
+        return  {
+            show : function(){
+              style.disabled = false;
+            },
+
+            hide : function() {
+              style.disabled = true;
+            }
+        }
+   }());
+
+    return switchStyle;
+});
 ;Air.Module('utility.util', function(){
   var util = {
     isEmpty :   function (obj) {
@@ -677,10 +704,10 @@ return generateScopeTree;
 	return api;
 })
 ;Air.Module('core.viewManager', function(require){
-	var config     = require('core.config'),
-	    scopeList  = require('core.scopeList'),
+	var config            = require('core.config'),
+	    scopeList         = require('core.scopeList'),
 	    generateScopeTree = require("core.scopeTree"),
-	    url        = require('core.url');
+	    url               = require('core.url');
 	var viewList   = {};
 	var viewStatus = {
 		active : null,
@@ -730,7 +757,6 @@ return generateScopeTree;
         viewStatus.active = view;
 		scopeList.init(view, generateScopeTree);
         loadController(view);
-
 	}
 
 	function regist(viewName, view, template, options){
@@ -834,7 +860,8 @@ return generateScopeTree;
       generateScopeTree = require("core.scopeTree"),
       EVENTS            = require("core.event"),
       config            = require('core.config'),
-      viewManage        = require('core.viewManager');
+      viewManage        = require('core.viewManager'),
+      switchStyle       = require('utility.switchStyle');
 
 
   function getTemplate (viewName, options){
@@ -843,7 +870,7 @@ return generateScopeTree;
       var viewTemplate = data.data
       viewTemplate && viewManage.append(viewName, viewTemplate, options);
       beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
-      style.show();
+      switchStyle.show();
       options.popstate || url.change(viewName, options);
     });
 
@@ -860,31 +887,6 @@ return generateScopeTree;
   };
 
 
-   var  style = (function(){
-        var css = '[ng-app] { text-indent: -10000%; background-color: #eee; }',
-        head = document.head || document.getElementsByTagName('head')[0],
-        style = document.createElement('style');
-
-        style.type = 'text/css';
-        if (style.styleSheet){
-          style.styleSheet.cssText = css;
-        } else {
-          style.appendChild(document.createTextNode(css));
-        }
-
-        head.appendChild(style);   
-        return  {
-            show : function(){
-              style.disabled = true;
-            },
-
-            hidden : function() {
-              style.disabled = false;
-            }
-        } 
-   }());
-
-
   var api = {
     EVENTS : {
       SHOWED : beacon.createEvent(""),
@@ -892,7 +894,7 @@ return generateScopeTree;
     },
 
     router : router,
-    
+
     init : function(urlPath){
       urlPath = urlPath || window.location.pathname;
       var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
@@ -923,20 +925,18 @@ return generateScopeTree;
     goto : function(viewName, options){
           options = options || {};
           beacon.on(api.EVENTS.SHOWEBEFOR, {viewName : viewName});
-          style.hidden();
           // var urlPath = url.getURLPath(viewName, options);
           var targetView = viewManage.show(viewName, options)
           if(targetView){
             options.popstate || url.change(viewName, options);
             scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
-            style.show();
           } else {
             getTemplate(viewName, options);
           }
     },
 
-    remove   : viewManage.remove,    
+    remove   : viewManage.remove,
     getCount : viewManage.getCount,
     getActive: viewManage.getActive
   }
@@ -1040,9 +1040,10 @@ return generateScopeTree;
   return service;
 })
 ;Air.Module("core.run", function(require){
-    var EVENTS    = require("core.event");
-    var service   = require("core.service");
-    var scopeList = require("core.scopeList");
+    var EVENTS      = require("core.event");
+    var service     = require("core.service");
+    var scopeList   = require("core.scopeList");
+    var switchStyle = require("utility.switchStyle");
 
     var run = function(controllerName, controller){
         var scopeList = require("core.scopeList");
@@ -1061,6 +1062,7 @@ return generateScopeTree;
           Air.run(function(){
             // scopeList.updateShadow(scope);
             beacon(scope).on(EVENTS.DATA_CHANGE, scope);
+            switchStyle.hide();
             beacon.on("hi", scope); // TODO: 换名
           })
 

@@ -1,7 +1,8 @@
 Air.Module("core.run", function(require){
-    var EVENTS    = require("core.event");
-    var service   = require("core.service");
-    var scopeList = require("core.scopeList");
+    var EVENTS      = require("core.event");
+    var service     = require("core.service");
+    var scopeList   = require("core.scopeList");
+    var switchStyle = require("utility.switchStyle");
 
     var run = function(controllerName, controller){
         var scopeList = require("core.scopeList");
@@ -20,6 +21,7 @@ Air.Module("core.run", function(require){
           Air.run(function(){
             // scopeList.updateShadow(scope);
             beacon(scope).on(EVENTS.DATA_CHANGE, scope);
+            switchStyle.hide();
             beacon.on("hi", scope); // TODO: 换名
           })
 

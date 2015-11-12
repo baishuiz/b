@@ -7,7 +7,8 @@ Air.Module('core.views', function(require){
       generateScopeTree = require("core.scopeTree"),
       EVENTS            = require("core.event"),
       config            = require('core.config'),
-      viewManage        = require('core.viewManager');
+      viewManage        = require('core.viewManager'),
+      switchStyle       = require('utility.switchStyle');
 
 
   function getTemplate (viewName, options){
@@ -16,7 +17,7 @@ Air.Module('core.views', function(require){
       var viewTemplate = data.data
       viewTemplate && viewManage.append(viewName, viewTemplate, options);
       beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
-      style.show();
+      switchStyle.show();
       options.popstate || url.change(viewName, options);
     });
 
@@ -33,31 +34,6 @@ Air.Module('core.views', function(require){
   };
 
 
-   var  style = (function(){
-        var css = '[ng-app] { text-indent: -10000%; background-color: #eee; }',
-        head = document.head || document.getElementsByTagName('head')[0],
-        style = document.createElement('style');
-
-        style.type = 'text/css';
-        if (style.styleSheet){
-          style.styleSheet.cssText = css;
-        } else {
-          style.appendChild(document.createTextNode(css));
-        }
-
-        head.appendChild(style);   
-        return  {
-            show : function(){
-              style.disabled = true;
-            },
-
-            hidden : function() {
-              style.disabled = false;
-            }
-        } 
-   }());
-
-
   var api = {
     EVENTS : {
       SHOWED : beacon.createEvent(""),
@@ -65,7 +41,7 @@ Air.Module('core.views', function(require){
     },
 
     router : router,
-    
+
     init : function(urlPath){
       urlPath = urlPath || window.location.pathname;
       var params = util.enums(urlPath.replace(/^\/|\/$/,'').split("/"))
@@ -96,20 +72,18 @@ Air.Module('core.views', function(require){
     goto : function(viewName, options){
           options = options || {};
           beacon.on(api.EVENTS.SHOWEBEFOR, {viewName : viewName});
-          style.hidden();
           // var urlPath = url.getURLPath(viewName, options);
           var targetView = viewManage.show(viewName, options)
           if(targetView){
             options.popstate || url.change(viewName, options);
             scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
-            style.show();
           } else {
             getTemplate(viewName, options);
           }
     },
 
-    remove   : viewManage.remove,    
+    remove   : viewManage.remove,
     getCount : viewManage.getCount,
     getActive: viewManage.getActive
   }
