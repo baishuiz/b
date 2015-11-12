@@ -25,6 +25,7 @@ Air.Module('core.service', function(require){
 
       serviceAPI =  {
         set : function(configs){
+            var getInstance = function() {
               var curServiceEvents = {
                 COMPLETE : beacon.createEvent("service response complete"),
                 SUCCESS : beacon.createEvent("service response success"),
@@ -78,8 +79,13 @@ Air.Module('core.service', function(require){
                 on : beacon.on,
                 off : beacon.off,
                 EVENTS  : curServiceEvents
-            }
-            return api;
+              }
+
+              return api;
+            };
+            return {
+              getInstance: getInstance
+            };
         }
       }
       return serviceAPI;
