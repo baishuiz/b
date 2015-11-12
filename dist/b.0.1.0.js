@@ -970,6 +970,7 @@ return generateScopeTree;
 
       serviceAPI =  {
         set : function(configs){
+            var getInstance = function() {
               var curServiceEvents = {
                 COMPLETE : beacon.createEvent("service response complete"),
                 SUCCESS : beacon.createEvent("service response success"),
@@ -1023,8 +1024,13 @@ return generateScopeTree;
                 on : beacon.on,
                 off : beacon.off,
                 EVENTS  : curServiceEvents
-            }
-            return api;
+              }
+
+              return api;
+            };
+            return {
+              getInstance: getInstance
+            };
         }
       }
       return serviceAPI;

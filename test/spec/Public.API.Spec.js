@@ -181,7 +181,7 @@ describe('view切换', function(){
         "contentType": 'text/plain',
         "Access-Control-Allow-Origin" : "*",
         "responseText": 'Hello from the list'
-      });      
+      });
   });
 
   afterEach(function() {
@@ -356,7 +356,7 @@ describe('服务请求', function(){
       var service = b.service("select").set({
         path : "/tag/",
         params : {},
-        dependencies : require("biz.service.H5.list")
+        dependencies : require("biz.service.H5.list").getInstance()
       });
       return service;
     });
@@ -375,7 +375,7 @@ describe('服务请求', function(){
 
     b.run('f6', function(require, $scope){
      var service = {
-       list : require("biz.service.H5.list")
+       list : require("biz.service.H5.list").getInstance()
      }
 
 
