@@ -696,31 +696,31 @@ return generateScopeTree;
 	}
 
 	function loadController(view){
-                // load controller
-                var scripts = view.querySelectorAll('script');
-                scripts = [].slice.call(scripts);
-                for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
-                  var activeScript = scripts[scriptIndex];
+        // load controller
+        var scripts = view.querySelectorAll('script');
+        scripts = [].slice.call(scripts);
+        for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
+          var activeScript = scripts[scriptIndex];
 
-                  if (activeScript.src) {
-                    Air.loadJS(activeScript.src);
-                  } else {
-                    var tmpScript = document.createElement('script');
-                    tmpScript.text = activeScript.text;
-                    document.getElementsByTagName('head')[0].appendChild(tmpScript);
-                  }
+          var tmpScript = document.createElement('script');
+          if (activeScript.src) {
+            tmpScript.src = activeScript.src;
+          } else {
+            tmpScript.text = activeScript.text;
+          }
+          view.appendChild(tmpScript);
 
-                  activeScript.parentNode.removeChild(activeScript);
-                };		
+          activeScript.parentNode.removeChild(activeScript);
+        };
 	}
 
 	function append(viewName, template, options){
         var viewport = document.querySelector("viewport[main='true']");
         var view     = document.createElement("view");
-        var template = parseResource(template);   
+        var template = parseResource(template);
 
         regist(viewName, view, template, options)
-       
+
         viewStatus.active && viewStatus.active.removeAttribute('active');
         view.setAttribute("active", "true");
         view.setAttribute("name", viewName);
@@ -730,7 +730,7 @@ return generateScopeTree;
         viewStatus.active = view;
 		scopeList.init(view, generateScopeTree);
         loadController(view);
-              
+
 	}
 
 	function regist(viewName, view, template, options){
@@ -738,7 +738,7 @@ return generateScopeTree;
         viewList[viewName] = {
         	template : template,
         	view     : view,
-        	url      : url.getURLPath(viewName, options)       	
+        	url      : url.getURLPath(viewName, options)
         }
 	}
 
@@ -770,13 +770,13 @@ return generateScopeTree;
             return targetView;
         } else if(targetView && targetView.url !== urlPath){
             removeSingle(viewName);
-            // loadController(targetView.view);
+            append(viewName, targetView.template, options);
             return targetView;
         }
-        
+
 	}
 
-	
+
 
     function removeAll(){
         for(var viewName in viewList){
@@ -795,7 +795,7 @@ return generateScopeTree;
         	viewStatus.active = null;
         }
     }
-	
+
 
 
     Air.domReady(function(){
@@ -824,7 +824,8 @@ return generateScopeTree;
 
 
 	return api;
-});;Air.Module('core.views', function(require){
+});
+;Air.Module('core.views', function(require){
   var Request           = require('core.network.request'),
       router            = require('core.router'),
       scopeList         = require('core.scopeList'),
