@@ -8,7 +8,8 @@ Air.Module('core.views', function(require){
       EVENTS            = require("core.event"),
       config            = require('core.config'),
       viewManage        = require('core.viewManager'),
-      switchStyle       = require('utility.switchStyle');
+      switchStyle       = require('utility.switchStyle'),
+      TDK               = require('utility.TDK');
 
 
   function getTemplate (viewName, options){
@@ -75,6 +76,8 @@ Air.Module('core.views', function(require){
           // var urlPath = url.getURLPath(viewName, options);
           var targetView = viewManage.show(viewName, options)
           if(targetView){
+            var scope = scopeList.get(viewName);
+            scope && TDK.set(scope.$TDK);
             options.popstate || url.change(viewName, options);
             scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});

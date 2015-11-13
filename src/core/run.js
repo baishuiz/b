@@ -3,6 +3,7 @@ Air.Module("core.run", function(require){
     var service     = require("core.service");
     var scopeList   = require("core.scopeList");
     var switchStyle = require("utility.switchStyle");
+    var TDK         = require("utility.TDK");
 
     var run = function(controllerName, controller){
         var scopeList = require("core.scopeList");
@@ -22,6 +23,7 @@ Air.Module("core.run", function(require){
             // scopeList.updateShadow(scope);
             beacon(scope).on(EVENTS.DATA_CHANGE, scope);
             switchStyle.hide();
+            TDK.set(scope.$TDK);
             beacon.on("hi", scope); // TODO: 换名
           })
 

@@ -94,6 +94,23 @@
     XHR.EVENTS  = events
     return XHR;
 });
+;Air.Module('utility.TDK', function(require){
+  function setTDK(tdk) {
+    if (!tdk) {
+      return;
+    }
+    document.title = tdk.title || '';
+    var head = document.getElementsByTagName('head')[0];
+    var descriptionTag = head.querySelector('meta[name="description"]');
+    var keywordsTag = head.querySelector('meta[name="keywords"]');
+    descriptionTag && descriptionTag.setAttribute('content', tdk.description || '');
+    keywordsTag && keywordsTag.setAttribute('content', tdk.keywords || '');
+  }
+
+  return {
+    set: setTDK
+  }
+});
 ;Air.Module("utility.node", function(){
   var node = function(node){
       var api = {
@@ -861,7 +878,8 @@ return generateScopeTree;
       EVENTS            = require("core.event"),
       config            = require('core.config'),
       viewManage        = require('core.viewManager'),
-      switchStyle       = require('utility.switchStyle');
+      switchStyle       = require('utility.switchStyle'),
+      TDK               = require('utility.TDK');
 
 
   function getTemplate (viewName, options){
@@ -928,6 +946,8 @@ return generateScopeTree;
           // var urlPath = url.getURLPath(viewName, options);
           var targetView = viewManage.show(viewName, options)
           if(targetView){
+            var scope = scopeList.get(viewName);
+            scope && TDK.set(scope.$TDK);
             options.popstate || url.change(viewName, options);
             scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
@@ -1044,6 +1064,7 @@ return generateScopeTree;
     var service     = require("core.service");
     var scopeList   = require("core.scopeList");
     var switchStyle = require("utility.switchStyle");
+    var TDK         = require("utility.TDK");
 
     var run = function(controllerName, controller){
         var scopeList = require("core.scopeList");
@@ -1063,6 +1084,7 @@ return generateScopeTree;
             // scopeList.updateShadow(scope);
             beacon(scope).on(EVENTS.DATA_CHANGE, scope);
             switchStyle.hide();
+            TDK.set(scope.$TDK);
             beacon.on("hi", scope); // TODO: 换名
           })
 
