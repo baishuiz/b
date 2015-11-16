@@ -215,8 +215,9 @@
 
   var signs = {};
   var routers = [];
-  var rules  = {};
+  var rules = {};
   var query = require('utility.query');
+  var config = require('core.config');
 
 
 
@@ -231,6 +232,7 @@
 
   router.param = {};
   function parseRouter(rule){
+    rule.router = (config.get("baseUrl") || "") + rule.router;
     var paramIndex = 0;
     var params = []
     var regStr = rule.router.replace(/\//ig,"\/")

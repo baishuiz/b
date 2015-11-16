@@ -9,8 +9,9 @@ Air.Module('core.router', function(require){
 
   var signs = {};
   var routers = [];
-  var rules  = {};
+  var rules = {};
   var query = require('utility.query');
+  var config = require('core.config');
 
 
 
@@ -25,6 +26,7 @@ Air.Module('core.router', function(require){
 
   router.param = {};
   function parseRouter(rule){
+    rule.router = (config.get("baseUrl") || "") + rule.router;
     var paramIndex = 0;
     var params = []
     var regStr = rule.router.replace(/\//ig,"\/")
