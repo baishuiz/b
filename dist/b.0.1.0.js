@@ -232,7 +232,6 @@
 
   router.param = {};
   function parseRouter(rule){
-    rule.router = (config.get("baseUrl") || "") + rule.router;
     var paramIndex = 0;
     var params = []
     var regStr = rule.router.replace(/\//ig,"\/")
