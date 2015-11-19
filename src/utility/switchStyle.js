@@ -5,20 +5,25 @@ Air.Module('utility.switchStyle', function(require) {
         style = document.createElement('style');
 
         style.type = 'text/css';
-        if (style.styleSheet){
-          style.styleSheet.cssText = css;
-        } else {
-          style.appendChild(document.createTextNode(css));
+        var appendStyle = function() {
+          if (style.styleSheet){
+            style.styleSheet.cssText = css;
+          } else {
+            style.innerText = '';
+            style.appendChild(document.createTextNode(css));
+          }
         }
 
         head.appendChild(style);
         return  {
             show : function(){
               style.disabled = false;
+              appendStyle();
             },
 
             hide : function() {
               style.disabled = true;
+              style.innerText = '';
             }
         }
    }());
