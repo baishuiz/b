@@ -1051,6 +1051,7 @@ return generateScopeTree;
                 },
                 on : beacon.on,
                 off : beacon.off,
+                once : beacon.once,
                 EVENTS  : curServiceEvents
               }
 

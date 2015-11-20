@@ -78,6 +78,7 @@ Air.Module('core.service', function(require){
                 },
                 on : beacon.on,
                 off : beacon.off,
+                once : beacon.once,
                 EVENTS  : curServiceEvents
               }
 
