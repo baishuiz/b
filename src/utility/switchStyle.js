@@ -17,8 +17,8 @@ Air.Module('utility.switchStyle', function(require) {
         head.appendChild(style);
         return  {
             show : function(){
-              style.disabled = false;
               appendStyle();
+              style.disabled = false;
             },
 
             hide : function() {

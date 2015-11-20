@@ -16,9 +16,9 @@ Air.Module('core.views', function(require){
     var request = new Request();
     beacon(request).once(Request.EVENTS.REQUEST_COMPLETE, function(e, data){
       var viewTemplate = data.data
+      switchStyle.show();
       viewTemplate && viewManage.append(viewName, viewTemplate, options);
       beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
-      switchStyle.show();
       options.popstate || url.change(viewName, options);
     });
 
