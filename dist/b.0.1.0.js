@@ -1123,7 +1123,9 @@ return generateScopeTree;
             var scopeList = require('core.scopeList');
             scopeList.init(document, generateScopeTree);
             beacon(window).on('popstate', function(e){
-                b.views.goto(e.state.viewName, {popstate:true});
+                if (e.state && e.state.viewName){
+                    b.views.goto(e.state.viewName, {popstate:true});
+                }
             })
 
 
