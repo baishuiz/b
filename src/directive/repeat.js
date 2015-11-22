@@ -10,14 +10,11 @@ Air.Module("directive.repeat", function(require){
 
 
   function init(target, $scope){
-   var placeholder   = {start : null, end : null};
-   placeholder.start = document.createComment("repeat");
-   placeholder.end   = document.createComment(" end repeat ");
+   var placeholder   = document.createComment("repeat placeholder ");
    cloneNode         = clone(target, $scope);
    container         = document.createDocumentFragment();
-   target.parentNode.insertBefore(placeholder.start, target);
-   target.parentNode.insertBefore(placeholder.end, target);
-   placeholder.end.parentNode.removeChild(target);
+   target.parentNode.insertBefore(placeholder, target);
+   placeholder.parentNode.removeChild(target);
    return placeholder;
   }
 
@@ -93,7 +90,7 @@ Air.Module("directive.repeat", function(require){
         container.appendChild(newNode);
       }
 
-      placeholder.end.parentNode.insertBefore(container,placeholder.end);
+      placeholder.parentNode.insertBefore(container,placeholder);
       beacon(target).on(EVENTS.REPEAT_DONE, nodes)
       target.repeaded = true;
       return {
