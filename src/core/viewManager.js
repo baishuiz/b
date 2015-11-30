@@ -2,7 +2,8 @@ Air.Module('core.viewManager', function(require){
     var config            = require('core.config'),
         scopeList         = require('core.scopeList'),
         generateScopeTree = require("core.scopeTree"),
-        url               = require('core.url');
+        url               = require('core.url'),
+        switchStyle       = require('utility.switchStyle');
     var viewList   = {};
     var viewStatus = {
         active : null,
@@ -92,6 +93,7 @@ Air.Module('core.viewManager', function(require){
         } else if(targetView && targetView.url !== urlPath){
             if (!options.noRender) {
                 removeSingle(viewName);
+                switchStyle.show();
                 append(viewName, targetView.template, options);
             }
             return targetView;
