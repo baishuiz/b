@@ -1,15 +1,15 @@
 Air.Module('core.network.request', function(){
 
     var state = {
-      unInit : 0,
-      opend  : 1,
-      sended : 2,
+      unInit    : 0,
+      opend     : 1,
+      sended    : 2,
       receiving : 3,
-      complete : 4
+      complete  : 4
     }
 
     var events = {
-      REQUEST_COMPLETE   : beacon.createEvent("request complete")
+      REQUEST_COMPLETE : beacon.createEvent("request complete")
     };
 
     function XHR(){
@@ -28,7 +28,6 @@ Air.Module('core.network.request', function(){
     }
 
      XHR.prototype = {
-
 
          request : function(options){
             this.xhr.open(options.method, options.url, true);
