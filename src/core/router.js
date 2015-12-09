@@ -1,11 +1,4 @@
 Air.Module('core.router', function(require){
-  // var routers = [
-  //    {
-  //       rule: reg,
-  //       viewName : "viewName",
-  //       sign   : "ABCDEF"
-  //    }
-  // ]
 
   var signs = {};
   var routers = [];
@@ -16,12 +9,7 @@ Air.Module('core.router', function(require){
 
 
   var router = function(rule){
-      // routers = crateRouter(rule);
-      // for (var rule in rules) {
-      //   if (object.hasOwnProperty(rule)) {
-      //     createReg(rule);
-      //   }
-      // }
+  
   };
 
   router.param = {};

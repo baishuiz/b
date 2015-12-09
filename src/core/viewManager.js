@@ -113,6 +113,7 @@ Air.Module('core.viewManager', function(require){
 
     function removeSingle(viewName){
         var view =  viewList[viewName].view;
+        unbind(view);
         view.parentNode.removeChild(view);
         delete viewList[viewName];
         viewStatus.count -= 1;
@@ -120,6 +121,13 @@ Air.Module('core.viewManager', function(require){
             viewStatus.active = null;
         }
     }
+
+    function unbind(view){
+        for(var i=0; i<view.childNodes.length; i++){
+            beacon(view.childNodes[i]).off();
+            unbind(view.childNodes[i]);
+        }
+    }    
 
 
 

@@ -82,6 +82,7 @@ Air.Module('core.views', function(require){
             scrollTop();
             beacon.on(api.EVENTS.SHOWED, {viewName : viewName});
           } else {
+            beacon.on('clear::scopeEvnet');
             getTemplate(viewName, options);
           }
     },
