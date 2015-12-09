@@ -72,6 +72,9 @@ Air.Module("directive.repeat", function(require){
 
         newNode.removeAttribute(key);
         var activeScope = new Scope($scope);
+        beacon.on('clear::scopeEvnet', function(){
+          beacon(activeScope).off();
+        });
         activeScope[itemName] = repeatScope[item];
         activeScope.$index = item;
         activeScope.$parentScope = $scope;

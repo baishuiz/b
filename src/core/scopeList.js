@@ -43,9 +43,7 @@ Air.Module("core.scopeList", function(require){
 
     	set  : function(key, parentScope) {
             var scope = new Scope(parentScope);
-            beacon.on('clear::scopeEvnet', function(){
-                beacon(scope).off();
-            });
+
 
     		scopeList[key] = scope;
             scope.__$shadowScope__ = shadowScope;

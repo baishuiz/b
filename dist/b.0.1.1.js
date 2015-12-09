@@ -414,9 +414,7 @@
 
     	set  : function(key, parentScope) {
             var scope = new Scope(parentScope);
-            beacon.on('clear::scopeEvnet', function(){
-                beacon(scope).off();
-            });
+
 
     		scopeList[key] = scope;
             scope.__$shadowScope__ = shadowScope;
@@ -521,6 +519,9 @@
 
         newNode.removeAttribute(key);
         var activeScope = new Scope($scope);
+        beacon.on('clear::scopeEvnet', function(){
+          beacon(activeScope).off();
+        });
         activeScope[itemName] = repeatScope[item];
         activeScope.$index = item;
         activeScope.$parentScope = $scope;
