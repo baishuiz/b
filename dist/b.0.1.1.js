@@ -983,7 +983,8 @@ return generateScopeTree;
   var serviceEvents = {
     COMPLETE : beacon.createEvent("service response complete"),
     SUCCESS : beacon.createEvent("service response success"),
-    ERROR : beacon.createEvent("service response error")
+    ERROR : beacon.createEvent("service response error"),
+    BEFORE_QUERY : beacon.createEvent("service before query")
   }
 
   var service = function(configKey){
@@ -1034,14 +1035,19 @@ return generateScopeTree;
                         options.scope && beacon.on(EVENTS.DATA_CHANGE, options.scope);
                     });
 
-                    request.request({
-                          method: configs.method,
-                          url   : getURL(configs),
-                          data  : params && JSON.stringify(params) || null,
-                          header: {
-                            'Content-Type': 'application/json;charset=utf-8'
-                          }
-                    });
+                    var header = configs.header || {};
+                    header['Content-Type'] = 'application/json;charset=utf-8';
+
+                    var requestParam = {
+                      method: configs.method,
+                      url   : getURL(configs),
+                      data  : params && JSON.stringify(params) || null,
+                      header: header
+                    };
+
+                    beacon.on(serviceEvents.BEFORE_QUERY, requestParam);
+
+                    request.request(requestParam);
                     return resultData
                 },
                 on : beacon.on,
