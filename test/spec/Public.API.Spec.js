@@ -238,7 +238,7 @@ describe('view切换', function(){
 
     //b.views.init();
 
-    var result = b.views.router.match("/detail/66");
+    var result = b.views.router.match("/detail/66/");
     expect(result.params.id).toEqual("66");
 
   });

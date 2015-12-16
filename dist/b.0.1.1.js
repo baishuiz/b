@@ -227,7 +227,7 @@
                     params.push(param.replace(":",""));
                     return "(\\w+)"
                   });
-    var reg = new RegExp("^" + regStr + "$","i");
+    var reg = new RegExp("^" + regStr + "\/*$","i");
 
     rule.rule = reg;
     rule.params = params;
