@@ -108,7 +108,7 @@ describe("模版数据绑定", function () {
 
         });
 
-        it("module 绑定输入控件", function(){
+        it("model 绑定输入控件", function(){
           b.run("f3", function(require, $scope){
             $scope.name = "baby";
             $scope.result = "123";
