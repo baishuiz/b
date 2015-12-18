@@ -6,7 +6,7 @@ Air.Module("core.scopeTree", function(require){
       EVENTS         = require("core.event"),
       repeatFilter   = require("directive.repeat"),
       eventDirective = require("direcitve.event"),
-      initModule     = require("direcitve.module");
+      initModule     = require("direcitve.model");
 
   var nodeType = node.type,
       key      = directive.key

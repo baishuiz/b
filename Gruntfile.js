@@ -23,7 +23,7 @@ module.exports = function(grunt){
                         './src/core/router.js',
 
                         './src/directive/event.js',
-                        './src/directive/module.js',
+                        './src/directive/model.js',
 
                         './src/core/scope.js',
                         './src/core/scopeList.js',
