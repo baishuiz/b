@@ -36,7 +36,7 @@ Air.Module('direcitve.model', function(require){
       beacon($scope).on(EVENTS.DATA_CHANGE, function(e, $scope){
 
         var value = Air.NS(dataPath, $scope);
-        target.value = !util.isEmpty(value) ? value.trim() : "";
+        target.value = !util.isEmpty(value) ? value.trim ? value.trim() : value : "";
       });
   }
   return api;
