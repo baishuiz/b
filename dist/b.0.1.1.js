@@ -348,6 +348,7 @@
       // target.value = Air.NS(dataPath, $scope);
       beacon(target).on('input', function(){
         var target = this;
+        target.value = target.value.trim();
         new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
 
         beacon($scope).on(EVENTS.DATA_CHANGE, $scope);
