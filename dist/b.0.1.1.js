@@ -652,13 +652,17 @@ function bindRepeatDone(target){
                      var isController = child.attributes.getNamedItem(key.controller);
                      if(isController){
                          var controllerName = child.getAttribute(key.controller)
-
-                         $scope = scopeList.set(controllerName, $scope);
+                         var $subScope =  scopeList.set(controllerName, $scope);
+                         generateScopeTree(child.attributes, $subScope);
+                         initModule(child, $subScope);
+                         eventDirective(child, $subScope);
+                         generateScopeTree(child.childNodes, $subScope);
+                     } else {
+                         generateScopeTree(child.attributes, $scope);
+                         initModule(child, $scope);
+                         eventDirective(child, $scope);
+                         generateScopeTree(child.childNodes, $scope);
                      }
-                     generateScopeTree(child.attributes, $scope);
-                     initModule(child, $scope);
-                     eventDirective(child, $scope);
-                     generateScopeTree(child.childNodes, $scope);
                }
            }
       }
