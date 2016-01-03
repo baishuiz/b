@@ -713,8 +713,11 @@ return generateScopeTree;
 		            });
 
 	            urlPath = urlPath.replace(/\/\/+/g,"/");
+              if (!location.origin) {
+                location.origin = location.protocol + "//" + location.hostname + (location.port ? ':' + location.port: '');
+              }
 	            url = location.origin + urlPath + query;
-	            
+
 			}
 			return url;
 		}
