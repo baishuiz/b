@@ -18,9 +18,9 @@ Air.Module('core.network.request', function(){
         xhr.onreadystatechange = function(){
           if(xhr.readyState === state.complete) {
             if(xhr.status>=200 && xhr.status<300 || xhr.status==304){
-                beacon(request).on(events.REQUEST_COMPLETE, {data:xhr.responseText});
+                beacon(request).on(events.REQUEST_COMPLETE, {data:xhr.responseText, xhr:xhr});
             } else {
-                beacon(request).on(events.REQUEST_COMPLETE, {err:xhr.status});
+                beacon(request).on(events.REQUEST_COMPLETE, {err:xhr.status, xhr:xhr});
             }
           }
         };
