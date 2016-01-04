@@ -4,13 +4,6 @@ Air.Module('direcitve.model', function(require){
       util      = require('utility.util'),
       EVENTS    = require("core.event");
 
-  // IE8
-  if (!String.prototype.trim) {
-    String.prototype.trim = function () {
-      return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-    };
-  }
-
   directive.signup('model', 'ng-model');
 
   var api = function(target, $scope){

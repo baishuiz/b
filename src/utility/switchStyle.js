@@ -10,7 +10,11 @@ Air.Module('utility.switchStyle', function(require) {
           if (style.styleSheet){
             style.styleSheet.cssText = css;
           } else {
-            style.innerText = '';
+            if (style.styleSheet) {
+              style.styleSheet.cssText = '';
+            } else {
+              style.innerText = '';
+            }
             style.appendChild(document.createTextNode(css));
           }
         }
@@ -24,7 +28,11 @@ Air.Module('utility.switchStyle', function(require) {
 
             hide : function() {
               style.disabled = true;
-              style.innerText = '';
+              if (style.styleSheet) {
+                style.styleSheet.cssText = '';
+              } else {
+                style.innerText = '';
+              }
             }
         }
    }());

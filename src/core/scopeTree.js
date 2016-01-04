@@ -44,6 +44,7 @@ function bindRepeatDone(target){
                   var textNode = child;
                   var text     = template;
                   var markups  = text.match(/{{.*?}}/ig) || []; // TODO : 剔除重复标签
+                  var isStyle = textNode.nodeName.toLowerCase() === 'ng-style';
                   $scope = $scope || this;
                   for (var i = markups.length - 1; i >= 0; i--) {
                       var markup   = markups[i];
@@ -55,7 +56,10 @@ function bindRepeatDone(target){
 
 
                   if( textNode.nodeValue != text){
-                     textNode.nodeValue = text
+                      textNode.nodeValue = text;
+                      if (isStyle) {
+                          textNode.ownerElement.style.cssText = text;
+                      }
                   }
                 }
               })(child, child.nodeValue);

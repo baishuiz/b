@@ -3,11 +3,13 @@ Air.run(function(require){
         node              = require("utility.node"),
         generateScopeTree = require("core.scopeTree"),
         view              = require('core.views')
-        directive         = require("core.directive");
+        directive         = require("core.directive"),
+        shim              = require("utility.shim");
 
     var EVENTS            = require("core.event"),
         FRAMEWORK_NAME    = 'b';
 
+    shim.run();
 
 
     Air.domReady(function(){

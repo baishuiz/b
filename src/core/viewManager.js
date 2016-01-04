@@ -18,6 +18,21 @@ Air.Module('core.viewManager', function(require){
         return content;
     }
 
+    function loadStyle(template) {
+        // IE 8 不支持直接innerHTML加载样式
+        if (document.createStyleSheet) {
+            var matched = template.match(/(<link[^>]+=["'])(\S+.css)(["'][^>]*>)/g) || [];
+            for (var i = 0, len = matched.length, link; i < len; i++) {
+                link = matched[i];
+                var path = link.match(/(<link[^>]+=["'])(\S+.css)(["'][^>]*>)/) || [];
+                var filePath = path[2];
+                if (filePath) {
+                    document.createStyleSheet(filePath);
+                }
+            }
+        }
+    }
+
     function loadController(view){
         // load controller
         var scripts = view.querySelectorAll('script');
@@ -48,6 +63,7 @@ Air.Module('core.viewManager', function(require){
         view.setAttribute("active", "true");
         view.setAttribute("name", viewName);
         view.innerHTML = template;
+        loadStyle(template);
         viewport.appendChild(view);
         viewStatus.count += 1;
         viewStatus.active = view;
