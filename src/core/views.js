@@ -87,9 +87,10 @@ Air.Module('core.views', function(require){
           }
     },
 
-    remove   : viewManage.remove,
-    getCount : viewManage.getCount,
-    getActive: viewManage.getActive
+    remove      : viewManage.remove,
+    getCount    : viewManage.getCount,
+    getActive   : viewManage.getActive,
+    getViewName : viewManage.getViewName
   }
 
   return api;

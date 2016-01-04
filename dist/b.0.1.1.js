@@ -688,11 +688,13 @@ return generateScopeTree;
             if(urlPath){
 	            var fromURL  = location.href;
 	            var stateObj = {viewName: viewName};
-	            if(options.replace==true){
-                    history.replaceState(stateObj, "viewName", urlPath);
-	            }else{
-	                history.pushState(stateObj, "viewName", urlPath);
-	            }
+              if (history.replaceState && history.pushState) {
+  	            if(options.replace==true){
+                      history.replaceState(stateObj, "viewName", urlPath);
+  	            }else{
+  	                history.pushState(stateObj, "viewName", urlPath);
+  	            }
+              }
 
 	            beacon.on(EVENTS.URL_CHANGE, {
 	            	from : fromURL,
@@ -817,6 +819,7 @@ return generateScopeTree;
     function show(viewName, options){
         var urlPath = url.getURLPath(viewName, options);
         var targetView = viewList[viewName];
+        viewStatus.viewName = viewName;
         // return targetView;
         if (targetView && targetView.url === urlPath){
             setActive(targetView.view);
@@ -858,7 +861,7 @@ return generateScopeTree;
             beacon(view.childNodes[i]).off();
             unbind(view.childNodes[i]);
         }
-    }    
+    }
 
 
 
@@ -876,6 +879,10 @@ return generateScopeTree;
 
         getActive : function(){
             return viewStatus.active
+        },
+
+        getViewName : function () {
+          return viewStatus.viewName
         },
 
         remove : function(viewName){
@@ -978,9 +985,10 @@ return generateScopeTree;
           }
     },
 
-    remove   : viewManage.remove,
-    getCount : viewManage.getCount,
-    getActive: viewManage.getActive
+    remove      : viewManage.remove,
+    getCount    : viewManage.getCount,
+    getActive   : viewManage.getActive,
+    getViewName : viewManage.getViewName
   }
 
   return api;

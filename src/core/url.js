@@ -11,11 +11,13 @@ Air.Module('core.url', function(require){
             if(urlPath){
 	            var fromURL  = location.href;
 	            var stateObj = {viewName: viewName};
-	            if(options.replace==true){
-                    history.replaceState(stateObj, "viewName", urlPath);
-	            }else{
-	                history.pushState(stateObj, "viewName", urlPath);
-	            }
+              if (history.replaceState && history.pushState) {
+  	            if(options.replace==true){
+                      history.replaceState(stateObj, "viewName", urlPath);
+  	            }else{
+  	                history.pushState(stateObj, "viewName", urlPath);
+  	            }
+              }
 
 	            beacon.on(EVENTS.URL_CHANGE, {
 	            	from : fromURL,

@@ -86,6 +86,7 @@ Air.Module('core.viewManager', function(require){
     function show(viewName, options){
         var urlPath = url.getURLPath(viewName, options);
         var targetView = viewList[viewName];
+        viewStatus.viewName = viewName;
         // return targetView;
         if (targetView && targetView.url === urlPath){
             setActive(targetView.view);
@@ -127,7 +128,7 @@ Air.Module('core.viewManager', function(require){
             beacon(view.childNodes[i]).off();
             unbind(view.childNodes[i]);
         }
-    }    
+    }
 
 
 
@@ -145,6 +146,10 @@ Air.Module('core.viewManager', function(require){
 
         getActive : function(){
             return viewStatus.active
+        },
+
+        getViewName : function () {
+          return viewStatus.viewName
         },
 
         remove : function(viewName){
