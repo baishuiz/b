@@ -104,10 +104,19 @@ Air.Module('core.viewManager', function(require){
         var targetView = viewList[viewName];
         viewStatus.viewName = viewName;
         // return targetView;
-        if (targetView && targetView.url === urlPath){
-            setActive(targetView.view);
-            return targetView;
-        } else if(targetView && targetView.url !== urlPath){
+        // if (targetView && targetView.url === urlPath){
+        //     setActive(targetView.view);
+        //     return targetView;
+        // } else if(targetView && targetView.url !== urlPath){
+        //     if (!options.noRender) {
+        //         removeSingle(viewName);
+        //         switchStyle.show();
+        //         append(viewName, targetView.template, options);
+        //     }
+        //     return targetView;
+        // }
+
+        if (targetView) {
             if (!options.noRender) {
                 removeSingle(viewName);
                 switchStyle.show();

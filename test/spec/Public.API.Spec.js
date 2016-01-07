@@ -203,15 +203,18 @@ describe('view切换', function(){
     expect(b.views.getCount()).toEqual(4);
     expect(b.views.getActive()).toEqual(dom.view1);
     b.views.goto("name2")
+    dom.view2 = document.querySelector('[name="name2"]');
     expect(b.views.getCount()).toEqual(4);
     expect(b.views.getActive()).toEqual(dom.view2);
 
     b.views.goto("name4")
     expect(b.views.getCount()).toEqual(4);
+    dom.view4 = document.querySelector('[name="name4"]');
     expect(b.views.getActive()).toEqual(dom.view4);
 
     b.views.goto("name1")
     expect(b.views.getCount()).toEqual(4);
+    dom.view1 = document.querySelector('[name="name1"]');
     expect(b.views.getActive()).toEqual(dom.view1);
 
     // beacon.once(b.views.EVENTS.SHOWED, function(){
