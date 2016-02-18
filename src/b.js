@@ -1,41 +1,26 @@
+/**
+ * @author baishuiz@gmail.com
+ * @version v2.0
+ */
 Air.run(function(require){
-    var Scope             = require("core.scope"),
-        node              = require("utility.node"),
-        generateScopeTree = require("core.scopeTree"),
-        view              = require('core.views')
-        directive         = require("core.directive"),
-        shim              = require("utility.shim");
+  void function main(){
+    var FRAMEWORK_NAME = "b";
+    var api = {
+      views    : require("B.view.viewManager"), // ViewManager
+      router   : require("B.router.router"), // Router
+      service  : null,
+      utility  : null,
 
-    var EVENTS            = require("core.event"),
-        FRAMEWORK_NAME    = 'b';
-
-    shim.run();
-
-
-    Air.domReady(function(){
-
-            var scopeList = require('core.scopeList');
-            scopeList.init(document, generateScopeTree);
-            beacon(window).on('popstate', function(e){
-                if (e.state && e.state.viewName){
-                    b.views.goto(e.state.viewName, {popstate:true});
-                }
-            })
-
-
-    });
-
-    void function main(){
-        var api = {
-            run : require('core.run'),
-            views: view,
-            config : require('core.config'),
-            EVENTS  : require('core.event'),
-            Module  : Air.Module,
-            service : require('core.service'),
-            loadJS : Air.loadJS
-        };
-        window[FRAMEWORK_NAME] = api;
-    }();
-
+      /**
+       * [环境初始化]
+       * @param  {Environment} env [环境配置对象]
+       * @return void
+       */
+      init     : function(env){},
+      run      : function(){},
+      Module   : function(){},
+      domReady : function(){}
+    };
+    window[FRAMEWORK_NAME] = api;
+  }()
 });
