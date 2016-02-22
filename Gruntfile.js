@@ -13,27 +13,11 @@ module.exports = function(grunt){
            ,dist: {
                 src : [
                         './libs/*.js',
-                        './src/core/directive.js',
-                        './src/core/event.js',
-                        './src/core/config.js',
-                        './src/core/network/request.js',
 
-                        './src/utility/*.js',
+                        './src/B/view/View.js',
+                        './src/B/view/viewManager.js',
 
-                        './src/core/router.js',
-
-                        './src/directive/event.js',
-                        './src/directive/model.js',
-
-                        './src/core/scope.js',
-                        './src/core/scopeList.js',
-                        './src/directive/repeat.js',
-                        './src/core/scopeTree.js',
-                        './src/core/url.js',
-                        './src/core/viewManager.js',
-                        './src/core/views.js',
-                        './src/core/service.js',
-                        './src/core/run.js',
+                        './src/B/router/router.js',
 
                         './src/*.js'
                       ],
@@ -49,7 +33,7 @@ module.exports = function(grunt){
                 // '--web-security' : false,
                 // '--local-to-remote-url-access' : true,
                 // '--ignore-ssl-errors' : true,
-                specs: './test/spec/*Spec.js',
+                specs: './test/spec/**/*Spec.js',
                 keepRunner: true,
                 //host: 'http://127.0.0.1:8808/',
                 vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],

@@ -1,10 +1,12 @@
 {
   "name": "b",
-  "version": "0.1.1",
-  "description": "cjia framework",
+  "version": "0.2.0",
+  "description": "FED framework",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test",
+    "debug" : "grunt debug",
+    "package" : "grunt package"
   },
   "repository": {
     "type": "git",
@@ -15,7 +17,12 @@
     "module",
     "loader"
   ],
-  "author": "baishuiz@gmail.com",
+  "author": "Air Zhang <baishuiz@gmail.com> (https://github.com/baishuiz/)",
+  "contributors" :[{
+                      "name"  : "Xue Mengfei",
+                      "email" : "xuemengfei@gmail.com",
+                      "url"   : "www.xuemengfei.com"
+                  }],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/baishuiz/b.js/issues"

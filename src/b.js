@@ -1,6 +1,6 @@
 /**
- * @author baishuiz@gmail.com
- * @version v2.0
+ * @author baishuiz@gmail.com, xuemengfei@gmail.com
+ * @version v0.2.0
  */
 Air.run(function(require){
   void function main(){
@@ -23,4 +23,11 @@ Air.run(function(require){
     };
     window[FRAMEWORK_NAME] = api;
   }()
+});
+
+
+// 考虑到模板内嵌 view 存在的可能性，
+// 为避免冗余模板请求，故此 view 初始化在 domReady 之后进行。
+Air.domReady(function(){
+  b.views.init();
 });

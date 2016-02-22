@@ -4,18 +4,18 @@ Air.Module("B.router.router", function(){
 
 
   function set(routerConfig){
-    var paramRule = /:\w+/ig;
     var RuleReg   = getMatchRuleReg(routerConfig.rule);
     var router    = {
                       rule     : routerConfig.rule,
                       viewName : routerConfig.viewName,
                       sign     : routerConfig.sign,
-                      reg      : reg
+                      reg      : RuleReg
                     }
     routers.push(router);
   }
 
   function getMatchRuleReg(ruleString){
+    var paramRule = /:\w+/ig;
     var matchRuleStr = ruleString.replace(paramRule, function(param){
                          return "(\\w+)";
                        });
