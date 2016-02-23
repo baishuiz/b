@@ -12,6 +12,7 @@ Air.Module("B.router.router", function(){
                       reg      : RuleReg
                     }
     routers.push(router);
+    routers[routerConfig.viewName] = router;
   }
 
   function getMatchRuleReg(ruleString){
@@ -30,7 +31,7 @@ Air.Module("B.router.router", function(){
       var activeRouter = routers[ruleIndex];
       var isMatched  = tryMatchURLPath(urlPath, activeRouter);
       if(isMatched){
-        return activeRule.viewName
+        return activeRouter.viewName
       }
     }
     return null;
@@ -40,9 +41,15 @@ Air.Module("B.router.router", function(){
     return router.reg.test(urlPath);
   }
 
+  function getUrlByViewName(viewName) {
+    var router = routers[viewName];
+    return router && router.rule;
+  }
+
   var api = {
     set : set,
-    getViewNameByURLPath : getViewNameByURLPath
+    getViewNameByURLPath : getViewNameByURLPath,
+    getUrlByViewName : getUrlByViewName
   }
   return api;
 });

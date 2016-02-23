@@ -28,6 +28,6 @@ Air.run(function(require){
 
 // 考虑到模板内嵌 view 存在的可能性，
 // 为避免冗余模板请求，故此 view 初始化在 domReady 之后进行。
-Air.domReady(function(){
-  b.views.init();
-});
+// Air.domReady(function(){
+//   b.views.init();
+// });

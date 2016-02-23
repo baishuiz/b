@@ -1,32 +1,40 @@
 Air.Module("B.view.View", function(){
-  var dom = null,
-      templete = null,
-      router = null,
-      initQueue = [],
-      showBeforeQueue = [],
-      showAfterQueue = [],
-      hideQueue =[]
 
-  function show (){}
+  function View(dom){
+    // var dom = null,
+    var templete = null,
+        router = null,
+        initQueue = [],
+        showBeforeQueue = [],
+        showAfterQueue = [],
+        hideQueue =[]
 
-  function hide(){}
+        this.show = function (){
+          dom.setAttribute('active','true');
+        },
 
-  function init(){}
+        this.hide = function(){
+          dom.removeAttribute('active');
+        },
 
-  function onInit(){}
+        this.init = function (){},
 
-  function onShowBefore(){}
+        this.onInit = function (){},
 
-  function onShowAfter(){}
+        this.onShowBefore = function (){},
 
-  function onHide(){}
+        this.onShowAfter = function (){},
 
-  function getTemplete(){}
+        this.onHide = function (){},
 
-  function runcontroller(){}
+        this.getTemplete = function (){},
 
-  function View(){
-    
+        this.runcontroller = function (){}
+
+        this.getDom = function (){
+          return dom;
+        }
+
   }
 
   return View;

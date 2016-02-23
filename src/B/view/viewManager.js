@@ -2,7 +2,7 @@ Air.Module("B.view.viewManager", function(require){
   var View = require("B.view.View");
   var router = require('B.router.router');
   var viewList = [],
-      viewportList = [null],
+      viewportList = [],
       activeView = null,
       mainViewport = null,
       middleware = []
@@ -10,11 +10,12 @@ Air.Module("B.view.viewManager", function(require){
   /**
    * 初始化首屏 View
    */
-  function init(){
+  function init(path){
     initLocalViewport();
-    var URLPath = location.pathname;
+    var URLPath = path || location.pathname;
     var viewName = router.getViewNameByURLPath(URLPath);
     show(viewName);
+    listenURLChange();
   }
 
   function initLocalViewport(){
@@ -30,17 +31,16 @@ Air.Module("B.view.viewManager", function(require){
       };
       viewportList.push(activeViewportInfo);
       isMainViewport && setMainViewport(activeViewportInfo);
-      initLocalView(activeViewport, isMainViewport);
+      initLocalView(activeViewportInfo);
     }
   }
 
   function setMainViewport(viewport){
-    viewportList[0] = viewportList.length - 1;
     mainViewport = viewport;
   }
 
-  function initLocalView(viewport, isMainViewport){
-    var viewContainer = viewportList.length - 1;
+  function initLocalView(viewContainer){
+    var viewport = viewContainer.dom;
     var views = viewport.querySelectorAll('view');
     var viewIndex = 0;
     var viewCount = views.length;
@@ -54,7 +54,33 @@ Air.Module("B.view.viewManager", function(require){
 
 
   function goto (viewName, options){
+    switchURL(viewName, options);
+    show(viewName);
+  }
 
+  function switchURL (viewName, options) {
+    var url = router.getUrlByViewName(viewName);
+
+    history.pushState({
+      viewName: viewName,
+      params: options && options.params
+    }, viewName, url);
+  }
+
+  function listenURLChange() {
+    beacon(window).on('popstate', function(e){
+      if (e.state && e.state.viewName){
+        b.views.goto(e.state.viewName);
+      }
+    });
+  }
+
+  function back (fn) {
+    if (beacon.isType(fn, 'Function')) {
+      fn()
+    } else {
+      window.history.back();
+    }
   }
 
   function setMiddleware (moduleName){
@@ -68,19 +94,22 @@ Air.Module("B.view.viewManager", function(require){
     view ? switchView(view) : throw404Event();
   }
 
+
+  function throw404Event(){};
+
   function getViewByViewName(viewName){
     return mainViewport.views[viewName];
   }
 
   function switchView(view){
     view.show();
-    activeView && activeView.hidden();
+    activeView && activeView.hide();
     activeView = view;
   }
 
-  function hidden(viewName){
+  function hide(viewName){
     var view = getViewByViewName(viewName);
-    view && view.hidden();
+    view && view.hide();
   }
 
   function createView(){}
@@ -89,15 +118,21 @@ Air.Module("B.view.viewManager", function(require){
 
   function hideLoading(){}
 
+  function getActive(){
+    return activeView && activeView.getDom();
+  }
+
   var viewProxy = function(viewportName){
 
   };
   api = {
     init : init,
     goto : goto,
+    back : back,
     setMiddleware : setMiddleware,
     showLoading : showLoading,
-    hideLoading : hideLoading
+    hideLoading : hideLoading,
+    getActive : getActive
   }
 
   return api;

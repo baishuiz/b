@@ -33,7 +33,7 @@ viewport view[active="true"]{display:block}
 </viewport>
 
 <% with (scripts) { %>
-  <% [].concat(polyfills, jasmine, boot, vendor, helpers, src, specs,reporters).forEach(function(script){ %>
+  <% [].concat(polyfills, jasmine, boot, vendor, helpers, src).forEach(function(script){ %>
   <script src="<%= script %>"></script>
   <% }) %>
 <% }; %>
@@ -67,5 +67,11 @@ viewport view[active="true"]{display:block}
 
     }());
 </script>
+
+<% with (scripts) { %>
+  <% [].concat(specs,reporters).forEach(function(script){ %>
+  <script src="<%= script %>"></script>
+  <% }) %>
+<% }; %>
 </body>
 </html>

@@ -13,11 +13,11 @@ module.exports = function(grunt){
            ,dist: {
                 src : [
                         './libs/*.js',
-
+                        './src/B/router/router.js',
                         './src/B/view/View.js',
                         './src/B/view/viewManager.js',
 
-                        './src/B/router/router.js',
+
 
                         './src/*.js'
                       ],

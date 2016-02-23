@@ -1,3 +1,5 @@
+history.pushState = function(){}
+history.replaceState = function(){}
 describe('模板内嵌 view ', function () {
 
     it(' 初始化 ', function () {
@@ -7,10 +9,12 @@ describe('模板内嵌 view ', function () {
         activeView : 'viewport[main=true] view[active=true]'
       }
 
+      b.views.init('/');
+
       // 模板 HTML元素引用
       var activeView  = document.querySelector(selector.activeView)
-      expect(activeView).not.toBe(null);
-
+      // expect(activeView).not.toBe(null);
+      //
       var activeViewContent = activeView.querySelector('p')
       expect(activeViewContent.innerText).toEqual('Hello');
 
@@ -26,7 +30,11 @@ describe('模板内嵌 view ', function () {
 
     it('后退', function () {
       b.views.goto('page_detail');
-      b.views.back();
+      b.views.back(function(){
+        b.views.goto('page_list');
+      });
+      var activeView = b.views.getActive();
+      var activeViewName = activeView.getAttribute('name');
       expect(activeViewName).toEqual('page_list')
     }); // 后退 完成
 
