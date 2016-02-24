@@ -41,7 +41,7 @@ viewport view[active="true"]{display:block}
 <script>
     ;(function(){
       b.router.set({
-        rule : '/',
+        rule : '/_SpecRunner.html',
         viewName : 'page_default'
       })
 
@@ -62,6 +62,21 @@ viewport view[active="true"]{display:block}
 
       b.router.set({
         rule : '/order',
+        viewName : 'page_order'
+      })
+
+      b.router.set({
+        rule : '/remote_page_map',
+        viewName : 'remote_page_map'
+      })
+
+      b.router.set({
+        rule : '/remote_page_list',
+        viewName : 'page_order'
+      })
+
+      b.router.set({
+        rule : '/remote_page_detail',
         viewName : 'page_order'
       })
 

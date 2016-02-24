@@ -53,7 +53,7 @@ viewport view[active="true"]{display:block}
 <script>
     ;(function(){
       b.router.set({
-        rule : '/',
+        rule : '/_SpecRunner.html',
         viewName : 'page_default'
       })
 
@@ -77,12 +77,29 @@ viewport view[active="true"]{display:block}
         viewName : 'page_order'
       })
 
+      b.router.set({
+        rule : '/remote_page_map',
+        viewName : 'remote_page_map'
+      })
+
+      b.router.set({
+        rule : '/remote_page_list',
+        viewName : 'page_order'
+      })
+
+      b.router.set({
+        rule : '/remote_page_detail',
+        viewName : 'page_order'
+      })
+
     }());
 </script>
 
 
   
   <script src="test/spec/view/view.localView.Spec.js"></script>
+  
+  <script src="test/spec/view/view.remoteView.Spec.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   

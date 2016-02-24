@@ -1,6 +1,8 @@
 Air.Module("B.view.viewManager", function(require){
   var View = require("B.view.View");
   var router = require('B.router.router');
+  var HTTP   = require('B.network.http');
+  var memCache = require('B.data.memCache');
   var viewList = [],
       viewportList = [],
       activeView = null,
@@ -14,7 +16,7 @@ Air.Module("B.view.viewManager", function(require){
     initLocalViewport();
     var URLPath = path || location.pathname;
     var viewName = router.getViewNameByURLPath(URLPath);
-    show(viewName);
+    goto(viewName, {init:true});
     listenURLChange();
   }
 
@@ -55,39 +57,39 @@ Air.Module("B.view.viewManager", function(require){
 
   function goto (viewName, options){
     switchURL(viewName, options);
-    show(viewName);
+    var hasView = getViewByViewName(viewName);
+    hasView ? show(viewName) : loadView(viewName);
   }
 
   function switchURL (viewName, options) {
+    options = options || {};
     var url = router.getUrlByViewName(viewName);
-
-    history.pushState({
+    var isInit  = options.init;
+    var changeURLState = isInit ? history.replaceState : history.pushState;
+    changeURLState.call(history,{
       viewName: viewName,
-      params: options && options.params
+      params: options.params
     }, viewName, url);
   }
 
   function listenURLChange() {
     beacon(window).on('popstate', function(e){
-      if (e.state && e.state.viewName){
-        b.views.goto(e.state.viewName);
-      }
+      var state  = e.state || {};
+        state.viewName && show(state.viewName);
     });
   }
 
-  function back (fn) {
-    if (beacon.isType(fn, 'Function')) {
-      fn()
-    } else {
-      window.history.back();
-    }
+  function back () {
+    window.history.back();
   }
 
   function setMiddleware (moduleName){
 
   }
 
-  function existView (viewName){}
+  function existView (viewName){
+
+  }
 
   function show (viewName){
     var view = getViewByViewName(viewName);
@@ -100,6 +102,32 @@ Air.Module("B.view.viewManager", function(require){
   function getViewByViewName(viewName){
     return mainViewport.views[viewName];
   }
+
+  function loadView(viewName){
+    showLoading();
+    var env = memCache.get('env');
+    var templatePath = env.templatePath + viewName + '.html';
+    var http = new HTTP();
+
+    http.get(templatePath, {
+      successCallBack : successCallBack,
+      errorCallBack : errorCallBack
+    });
+
+    function successCallBack(responseText){
+      var view = new View(responseText, {
+        initCallback: function(){
+          hideLoading();
+        }
+      });
+      mainViewport.appendChild(view.getDom());
+    }
+
+    function errorCallBack(){
+      throw404Event();
+    }
+  }
+
 
   function switchView(view){
     view.show();
