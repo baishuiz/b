@@ -17,10 +17,10 @@ Air.Module("B.view.viewManager", function(require){
     var URLPath = path || location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
-      goto(activeRouter.viewName, {
+      goTo(activeRouter.viewName, {
         init: true,
         params: activeRouter.params,
-        query: '' // TODO query?
+        query: location.search
       });
     } else {
       throw404Event();
@@ -68,7 +68,7 @@ Air.Module("B.view.viewManager", function(require){
 
 
 
-  function goto (viewName, options){
+  function goTo (viewName, options){
     switchURL(viewName, options);
     var hasView = getViewByViewName(viewName);
     hasView ? show(viewName) : loadView(viewName);
@@ -183,7 +183,7 @@ Air.Module("B.view.viewManager", function(require){
   };
   api = {
     init : init,
-    goto : goto,
+    goTo : goTo,
     back : back,
     setMiddleware : setMiddleware,
     showLoading : showLoading,

@@ -26,14 +26,14 @@ describe('模板内嵌 view ', function () {
 
   it('前进', function () {
     // 切换至列表页
-    b.views.goto('page_list');
+    b.views.goTo('page_list');
     var activeView = b.views.getActive();
     var activeViewName = activeView.getViewName();
     expect(activeViewName).toEqual('page_list');
   });// 切换 完成
 
   it('路由参数', function() {
-    b.views.goto('page_list', {
+    b.views.goTo('page_list', {
       params: {
         city: 104
       },
@@ -44,7 +44,7 @@ describe('模板内嵌 view ', function () {
 
 
   it('后退', function (done) {
-    b.views.goto('page_detail');
+    b.views.goTo('page_detail');
     b.views.back();
 
     var activeView = b.views.getActive();

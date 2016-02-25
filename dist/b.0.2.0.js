@@ -203,6 +203,7 @@
     options = options || {};
     if (beacon.isType(dom, 'String')) {
       dom = createDomByString(dom);
+      // TODO: IE 8 不支持直接innerHTML加载样式
       loadScript(dom, options.initCallback);
     }
     // var dom = null,
@@ -273,10 +274,10 @@
     var URLPath = path || location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
-      goto(activeRouter.viewName, {
+      goTo(activeRouter.viewName, {
         init: true,
         params: activeRouter.params,
-        query: '' // TODO query?
+        query: location.search
       });
     } else {
       throw404Event();
@@ -324,7 +325,7 @@
 
 
 
-  function goto (viewName, options){
+  function goTo (viewName, options){
     switchURL(viewName, options);
     var hasView = getViewByViewName(viewName);
     hasView ? show(viewName) : loadView(viewName);
@@ -439,7 +440,7 @@
   };
   api = {
     init : init,
-    goto : goto,
+    goTo : goTo,
     back : back,
     setMiddleware : setMiddleware,
     showLoading : showLoading,

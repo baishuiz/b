@@ -21,12 +21,12 @@ describe('远程模板', function () {
         });
       });
 
-      b.views.goto('remote_page_map');
+      b.views.goTo('remote_page_map');
     }); // view 初始化完成
 
     it('前进', function (done) {
       // 切换至列表页
-      b.views.goto('remote_page_list');
+      b.views.goTo('remote_page_list');
 
       var activeView = b.views.getActive();
       beacon(activeView).once(activeView.events.onHide, function(e, data) {
