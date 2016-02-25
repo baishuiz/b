@@ -1,8 +1,8 @@
-// history.pushState = function(){location.hash = new Date()}
-// history.replaceState = function(){location.hash = new Date()}
+// location.pathname = '/index/hello';
 describe('模板内嵌 view ', function () {
 
-  it(' 初始化 ', function () {
+  it('初始化', function () {
+    history.replaceState(null, 'index', '/index/hello');
 
     // 模板 HTML 元素选择器
     var selector = {
@@ -25,10 +25,16 @@ describe('模板内嵌 view ', function () {
 
   it('前进', function () {
     // 切换至列表页
-    b.views.goto('page_list');
+    b.views.goto('page_list', {
+      params: {
+        city: 104
+      },
+      query: '?a=1&b=2'
+    });
     var activeView = b.views.getActive();
     var activeViewName = activeView.getViewName();
     expect(activeViewName).toEqual('page_list');
+    expect(location.pathname + location.search).toEqual('/list/104?a=1&b=2');
   });// 切换 完成
 
 
@@ -49,4 +55,4 @@ describe('模板内嵌 view ', function () {
     });
   }); // 后退 完成
 
-}); // 本地 view 初始化 over
+}); // 模板内嵌 view over

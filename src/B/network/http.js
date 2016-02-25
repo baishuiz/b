@@ -16,7 +16,7 @@ Air.Module('B.network.http', function() {
         if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304) {
           request.successCallBack && request.successCallBack(xhr.responseText);
         } else {
-          request.successCallBack && request.successCallBack(xhr);
+          request.errorCallBack && request.errorCallBack(xhr);
         }
       }
     };

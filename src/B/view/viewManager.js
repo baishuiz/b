@@ -15,8 +15,16 @@ Air.Module("B.view.viewManager", function(require){
   function init(path){
     initLocalViewport();
     var URLPath = path || location.pathname;
-    var viewName = router.getViewNameByURLPath(URLPath);
-    goto(viewName, {init:true});
+    var activeRouter = router.getMatchedRouter(URLPath);
+    if (activeRouter) {
+      goto(activeRouter.viewName, {
+        init: true,
+        params: activeRouter.params,
+        query: '' // TODO query?
+      });
+    } else {
+      throw404Event();
+    }
     listenURLChange();
   }
 
@@ -68,7 +76,10 @@ Air.Module("B.view.viewManager", function(require){
 
   function switchURL (viewName, options) {
     options = options || {};
-    var url = router.getUrlByViewName(viewName);
+    var url = router.getURLPathByViewName(viewName, {
+      params: options.params,
+      query: options.query
+    });
     var isInit  = options.init;
     var changeURLState = isInit ? history.replaceState : history.pushState;
     changeURLState.call(history,{

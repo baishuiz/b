@@ -1,8 +1,6 @@
-// history.pushState = function(){location.hash = new Date()}
-// history.replaceState = function(){location.hash = new Date()}
 describe('远程模板', function () {
 
-    it(' 初始化 ', function (done) {
+    it('初始化', function (done) {
       // 模板 HTML 元素选择器
       var selector = {
         activeView : 'viewport[main=true] view[active=true]'
@@ -61,4 +59,4 @@ describe('远程模板', function () {
       });
     }); // 后退 完成
 
-}); // 本地 view 初始化 over
+}); // 远程模板 over
