@@ -13,7 +13,7 @@ Air.Module("B.view.View", function(){
     fn && fn();
   }
 
-  function runJS(JSList){
+  function runJS(scripts){
     for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
       var activeScript = scripts[scriptIndex];
 
@@ -35,7 +35,7 @@ Air.Module("B.view.View", function(){
       return scripts
   }
 
-  function View(dom, options){
+  function View(viewName, dom, options){
     options = options || {};
     if (beacon.isType(dom, 'String')) {
       dom = createDomByString(dom);
@@ -47,7 +47,11 @@ Air.Module("B.view.View", function(){
         initQueue = [],
         showBeforeQueue = [],
         showAfterQueue = [],
-        hideQueue =[]
+        hideQueue =[],
+        events = {
+          onShow: beacon.createEvent('view onShow'),
+          onHide: beacon.createEvent('view onHide')
+        };
 
         this.show = function (){
           dom.setAttribute('active','true');
@@ -74,6 +78,12 @@ Air.Module("B.view.View", function(){
         this.getDom = function (){
           return dom;
         }
+
+        this.getViewName = function (){
+          return viewName;
+        }
+
+        this.events = events;
 
   }
 

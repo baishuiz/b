@@ -14,9 +14,9 @@ Air.Module('B.network.http', function() {
     xhr.onreadystatechange = function() {
       if (xhr.readyState === state.complete) {
         if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304) {
-          this.successCallBack && this.successCallBack(xhr.responseText);
+          request.successCallBack && request.successCallBack(xhr.responseText);
         } else {
-          this.successCallBack && this.successCallBack(xhr);
+          request.successCallBack && request.successCallBack(xhr);
         }
       }
     };

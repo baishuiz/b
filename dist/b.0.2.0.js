@@ -35,9 +35,9 @@
     xhr.onreadystatechange = function() {
       if (xhr.readyState === state.complete) {
         if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304) {
-          this.successCallBack && this.successCallBack(xhr.responseText);
+          request.successCallBack && request.successCallBack(xhr.responseText);
         } else {
-          this.successCallBack && this.successCallBack(xhr);
+          request.successCallBack && request.successCallBack(xhr);
         }
       }
     };
@@ -137,7 +137,7 @@
     fn && fn();
   }
 
-  function runJS(JSList){
+  function runJS(scripts){
     for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
       var activeScript = scripts[scriptIndex];
 
@@ -159,7 +159,7 @@
       return scripts
   }
 
-  function View(dom, options){
+  function View(viewName, dom, options){
     options = options || {};
     if (beacon.isType(dom, 'String')) {
       dom = createDomByString(dom);
@@ -171,7 +171,11 @@
         initQueue = [],
         showBeforeQueue = [],
         showAfterQueue = [],
-        hideQueue =[]
+        hideQueue =[],
+        events = {
+          onShow: beacon.createEvent('view onShow'),
+          onHide: beacon.createEvent('view onHide')
+        };
 
         this.show = function (){
           dom.setAttribute('active','true');
@@ -198,6 +202,12 @@
         this.getDom = function (){
           return dom;
         }
+
+        this.getViewName = function (){
+          return viewName;
+        }
+
+        this.events = events;
 
   }
 
@@ -243,6 +253,11 @@
     }
   }
 
+  function appendView(viewName, view) {
+    mainViewport.dom.appendChild(view.getDom());
+    mainViewport.views[viewName] = view;
+  }
+
   function setMainViewport(viewport){
     mainViewport = viewport;
   }
@@ -255,7 +270,7 @@
     for(; viewIndex < viewCount; viewIndex++){
       var activeView = views[viewIndex];
       var activeViewName = activeView.getAttribute('name');
-      viewContainer['views'][activeViewName] = new View(activeView);
+      viewContainer['views'][activeViewName] = new View(activeViewName, activeView);
     }
   }
 
@@ -321,12 +336,13 @@
     });
 
     function successCallBack(responseText){
-      var view = new View(responseText, {
+      var view = new View(viewName, responseText, {
         initCallback: function(){
           hideLoading();
         }
       });
-      mainViewport.appendChild(view.getDom());
+      appendView(viewName, view);
+      show(viewName);
     }
 
     function errorCallBack(){
@@ -336,9 +352,20 @@
 
 
   function switchView(view){
-    view.show();
-    activeView && activeView.hide();
+    var lastView = activeView;
+    if (lastView) {
+      var lastViewName = lastView.getViewName();
+      lastView && lastView.hide();
+      beacon(lastView).once(lastView.events.onHide, {
+        to: view
+      });
+    }
+
     activeView = view;
+    activeView.show();
+    beacon(activeView).once(activeView.events.onShow, {
+      from: lastViewName
+    });
   }
 
   function hide(viewName){
@@ -353,7 +380,7 @@
   function hideLoading(){}
 
   function getActive(){
-    return activeView && activeView.getDom();
+    return activeView;
   }
 
   var viewProxy = function(viewportName){

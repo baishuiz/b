@@ -37,6 +37,11 @@ Air.Module("B.view.viewManager", function(require){
     }
   }
 
+  function appendView(viewName, view) {
+    mainViewport.dom.appendChild(view.getDom());
+    mainViewport.views[viewName] = view;
+  }
+
   function setMainViewport(viewport){
     mainViewport = viewport;
   }
@@ -49,7 +54,7 @@ Air.Module("B.view.viewManager", function(require){
     for(; viewIndex < viewCount; viewIndex++){
       var activeView = views[viewIndex];
       var activeViewName = activeView.getAttribute('name');
-      viewContainer['views'][activeViewName] = new View(activeView);
+      viewContainer['views'][activeViewName] = new View(activeViewName, activeView);
     }
   }
 
@@ -115,12 +120,13 @@ Air.Module("B.view.viewManager", function(require){
     });
 
     function successCallBack(responseText){
-      var view = new View(responseText, {
+      var view = new View(viewName, responseText, {
         initCallback: function(){
           hideLoading();
         }
       });
-      mainViewport.appendChild(view.getDom());
+      appendView(viewName, view);
+      show(viewName);
     }
 
     function errorCallBack(){
@@ -130,9 +136,20 @@ Air.Module("B.view.viewManager", function(require){
 
 
   function switchView(view){
-    view.show();
-    activeView && activeView.hide();
+    var lastView = activeView;
+    if (lastView) {
+      var lastViewName = lastView.getViewName();
+      lastView && lastView.hide();
+      beacon(lastView).once(lastView.events.onHide, {
+        to: view
+      });
+    }
+
     activeView = view;
+    activeView.show();
+    beacon(activeView).once(activeView.events.onShow, {
+      from: lastViewName
+    });
   }
 
   function hide(viewName){
@@ -147,7 +164,7 @@ Air.Module("B.view.viewManager", function(require){
   function hideLoading(){}
 
   function getActive(){
-    return activeView && activeView.getDom();
+    return activeView;
   }
 
   var viewProxy = function(viewportName){
