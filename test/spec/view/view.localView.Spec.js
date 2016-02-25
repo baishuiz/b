@@ -2,6 +2,7 @@
 describe('模板内嵌 view ', function () {
 
   it('初始化', function () {
+    // 修改url为主页
     history.replaceState(null, 'index', '/index/hello');
 
     // 模板 HTML 元素选择器
@@ -25,17 +26,21 @@ describe('模板内嵌 view ', function () {
 
   it('前进', function () {
     // 切换至列表页
+    b.views.goto('page_list');
+    var activeView = b.views.getActive();
+    var activeViewName = activeView.getViewName();
+    expect(activeViewName).toEqual('page_list');
+  });// 切换 完成
+
+  it('路由参数', function() {
     b.views.goto('page_list', {
       params: {
         city: 104
       },
       query: '?a=1&b=2'
     });
-    var activeView = b.views.getActive();
-    var activeViewName = activeView.getViewName();
-    expect(activeViewName).toEqual('page_list');
     expect(location.pathname + location.search).toEqual('/list/104?a=1&b=2');
-  });// 切换 完成
+  }); // 路由参数 完成
 
 
   it('后退', function (done) {
