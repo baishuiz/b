@@ -111,6 +111,7 @@
   }
 
   function parseHTML(target, $scope){
+    generateScopeTree(target.attributes, $scope);
     generateScopeTree(target.childNodes, $scope);
   }
 

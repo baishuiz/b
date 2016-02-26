@@ -40,6 +40,7 @@ Air.Module('B.scope.scopeManager', function(require){
   }
 
   function parseHTML(target, $scope){
+    generateScopeTree(target.attributes, $scope);
     generateScopeTree(target.childNodes, $scope);
   }
 

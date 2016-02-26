@@ -13,6 +13,20 @@ describe('数据绑定', function () {
       })
     });
 
+    it('scope 属性', function (done) {
+      b.run('page_list', function(require, $scope){
+        $scope.flower = 'list sun';
+        $scope.attr = 'hello';
+        var dom = {
+          flower : document.querySelector('view[name=page_list] .flower')
+        }
+        setTimeout(function(){
+          expect(dom.flower.getAttribute('attr')).toEqual('hello');
+          done();
+        }, 0);
+      })
+    });
+
     it('远程模板渲染', function (done) {
       var activeView = b.views.getActive();
       beacon(activeView).once(activeView.events.onHide, function(e, data) {
