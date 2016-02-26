@@ -1,4 +1,4 @@
-Air.Module('B.data.Scope', function() {
+Air.Module('B.scope.Scope', function() {
     var Scope = function(){
       var parentScope;
       this.getParent = function(){

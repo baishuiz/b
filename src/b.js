@@ -5,7 +5,8 @@
 Air.run(function(require){
   var viewManager   = require("B.view.viewManager"),
       router = require("B.router.router"),
-      memCache = require('B.data.memCache');
+      memCache = require('B.data.memCache'),
+      run = require('B.controller.run');
   void function main(){
     var FRAMEWORK_NAME = "b";
     var api = {
@@ -24,7 +25,7 @@ Air.run(function(require){
         viewManager.init();
 
       },
-      run      : function(){},
+      run      : run,
       Module   : function(){},
       domReady : function(){}
     };

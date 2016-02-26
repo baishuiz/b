@@ -22,11 +22,16 @@ module.exports = function(grunt){
            ,dist: {
                 src : [
                         './libs/*.js',
+                        './src/B/util/*.js',
                         './src/B/data/memCache.js',
+                        './src/B/event/events.js',
+                        './src/B/scope/Scope.js',
+                        './src/B/scope/scopeManager.js',
                         './src/B/network/http.js',
                         './src/B/router/router.js',
                         './src/B/view/View.js',
                         './src/B/view/viewManager.js',
+                        './src/B/controller/run.js',
 
 
 
@@ -44,7 +49,7 @@ module.exports = function(grunt){
                 // '--web-security' : false,
                 // '--local-to-remote-url-access' : true,
                 // '--ignore-ssl-errors' : true,
-                specs: './test/spec/**/*Spec.js',
+                specs: ['./test/spec/view/*Spec.js', './test/spec/scope/*Spec.js'],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',
                 vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],

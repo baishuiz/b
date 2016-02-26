@@ -19,6 +19,7 @@ viewport view[active="true"]{display:block}
 <viewport main="true">
   <view name="page_default" >
     <p>Hello</p>
+    <span class='flower'>{{flower}}</span>
   </view>
   <view name="page_list"></view>
   <view name="page_detail"></view>
@@ -92,6 +93,11 @@ viewport view[active="true"]{display:block}
         viewName : 'page_order'
       })
 
+      b.router.set({
+        rule : '/remote_page_scope',
+        viewName : 'remote_page_scope'
+      })
+
     }());
 </script>
 
@@ -100,6 +106,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/view/view.localView.Spec.js"></script>
   
   <script src="test/spec/view/view.remoteView.Spec.js"></script>
+  
+  <script src="test/spec/scope/scope.base.Spec.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   

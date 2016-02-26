@@ -1,7 +1,8 @@
-Air.Module("core.run", function(require){
+Air.Module("B.controller.run", function(require){
     var run = function(controllerName, controller){
-        var scopeList = require("core.scopeList");
-        var scope = scopeList.get(controllerName);
+        var scopeManager = require("B.scope.scopeManager");
+        var EVENTS = require('B.event.EVENTS');
+        var scope = scopeManager.getScope(controllerName);
 
         // beacon(scope).on(EVENTS.DATA_CHANGE, function(e, scope){
         //   scopeList.updateShadow(scope);
@@ -10,7 +11,7 @@ Air.Module("core.run", function(require){
     	  // try{  // TODO: 服务依赖需要Try来屏蔽错误
           Air.run(controller, false, scope);
           Air.run(function(){
-            // beacon(scope).on(EVENTS.DATA_CHANGE, scope);
+            beacon(scope).on(EVENTS.DATA_CHANGE, scope);
           })
 
           // })
