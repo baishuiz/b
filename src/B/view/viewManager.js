@@ -3,6 +3,7 @@ Air.Module("B.view.viewManager", function(require){
   var router = require('B.router.router');
   var HTTP   = require('B.network.http');
   var memCache = require('B.data.memCache');
+  var scopeManager = require('B.scope.scopeManager')；
   var viewList = [],
       viewportList = [],
       activeView = null,
@@ -62,7 +63,9 @@ Air.Module("B.view.viewManager", function(require){
     for(; viewIndex < viewCount; viewIndex++){
       var activeView = views[viewIndex];
       var activeViewName = activeView.getAttribute('name');
-      viewContainer['views'][activeViewName] = new View(activeViewName, activeView);
+      var view = new View(activeViewName, activeView)
+      viewContainer['views'][activeViewName] = view;
+      scopeManager.parseScope(view.getDom());
     }
   }
 

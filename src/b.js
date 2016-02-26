@@ -3,13 +3,13 @@
  * @version v0.2.0
  */
 Air.run(function(require){
-  var view   = require("B.view.viewManager"),
+  var viewManager   = require("B.view.viewManager"),
       router = require("B.router.router"),
       memCache = require('B.data.memCache');
   void function main(){
     var FRAMEWORK_NAME = "b";
     var api = {
-      views    : view, // ViewManager
+      views    : viewManager, // ViewManager
       router   : router, // Router
       service  : null,
       utility  : null,
@@ -21,7 +21,8 @@ Air.run(function(require){
        */
       init     : function(env){
         memCache.set('env', env);
-        view.init()
+        viewManager.init();
+
       },
       run      : function(){},
       Module   : function(){},

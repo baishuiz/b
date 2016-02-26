@@ -203,7 +203,6 @@
     options = options || {};
     if (beacon.isType(dom, 'String')) {
       dom = createDomByString(dom);
-      // TODO: IE 8 不支持直接innerHTML加载样式
       loadScript(dom, options.initCallback);
     }
     // var dom = null,
