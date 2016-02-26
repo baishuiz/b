@@ -50,4 +50,22 @@ describe('数据绑定', function () {
       b.views.goTo('remote_page_scope');
     });
 
+    it('scope 作用域', function (done) {
+      b.run('page_detail', function(require, $scope){
+        $scope.parentValue = 'p';
+      });
+
+      b.run('page_detail_subview', function(require, $scope){
+        $scope.subValue = 's';
+        var dom = {
+          text : document.querySelector('view[name=page_detail_subview] .text')
+        }
+
+        setTimeout(function(){
+          expect(dom.text.innerText).toEqual('p - s');
+          done();
+        }, 0);
+      });
+    });
+
 });

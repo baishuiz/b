@@ -40,6 +40,12 @@ Air.Module('B.scope.scopeManager', function(require){
   }
 
   function parseHTML(target, $scope){
+    if (target.tagName.toLowerCase() === 'view') {
+      var $subScope = new Scope($scope);
+      var subScopeName = target.getAttribute('name');
+      scopeList[subScopeName] = $subScope;
+      $scope = $subScope;
+    }
     generateScopeTree(target.attributes, $scope);
     generateScopeTree(target.childNodes, $scope);
   }
@@ -75,7 +81,7 @@ Air.Module('B.scope.scopeManager', function(require){
   }
 
   function parseScope(scopeName,dom){
-    var scope = new Scope(scopeName, dom)
+    var scope = new Scope()
     scopeList[scopeName] = scope;
     generateScopeTree(dom.childNodes, scope);
   }

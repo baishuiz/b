@@ -25,7 +25,12 @@ viewport view[active="true"]{display:block}
     <p>Hello</p>
     <span class="flower" attr="{{attr}}">{{flower}}</span>
   </view>
-  <view name="page_detail"></view>
+  <view name="page_detail">
+    <p>{{parentValue}}</p>
+    <view name="page_detail_subview">
+      <p class="text">{{parentValue}} - {{subValue}}</p>
+    </view>
+  </view>
   <view name="page_booking"></view>
   <view name="page_order"></view>
 </viewport>

@@ -57,15 +57,17 @@ Air.Module("B.view.viewManager", function(require){
 
   function initLocalView(viewContainer){
     var viewport = viewContainer.dom;
-    var views = viewport.querySelectorAll('view');
+    var views = viewport.children;
     var viewIndex = 0;
     var viewCount = views.length;
     for(; viewIndex < viewCount; viewIndex++){
       var activeView = views[viewIndex];
-      var activeViewName = activeView.getAttribute('name');
-      var view = new View(activeViewName, activeView)
-      viewContainer['views'][activeViewName] = view;
-      scopeManager.parseScope(activeViewName, view.getDom());
+      if (activeView.tagName.toLowerCase() === 'view') {
+        var activeViewName = activeView.getAttribute('name');
+        var view = new View(activeViewName, activeView)
+        viewContainer['views'][activeViewName] = view;
+        scopeManager.parseScope(activeViewName, view.getDom());
+      }
     }
   }
 

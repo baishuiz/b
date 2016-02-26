@@ -57,17 +57,15 @@
   return events;
 });
 ;Air.Module('B.scope.Scope', function() {
-    var Scope = function(){
-      var parentScope;
-      this.getParent = function(){
-        return parentScope;
-      };
+  var Scope = function(parent){
+    this.parent = parent
+  }
 
-      this.setParent = function(parent){
-          parentScope = parent;
-      }
-    }
-    return Scope;
+  var api = function(parent){
+        Scope.prototype = parent || {};
+        return new Scope(parent);
+  }
+  return api;
 });
 ;Air.Module('B.scope.scopeManager', function(require){
   var scopeList = [];
@@ -111,6 +109,12 @@
   }
 
   function parseHTML(target, $scope){
+    if (target.tagName.toLowerCase() === 'view') {
+      var $subScope = new Scope($scope);
+      var subScopeName = target.getAttribute('name');
+      scopeList[subScopeName] = $subScope;
+      $scope = $subScope;
+    }
     generateScopeTree(target.attributes, $scope);
     generateScopeTree(target.childNodes, $scope);
   }
@@ -146,7 +150,7 @@
   }
 
   function parseScope(scopeName,dom){
-    var scope = new Scope(scopeName, dom)
+    var scope = new Scope()
     scopeList[scopeName] = scope;
     generateScopeTree(dom.childNodes, scope);
   }
@@ -457,15 +461,17 @@
 
   function initLocalView(viewContainer){
     var viewport = viewContainer.dom;
-    var views = viewport.querySelectorAll('view');
+    var views = viewport.children;
     var viewIndex = 0;
     var viewCount = views.length;
     for(; viewIndex < viewCount; viewIndex++){
       var activeView = views[viewIndex];
-      var activeViewName = activeView.getAttribute('name');
-      var view = new View(activeViewName, activeView)
-      viewContainer['views'][activeViewName] = view;
-      scopeManager.parseScope(activeViewName, view.getDom());
+      if (activeView.tagName.toLowerCase() === 'view') {
+        var activeViewName = activeView.getAttribute('name');
+        var view = new View(activeViewName, activeView)
+        viewContainer['views'][activeViewName] = view;
+        scopeManager.parseScope(activeViewName, view.getDom());
+      }
     }
   }
 
