@@ -26,18 +26,34 @@
 });
 ;Air.Module('B.data.memCache', function(){
   var MEMORY_CACHE = {};
+  var EXPIRED_LIST = {};
   function set(key, value, options) {
     if (!key) {
       return;
     }
     MEMORY_CACHE[key] = value;
+    if (options && typeof options.expiredSecond === 'number') {
+      var now = new Date();
+      now.setSeconds(now.getSeconds() + options.expiredSecond);
+      EXPIRED_LIST[key] = now;
+    }
   }
 
   function get(key) {
     if (!key) {
       return;
     }
-    return MEMORY_CACHE[key];
+    var value = MEMORY_CACHE[key];
+    var expiredTime = EXPIRED_LIST[key];
+    if (expiredTime) {
+      var now = new Date();
+      if (now.getTime() > expiredTime.getTime()) {
+        delete MEMORY_CACHE[key];
+        delete EXPIRED_LIST[key];
+        return undefined;
+      }
+    }
+    return value;
   }
 
   return {
@@ -222,11 +238,7 @@
 ;Air.Module('B.service.Service', function(require) {
   var HTTP = require('B.network.HTTP');
   var EVENTS =  require('B.event.events');
-  // var Data = require('B.data.data'); TODO
-
-  function successHandler() {
-
-  }
+  var memCache = require('B.data.MemCache');
 
   function Service(config, scope){
     // var cachedData = Data;
@@ -248,10 +260,22 @@
     };
 
     this.query = function(requestParams, options){
-      // TODO options.noCache || 缓存过期
+      options = options || {};
+      var url = config.protocol + '://' + config.host + config.path;
+      var cacheKey = url + JSON.stringify(requestParams);
+
+      if (!options.noCache) {
+        var cachedData = memCache.get(cacheKey);
+        if (cachedData) {
+          var fromCache = true;
+          options.successCallBack && options.successCallBack(cachedData, fromCache);
+          beacon(scope).on(EVENTS.DATA_CHANGE);
+          return;
+        }
+      }
       // TODO 中间件
       var requestOptions = {
-        url: config.protocol + '://' + config.host + config.path,
+        url: url,
         method: config.method,
         header: header,
         data: JSON.stringify(requestParams),
@@ -262,6 +286,10 @@
           } catch(e) {
             options.errorCallBack && options.errorCallBack();
           }
+
+          memCache.set(cacheKey, responseData, {
+            expiredSecond: config.expiredSecond
+          });
 
           options.successCallBack && options.successCallBack(responseData);
           beacon(scope).on(EVENTS.DATA_CHANGE);

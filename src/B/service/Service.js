@@ -1,11 +1,7 @@
 Air.Module('B.service.Service', function(require) {
   var HTTP = require('B.network.HTTP');
   var EVENTS =  require('B.event.events');
-  // var Data = require('B.data.data'); TODO
-
-  function successHandler() {
-
-  }
+  var memCache = require('B.data.MemCache');
 
   function Service(config, scope){
     // var cachedData = Data;
@@ -27,10 +23,22 @@ Air.Module('B.service.Service', function(require) {
     };
 
     this.query = function(requestParams, options){
-      // TODO options.noCache || 缓存过期
+      options = options || {};
+      var url = config.protocol + '://' + config.host + config.path;
+      var cacheKey = url + JSON.stringify(requestParams);
+
+      if (!options.noCache) {
+        var cachedData = memCache.get(cacheKey);
+        if (cachedData) {
+          var fromCache = true;
+          options.successCallBack && options.successCallBack(cachedData, fromCache);
+          beacon(scope).on(EVENTS.DATA_CHANGE);
+          return;
+        }
+      }
       // TODO 中间件
       var requestOptions = {
-        url: config.protocol + '://' + config.host + config.path,
+        url: url,
         method: config.method,
         header: header,
         data: JSON.stringify(requestParams),
@@ -41,6 +49,10 @@ Air.Module('B.service.Service', function(require) {
           } catch(e) {
             options.errorCallBack && options.errorCallBack();
           }
+
+          memCache.set(cacheKey, responseData, {
+            expiredSecond: config.expiredSecond
+          });
 
           options.successCallBack && options.successCallBack(responseData);
           beacon(scope).on(EVENTS.DATA_CHANGE);

@@ -9,12 +9,12 @@ describe('服务请求', function () {
     },
     path: '',
     params: null,
-    expiredTime: null,
+    expiredSecond: null,
   });
 
   b.service.set('service.roomModelSearchListOpenCity', {
       path: 'roomModelSearchListOpenCity.json',
-      expiredTime: 60 * 60 *24,
+      expiredSecond: 1,
       extend : 'default'
   });
 
@@ -59,8 +59,56 @@ describe('服务请求', function () {
         errorCallBack: function(xhr) {
           throw new Error(xhr);
         }
-      })
+      });
     });
+  });
+
+  it('服务缓存', function(done) {
+    b.run('page_service_cache', function(require, $scope){
+      var cityListService = b.service.get('service.roomModelSearchListOpenCity', $scope);
+
+      var query = function(params, callback, noCache) {
+        cityListService.query(params, {
+          noCache: noCache,
+          successCallBack: function(data, fromCache){
+            callback(data, fromCache);
+          },
+          errorCallBack: function(xhr) {
+            throw new Error(xhr);
+          }
+        });
+      };
+
+      // 第一次请求后记录缓存
+      query({ a: 2, b: 3}, function(data, fromCache) {
+        expect(fromCache).toEqual(undefined);
+
+        // 第二次请求直接从缓存读取
+        query({ a: 2, b: 3}, function(data, fromCache) {
+          expect(fromCache).toEqual(true);
+          expect(data.result[0].cityName).toEqual('上海');
+
+          // 第三次修改参数后缓存失效，同时记录新缓存
+          query({ a: 3, b: 4}, function(data, fromCache) {
+            expect(fromCache).toEqual(undefined);
+
+            // 第四次3秒后请求，此时缓存已过期
+            setTimeout(function() {
+              query({ a: 3, b: 4}, function(data, fromCache) {
+                expect(fromCache).toEqual(undefined);
+
+                // 第五次不使用缓存
+                query({ a: 3, b: 4}, function(data, fromCache) {
+                  expect(fromCache).toEqual(undefined);
+                  done();
+                }, true);
+              });
+            }, 1500);
+          });
+        });
+      });
+    });
+
   });
 
 });
