@@ -70,8 +70,9 @@ module.exports = function(grunt){
               src: './dist/<%= output.minFileName %>',
               options: {
                 template: 'test/template/DefaultRunner.tmpl',
-                specs: './test/spec/*Spec.js',
-                keepRunner:true,
+                specs: ['./test/spec/view/*Spec.js', './test/spec/scope/*Spec.js', './test/spec/service/*Spec.js', './test/spec/event/*Spec.js'],
+                keepRunner: true,
+                host: 'http://127.0.0.1:8000/',
                 vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],
               }
             }
@@ -90,7 +91,7 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.registerTask('default', [ 'concat', 'uglify', 'jasmine']);
+    grunt.registerTask('default', ['connect',  'concat', 'uglify', 'jasmine:mini']);
     grunt.registerTask('package', [ 'concat', 'uglify']);
     grunt.registerTask('debug', [ 'connect', 'concat', 'jasmine:pivotal']);
 };
