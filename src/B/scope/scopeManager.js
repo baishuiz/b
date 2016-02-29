@@ -5,12 +5,8 @@ Air.Module('B.scope.scopeManager', function(require){
   var EVENTS =  require('B.event.events');
   var util = require('B.util.util');
   var Scope =  require('B.scope.Scope');
-
-  var nodeType = {
-      TEXT : 3,
-      HTML : 1,
-      ATTR : 2
-  }
+  var nodeUtil = require('B.util.node');
+  var eventDirective = require('B.directive.event');
 
 
   function getApps(dom){
@@ -27,11 +23,11 @@ Air.Module('B.scope.scopeManager', function(require){
 
   function TryParseNode(target, $scope){
     switch (target.nodeType) {
-      case nodeType.HTML:
+      case nodeUtil.type.HTML:
         parseHTML(target, $scope);
         break;
-      case nodeType.TEXT:
-      case nodeType.ATTR:
+      case nodeUtil.type.TEXT:
+      case nodeUtil.type.ATTR:
         parseTextNode(target, $scope);
         break;
       default:
@@ -46,6 +42,7 @@ Air.Module('B.scope.scopeManager', function(require){
       scopeList[subScopeName] = $subScope;
       $scope = $subScope;
     }
+    eventDirective(target, $scope);
     generateScopeTree(target.attributes, $scope);
     generateScopeTree(target.childNodes, $scope);
   }

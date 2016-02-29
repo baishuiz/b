@@ -38,6 +38,15 @@ viewport view[active="true"]{display:block}
     <p class="city">City = {{city}}<p>
   </view>
   <view name="page_service_cache"></view>
+  <view name="page_event">
+    <a href="javascript:void(0)" class="btn" ng-event="click clickHandle('Hello')">Hello Event</a>
+  </view>
+  <view name="page_event_param">
+    <a href="javascript:void(0)" class="btn" ng-event="click clickHandle('Hello', '{{scopeParam}}')">Hello Event</a>
+  </view>
+  <view name="page_event_multiple">
+    <a href="javascript:void(0)" class="btn" ng-event="click clickHandle('click'); focus focusHandle('focus')">Hello Event</a>
+  </view>
 </viewport>
 
 <viewport class=".footer">
@@ -53,6 +62,8 @@ viewport view[active="true"]{display:block}
 <% }; %>
 
 <script>
+    window.host = '127.0.0.1:8000';
+
     ;(function(){
       b.router.set({
         rule : '/index/:info',

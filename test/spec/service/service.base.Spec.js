@@ -1,6 +1,6 @@
 describe('服务请求', function () {
   b.service.setConfig('default', {
-    host: '127.0.0.1:8000/test/service/',
+    host: window.host + '/test/service/',
     method: 'GET',
     protocol: 'HTTP',
     header: {
