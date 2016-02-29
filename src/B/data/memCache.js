@@ -1,17 +1,17 @@
 Air.Module('B.data.memCache', function(){
-  var MemCache = {};
-  function set(key, value) {
+  var MEMORY_CACHE = {};
+  function set(key, value, options) {
     if (!key) {
       return;
     }
-    MemCache[key] = value;
+    MEMORY_CACHE[key] = value;
   }
 
   function get(key) {
     if (!key) {
       return;
     }
-    return MemCache[key];
+    return MEMORY_CACHE[key];
   }
 
   return {

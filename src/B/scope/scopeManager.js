@@ -60,22 +60,26 @@ Air.Module('B.scope.scopeManager', function(require){
         //   beacon($scope).on(EVENTS.DATA_CHANGE)
         // })
       }
-      beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
 
-      function txtNodeDataChange(){
-        var text = node.nodeValue;
-        var markups  = text.match(regMarkup) || [];
-        for (var i = markups.length - 1; i >= 0; i--) {
-          var markup   = markups[i];
-          var dataPath = markup.replace(/{{|}}/ig,"");
-          var data = Air.NS(dataPath, $scope);
-          data = util.isEmpty(data) ? '' : data;
-          text = text.replace(markup, data);
-        };
-        if( node.nodeValue != text){
-          node.nodeValue = text;
+      var txtNodeDataChange = (function(node, template){
+        // 保持 template 的值，供后续替换使用
+        return function(){
+          var text = template;
+          var markups = text.match(regMarkup) || [];
+          for (var i = markups.length - 1; i >= 0; i--) {
+            var markup   = markups[i];
+            var dataPath = markup.replace(/{{|}}/ig,"");
+            var data = Air.NS(dataPath, $scope);
+            data = util.isEmpty(data) ? '' : data;
+            text = text.replace(markup, data);
+          };
+          if(node.nodeValue != text){
+            node.nodeValue = text;
+          }
         }
-      }
+      })(node, node.nodeValue);
+
+      beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
     }
 
   }

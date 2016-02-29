@@ -1,7 +1,7 @@
 Air.Module("B.view.viewManager", function(require){
   var View = require("B.view.View");
   var router = require('B.router.router');
-  var HTTP   = require('B.network.http');
+  var HTTP   = require('B.network.HTTP');
   var memCache = require('B.data.memCache');
   var scopeManager = require('B.scope.scopeManager');
   var viewList = [],

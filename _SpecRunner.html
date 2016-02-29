@@ -33,6 +33,10 @@ viewport view[active="true"]{display:block}
   </view>
   <view name="page_booking"></view>
   <view name="page_order"></view>
+  <view name="page_service"></view>
+  <view name="page_service_change">
+    <p class="city">City = {{city}}<p>
+  </view>
 </viewport>
 
 <viewport class=".footer">
@@ -116,6 +120,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/view/view.remoteView.Spec.js"></script>
   
   <script src="test/spec/scope/scope.base.Spec.js"></script>
+  
+  <script src="test/spec/service/service.base.Spec.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   

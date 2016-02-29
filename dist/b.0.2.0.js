@@ -25,19 +25,19 @@
   return util;
 });
 ;Air.Module('B.data.memCache', function(){
-  var MemCache = {};
-  function set(key, value) {
+  var MEMORY_CACHE = {};
+  function set(key, value, options) {
     if (!key) {
       return;
     }
-    MemCache[key] = value;
+    MEMORY_CACHE[key] = value;
   }
 
   function get(key) {
     if (!key) {
       return;
     }
-    return MemCache[key];
+    return MEMORY_CACHE[key];
   }
 
   return {
@@ -129,22 +129,26 @@
         //   beacon($scope).on(EVENTS.DATA_CHANGE)
         // })
       }
-      beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
 
-      function txtNodeDataChange(){
-        var text = node.nodeValue;
-        var markups  = text.match(regMarkup) || [];
-        for (var i = markups.length - 1; i >= 0; i--) {
-          var markup   = markups[i];
-          var dataPath = markup.replace(/{{|}}/ig,"");
-          var data = Air.NS(dataPath, $scope);
-          data = util.isEmpty(data) ? '' : data;
-          text = text.replace(markup, data);
-        };
-        if( node.nodeValue != text){
-          node.nodeValue = text;
+      var txtNodeDataChange = (function(node, template){
+        // 保持 template 的值，供后续替换使用
+        return function(){
+          var text = template;
+          var markups = text.match(regMarkup) || [];
+          for (var i = markups.length - 1; i >= 0; i--) {
+            var markup   = markups[i];
+            var dataPath = markup.replace(/{{|}}/ig,"");
+            var data = Air.NS(dataPath, $scope);
+            data = util.isEmpty(data) ? '' : data;
+            text = text.replace(markup, data);
+          };
+          if(node.nodeValue != text){
+            node.nodeValue = text;
+          }
         }
-      }
+      })(node, node.nodeValue);
+
+      beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
     }
 
   }
@@ -167,7 +171,7 @@
     getScope: getScope
   }
 });
-;Air.Module('B.network.http', function() {
+;Air.Module('B.network.HTTP', function() {
 
   var state = {
     unInit: 0,
@@ -214,6 +218,106 @@
     }
   }
   return XHR;
+});
+;Air.Module('B.service.Service', function(require) {
+  var HTTP = require('B.network.HTTP');
+  var EVENTS =  require('B.event.events');
+  // var Data = require('B.data.data'); TODO
+
+  function successHandler() {
+
+  }
+
+  function Service(config, scope){
+    // var cachedData = Data;
+    config = config || {};
+    var header = config.header || {};
+    header['Content-Type'] = 'application/json;charset=utf-8';
+
+    var requestParams = null;
+    var http = new HTTP();
+    var getCachedData = function(){
+
+    };
+
+    this.onQueryBefore = function(){
+
+    };
+    this.onQueryAfter = function(){
+
+    };
+
+    this.query = function(requestParams, options){
+      // TODO options.noCache || 缓存过期
+      // TODO 中间件
+      var requestOptions = {
+        url: config.protocol + '://' + config.host + config.path,
+        method: config.method,
+        header: header,
+        data: JSON.stringify(requestParams),
+        successCallBack: function(responseText){
+          var responseData = null;
+          try {
+            responseData = JSON.parse(responseText);
+          } catch(e) {
+            options.errorCallBack && options.errorCallBack();
+          }
+
+          options.successCallBack && options.successCallBack(responseData);
+          beacon(scope).on(EVENTS.DATA_CHANGE);
+        },
+        errorCallBack: function(xhr){
+          options.errorCallBack && options.errorCallBack(xhr);
+          beacon(scope).on(EVENTS.DATA_CHANGE);
+        }
+      }
+      http.request(requestOptions);
+    };
+  }
+
+  return Service;
+
+});
+;Air.Module('B.service.serviceFactory', function(require) {
+  var configList = [];
+  var serviceList = [];
+  var Service = require('B.service.Service');
+
+  function setConfig(configName, config) {
+    if (configName) {
+      configList[configName] = config;
+    }
+  }
+
+  function getConfig(configName) {
+    return configList[configName] || {};
+  }
+
+
+
+  function set(serviceName, config) {
+    if (serviceName) {
+      var newConfig = beacon.utility.merge({}, getConfig(config.extend), config);
+      serviceList[serviceName] = newConfig;
+    } else {
+      throw new Error('serviceName is required');
+    }
+  }
+
+  function get(serviceName, scope) {
+    var serviceConfig = serviceList[serviceName];
+    if (serviceConfig) {
+      return new Service(serviceConfig, scope);
+    } else {
+      throw new Error(serviceName + ' not found');
+    }
+  }
+
+  return {
+    setConfig: setConfig,
+    set: set,
+    get : get
+  }
 });
 ;Air.Module("B.router.router", function(){
 
@@ -405,7 +509,7 @@
 ;Air.Module("B.view.viewManager", function(require){
   var View = require("B.view.View");
   var router = require('B.router.router');
-  var HTTP   = require('B.network.http');
+  var HTTP   = require('B.network.HTTP');
   var memCache = require('B.data.memCache');
   var scopeManager = require('B.scope.scopeManager');
   var viewList = [],
@@ -635,13 +739,14 @@ Air.run(function(require){
   var viewManager   = require("B.view.viewManager"),
       router = require("B.router.router"),
       memCache = require('B.data.memCache'),
-      run = require('B.controller.run');
+      run = require('B.controller.run'),
+      serviceFactory = require('B.service.serviceFactory');
   void function main(){
     var FRAMEWORK_NAME = "b";
     var api = {
       views    : viewManager, // ViewManager
       router   : router, // Router
-      service  : null,
+      service  : serviceFactory,
       utility  : null,
 
       /**
@@ -655,7 +760,7 @@ Air.run(function(require){
 
       },
       run      : run,
-      Module   : function(){},
+      Module   : Air.Module,
       domReady : function(){}
     };
     window[FRAMEWORK_NAME] = api;

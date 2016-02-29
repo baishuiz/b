@@ -1,4 +1,4 @@
-Air.Module('B.network.http', function() {
+Air.Module('B.network.HTTP', function() {
 
   var state = {
     unInit: 0,
