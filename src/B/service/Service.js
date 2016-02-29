@@ -4,23 +4,12 @@ Air.Module('B.service.Service', function(require) {
   var memCache = require('B.data.MemCache');
 
   function Service(config, scope){
-    // var cachedData = Data;
     config = config || {};
     var header = config.header || {};
     header['Content-Type'] = 'application/json;charset=utf-8';
 
     var requestParams = null;
     var http = new HTTP();
-    var getCachedData = function(){
-
-    };
-
-    this.onQueryBefore = function(){
-
-    };
-    this.onQueryAfter = function(){
-
-    };
 
     this.query = function(requestParams, options){
       options = options || {};
@@ -50,6 +39,7 @@ Air.Module('B.service.Service', function(require) {
             options.errorCallBack && options.errorCallBack();
           }
 
+          // 记录缓存
           memCache.set(cacheKey, responseData, {
             expiredSecond: config.expiredSecond
           });
