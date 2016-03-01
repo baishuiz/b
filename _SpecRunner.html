@@ -35,17 +35,24 @@ viewport view[active="true"]{display:block}
   <view name="page_order"></view>
   <view name="page_service"></view>
   <view name="page_service_change">
-    <p class="city">City = {{city}}<p>
+    <p class="city">City = {{city}}</p>
   </view>
   <view name="page_service_cache"></view>
   <view name="page_event">
-    <a href="javascript:void(0)" class="btn" ng-event="click clickHandle('Hello')">Hello Event</a>
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello')">Hello Event</a>
   </view>
   <view name="page_event_param">
-    <a href="javascript:void(0)" class="btn" ng-event="click clickHandle('Hello', '{{scopeParam}}')">Hello Event</a>
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello', '{{scopeParam}}')">Hello Event</a>
   </view>
   <view name="page_event_multiple">
-    <a href="javascript:void(0)" class="btn" ng-event="click clickHandle('click'); focus focusHandle('focus')">Hello Event</a>
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('click'); focus focusHandle('focus')">Hello Event</a>
+  </view>
+  <view name="page_repeat">
+    <ul>
+      <li b-repeat="item in list">
+        {{ item.name }}
+      </li>
+    </ul>
   </view>
 </viewport>
 
@@ -56,25 +63,25 @@ viewport view[active="true"]{display:block}
 </viewport>
 
 
-
+  
   <script src=".grunt/grunt-contrib-jasmine/es5-shim.js"></script>
-
+  
   <script src=".grunt/grunt-contrib-jasmine/jasmine.js"></script>
-
+  
   <script src=".grunt/grunt-contrib-jasmine/jasmine-html.js"></script>
-
+  
   <script src=".grunt/grunt-contrib-jasmine/json2.js"></script>
-
+  
   <script src=".grunt/grunt-contrib-jasmine/boot.js"></script>
-
+  
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
-
-  <script src="dist/b.0.2.0.min.js"></script>
-
+  
+  <script src="dist/b.0.2.0.js"></script>
+  
 
 
 <script>
-    window.host = '127.0.0.1:8800';
+    window.host = '127.0.0.1:8000';
 
     ;(function(){
       b.router.set({
@@ -126,19 +133,23 @@ viewport view[active="true"]{display:block}
 </script>
 
 
-
+  
   <script src="test/spec/view/view.localView.Spec.js"></script>
-
+  
   <script src="test/spec/view/view.remoteView.Spec.js"></script>
-
+  
   <script src="test/spec/scope/scope.base.Spec.js"></script>
-
+  
   <script src="test/spec/service/service.base.Spec.js"></script>
-
+  
   <script src="test/spec/event/event.base.Spec.js"></script>
-
+  
+  <script src="test/spec/repeat/repeat.base.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
+  
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
-
+  
 
 </body>
 </html>

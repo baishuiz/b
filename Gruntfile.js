@@ -26,6 +26,7 @@ module.exports = function(grunt){
                         './src/B/data/memCache.js',
                         './src/B/event/events.js',
                         './src/B/directive/event.js',
+                        './src/B/directive/repeat.js',
                         './src/B/scope/Scope.js',
                         './src/B/scope/scopeManager.js',
                         './src/B/network/http.js',
@@ -52,7 +53,13 @@ module.exports = function(grunt){
                 // '--web-security' : false,
                 // '--local-to-remote-url-access' : true,
                 // '--ignore-ssl-errors' : true,
-                specs: ['./test/spec/view/*Spec.js', './test/spec/scope/*Spec.js', './test/spec/service/*Spec.js', './test/spec/event/*Spec.js'],
+                specs: [
+                  './test/spec/view/*Spec.js',
+                  './test/spec/scope/*Spec.js',
+                  './test/spec/service/*Spec.js',
+                  './test/spec/event/*Spec.js',
+                  './test/spec/repeat/*Spec.js'
+                ],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',
                 vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],
@@ -70,7 +77,13 @@ module.exports = function(grunt){
               src: './dist/<%= output.minFileName %>',
               options: {
                 template: 'test/template/DefaultRunner.tmpl',
-                specs: ['./test/spec/view/*Spec.js', './test/spec/scope/*Spec.js', './test/spec/service/*Spec.js', './test/spec/event/*Spec.js'],
+                specs: [
+                  './test/spec/view/*Spec.js',
+                  './test/spec/scope/*Spec.js',
+                  './test/spec/service/*Spec.js',
+                  './test/spec/event/*Spec.js',
+                  './test/spec/repeat/*Spec.js'
+                ],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',
                 vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],

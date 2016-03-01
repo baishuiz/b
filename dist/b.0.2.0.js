@@ -93,7 +93,7 @@
   var node      = require('B.util.node'),
       EVENTS    = require('B.event.events');
 
-  var attribute = 'ng-event';
+  var attribute = 'b-event';
   var reg = /(\((.*?)\))/;
   var api = function(target, $scope){
     if(!node(target).hasAttribute(attribute)){
@@ -129,6 +129,87 @@
 
   return api;
 })
+;Air.Module('B.directive.repeat', function(require){
+  var attrName = 'b-repeat';
+  var nodeUtil = require('B.util.node');
+  var Scope = require('B.scope.Scope');
+
+  // TODO parentScope
+
+  function init(target, scope) {
+    var placeholder = generatePlaceholder(target);
+    var template  = getTemplate(target);
+
+    var repeatData = getRepeatData(target, scope);
+    var repeatItems = generateRepeatItems(template, scope, repeatData, placeholder);
+
+    return repeatItems;
+  }
+
+  function getRepeatData(target, scope) {
+    var condition = target.getAttribute(attrName);
+    var dataPath  = condition.replace(/\S+\s+in\s+(\S+)/ig, '$1');
+    var itemName  = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
+
+    var data = Air.NS(dataPath, scope);
+    return {
+      data: data,
+      itemName: itemName
+    };
+  }
+
+  function generatePlaceholder(target) {
+    if (target.placeholder) {
+      return target.placeholder;
+    }
+    var placeholder = document.createComment('repeat placeholder ' + target.getAttribute(attrName));
+    target.parentNode.insertBefore(placeholder, target);
+    target.placeholder = placeholder;
+    return placeholder;
+  }
+
+  function generateRepeatItems(template, parentScope, repeatData, placeholder) {
+    var repeatItems = [];
+    var nodes = [];
+    var dataAry = repeatData.data;
+    var itemName = repeatData.itemName;
+    var tmpParent = document.createDocumentFragment();
+
+    if (beacon.utility.isType(dataAry, 'Array')) {
+      for (var i = 0, len = dataAry.length, data; i < len; i++) {
+        var data = dataAry[i];
+        var node = template.cloneNode(true);
+        var scope = new Scope(parentScope);
+
+        scope[itemName] = data;
+
+        node.removeAttribute(attrName);
+        tmpParent.appendChild(node);
+
+        repeatItems.push({
+          node: node,
+          $scope: scope
+        });
+      }
+      placeholder.parentNode.insertBefore(tmpParent, placeholder);
+    }
+    return repeatItems;
+  }
+
+  function getTemplate(target) {
+    target.parentNode && target.parentNode.removeChild(target);
+    return target;
+  }
+
+  function needRepeat(target) {
+    return nodeUtil(target).hasAttribute(attrName);
+  }
+
+  return {
+    init: init,
+    needRepeat: needRepeat
+  };
+});
 ;Air.Module('B.scope.Scope', function() {
   var Scope = function(parent){
     this.parent = parent
@@ -142,7 +223,7 @@
 });
 ;Air.Module('B.scope.scopeManager', function(require){
   var scopeList = [];
-  // var repeat = require('B.directive.repeat');
+  var repeat = require('B.directive.repeat');
   // var model =  require('B.directive.model');
   var EVENTS =  require('B.event.events');
   var util = require('B.util.util');
@@ -177,16 +258,42 @@
     }
   }
 
-  function parseHTML(target, $scope){
+  function tryGenerateViewScope(target, $scope) {
     if (target.tagName.toLowerCase() === 'view') {
       var $subScope = new Scope($scope);
       var subScopeName = target.getAttribute('name');
       scopeList[subScopeName] = $subScope;
       $scope = $subScope;
     }
+
+    return $scope;
+  }
+
+  function generateRepeatScopeTree(target, $scope) {
+    var repeatItems = repeat.init(target, $scope);
+    for (var i = 0, len = repeatItems.length, repeatItem; i < len; i++) {
+      repeatItem = repeatItems[i];
+      generateScopeTree([repeatItem.node], repeatItem.$scope);
+      beacon(repeatItem.$scope).on(EVENTS.DATA_CHANGE);
+    }
+  }
+
+  function parseHTML(target, $scope){
+    $scope = tryGenerateViewScope(target, $scope);
+
     eventDirective(target, $scope);
-    generateScopeTree(target.attributes, $scope);
-    generateScopeTree(target.childNodes, $scope);
+
+    if (repeat.needRepeat(target)) {
+      beacon($scope).on(EVENTS.DATA_CHANGE, function(){
+        // TODO 检查repeat需要的data有无变化
+        generateRepeatScopeTree(target, $scope);
+
+      });
+      generateRepeatScopeTree(target, $scope);
+    } else {
+      generateScopeTree(target.attributes, $scope);
+      generateScopeTree(target.childNodes, $scope);
+    }
   }
 
   function parseTextNode(node, $scope){
@@ -194,6 +301,7 @@
     var text = node.nodeValue;
     if(text.match(regMarkup)){
       if($scope.$parentScope){
+        // TODO
         // beacon($scope.$parentScope).on(EVENTS.DATA_CHANGE, function(){
         //   $scope.$update();
         //   beacon($scope).on(EVENTS.DATA_CHANGE)
@@ -208,6 +316,7 @@
           for (var i = markups.length - 1; i >= 0; i--) {
             var markup   = markups[i];
             var dataPath = markup.replace(/{{|}}/ig,"");
+            dataPath = dataPath.trim();
             var data = Air.NS(dataPath, $scope);
             data = util.isEmpty(data) ? '' : data;
             text = text.replace(markup, data);

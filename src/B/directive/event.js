@@ -2,7 +2,7 @@ Air.Module('B.directive.event', function(require){
   var node      = require('B.util.node'),
       EVENTS    = require('B.event.events');
 
-  var attribute = 'ng-event';
+  var attribute = 'b-event';
   var reg = /(\((.*?)\))/;
   var api = function(target, $scope){
     if(!node(target).hasAttribute(attribute)){
