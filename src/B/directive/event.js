@@ -16,6 +16,13 @@ Air.Module('B.directive.event', function(require){
       bind(cmdList[i], i);
     };
 
+    function getParentScope($scope) {
+      if ($scope.parent) {
+        return getParentScope($scope.parent);
+      }
+      return $scope;
+    }
+
     function bind(cmd, eventIndex){
       var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
 
@@ -28,7 +35,7 @@ Air.Module('B.directive.event', function(require){
         var params = eval("["+eventParam+"]");
         params.unshift(e);
         this.$index = $scope.$index;
-        var scope = $scope.$parentScope || $scope;
+        var scope = getParentScope($scope);
         scope.$event[eventHandle].apply(this, params);
         beacon(scope).on(EVENTS.DATA_CHANGE, scope);
       });

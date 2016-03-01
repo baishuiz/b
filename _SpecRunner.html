@@ -54,6 +54,51 @@ viewport view[active="true"]{display:block}
       </li>
     </ul>
   </view>
+  <view name="page_repeat_in_repeat">
+    <div class="list1" b-repeat="item1 in list1">
+      <div class="list2" b-repeat="item2 in list2">
+        {{item1.name}}{{item2.name}}
+      </div>
+    </div>
+  </view>
+  <view name="page_repeat_nearby_repeat">
+    <ul class="list1">
+      <li b-repeat="item1 in list1">{{item1.name}}</li>
+    </ul>
+    <ul class="list2">
+      <li b-repeat="item2 in list2">{{item2.name}}</li>
+    </ul>
+  </view>
+  <view name="page_repeat_with_event_outer">
+    <ul>
+      <li b-repeat="item in list" b-event="click clickHandle('good')">{{item.name}}</li>
+    </ul>
+  </view>
+  <view name="page_repeat_with_event_inner">
+    <ul>
+      <li b-repeat="item in list">
+        <a href="javascript:void(0)" b-event="click clickHandle()">{{item.name}}</a>
+      </li>
+    </ul>
+  </view>
+  <view name="page_repeat_with_data">
+    <p class="title" b-event="click titleClickHandle()">{{notice}}</p>
+    <ul>
+      <li b-repeat="item in list">
+        <a href="javascript:void(0)" b-event="click itemClickHandle()">{{item.name}}</a>
+      </li>
+    </ul>
+  </view>
+  <view name="page_repeat_in_repeat_event">
+    <p class="title">{{notice}}</p>
+    <div>
+      <div class="list1" b-repeat="item1 in list1">
+        <div class="list2" b-repeat="item2 in list2">
+          <a href="javascript:void(0)" b-event="click clickHandle()">{{item1.name}}{{item2.name}}</a>
+        </div>
+      </div>
+    </div>
+  </view>
 </viewport>
 
 <viewport class=".footer">

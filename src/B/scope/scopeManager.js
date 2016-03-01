@@ -64,7 +64,6 @@ Air.Module('B.scope.scopeManager', function(require){
       beacon($scope).on(EVENTS.DATA_CHANGE, function(){
         // TODO 检查repeat需要的data有无变化
         generateRepeatScopeTree(target, $scope);
-
       });
       generateRepeatScopeTree(target, $scope);
     } else {

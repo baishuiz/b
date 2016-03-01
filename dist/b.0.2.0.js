@@ -107,6 +107,13 @@
       bind(cmdList[i], i);
     };
 
+    function getParentScope($scope) {
+      if ($scope.parent) {
+        return getParentScope($scope.parent);
+      }
+      return $scope;
+    }
+
     function bind(cmd, eventIndex){
       var eventName = cmd.match(/^\s*(\w+)\s+/)[1];
 
@@ -119,7 +126,7 @@
         var params = eval("["+eventParam+"]");
         params.unshift(e);
         this.$index = $scope.$index;
-        var scope = $scope.$parentScope || $scope;
+        var scope = getParentScope($scope);
         scope.$event[eventHandle].apply(this, params);
         beacon(scope).on(EVENTS.DATA_CHANGE, scope);
       });
@@ -129,29 +136,42 @@
 
   return api;
 })
+;Air.Module('B.scope.Scope', function() {
+  var Scope = function(parent){
+    this.parent = parent
+  }
+
+  var api = function(parent){
+        Scope.prototype = parent || {};
+        return new Scope(parent);
+  }
+  return api;
+});
 ;Air.Module('B.directive.repeat', function(require){
   var attrName = 'b-repeat';
   var nodeUtil = require('B.util.node');
   var Scope = require('B.scope.Scope');
 
-  // TODO parentScope
-
   function init(target, scope) {
     var placeholder = generatePlaceholder(target);
-    var template  = getTemplate(target);
 
-    var repeatData = getRepeatData(target, scope);
+    tryDeleteCachedNodes(target.cachedNodes);
+
+    var template = getTemplate(target);
+
+    var repeatData = getRepeatData(template, scope);
     var repeatItems = generateRepeatItems(template, scope, repeatData, placeholder);
 
     return repeatItems;
   }
 
-  function getRepeatData(target, scope) {
-    var condition = target.getAttribute(attrName);
+  function getRepeatData(template, scope) {
+    var condition = template.getAttribute(attrName);
     var dataPath  = condition.replace(/\S+\s+in\s+(\S+)/ig, '$1');
     var itemName  = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
 
     var data = Air.NS(dataPath, scope);
+
     return {
       data: data,
       itemName: itemName
@@ -168,6 +188,27 @@
     return placeholder;
   }
 
+  function tryDeleteCachedNodes(cachedNodes) {
+    cachedNodes = cachedNodes || [];
+    for (var i = 0, len = cachedNodes.length, node; i < len; i++){
+      node = cachedNodes[i];
+      node.parentNode && node.parentNode.removeChild(node);
+      unbind(node);
+    }
+  }
+
+  function unbind(node){
+    for(var i=0; i<node.childNodes.length; i++){
+      beacon(node.childNodes[i]).off();
+      unbind(node.childNodes[i]);
+    }
+  }
+
+  function cacheNodes(template, node){
+    template.cachedNodes = template.cachedNodes || [];
+    template.cachedNodes.push(node);
+  }
+
   function generateRepeatItems(template, parentScope, repeatData, placeholder) {
     var repeatItems = [];
     var nodes = [];
@@ -180,11 +221,13 @@
         var data = dataAry[i];
         var node = template.cloneNode(true);
         var scope = new Scope(parentScope);
-
+        scope.$index = i;
         scope[itemName] = data;
 
         node.removeAttribute(attrName);
         tmpParent.appendChild(node);
+
+        cacheNodes(template, node);
 
         repeatItems.push({
           node: node,
@@ -209,17 +252,6 @@
     init: init,
     needRepeat: needRepeat
   };
-});
-;Air.Module('B.scope.Scope', function() {
-  var Scope = function(parent){
-    this.parent = parent
-  }
-
-  var api = function(parent){
-        Scope.prototype = parent || {};
-        return new Scope(parent);
-  }
-  return api;
 });
 ;Air.Module('B.scope.scopeManager', function(require){
   var scopeList = [];
@@ -287,7 +319,6 @@
       beacon($scope).on(EVENTS.DATA_CHANGE, function(){
         // TODO 检查repeat需要的data有无变化
         generateRepeatScopeTree(target, $scope);
-
       });
       generateRepeatScopeTree(target, $scope);
     } else {
