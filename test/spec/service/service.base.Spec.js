@@ -14,7 +14,7 @@ describe('服务请求', function () {
 
   b.service.set('service.roomModelSearchListOpenCity', {
       path: 'roomModelSearchListOpenCity.json',
-      expiredSecond: 1,
+      expiredSecond: 0.5,
       extend : 'default'
   });
 
@@ -103,7 +103,7 @@ describe('服务请求', function () {
                   done();
                 }, true);
               });
-            }, 1500);
+            }, 1000);
           });
         });
       });

@@ -4,11 +4,13 @@ Air.Module("B.view.viewManager", function(require){
   var HTTP   = require('B.network.HTTP');
   var memCache = require('B.data.memCache');
   var scopeManager = require('B.scope.scopeManager');
+  var EVENTS =  require('B.event.events');
   var viewList = [],
       viewportList = [],
       activeView = null,
       mainViewport = null,
       middleware = []
+  var lastView = null;
 
   /**
    * 初始化首屏 View
@@ -77,7 +79,13 @@ Air.Module("B.view.viewManager", function(require){
   function goTo (viewName, options){
     switchURL(viewName, options);
     var hasView = getViewByViewName(viewName);
-    hasView ? show(viewName) : loadView(viewName);
+    if (hasView) {
+      saveLastView();
+      show(viewName);
+    } else {
+      loadView(viewName);
+    }
+    // hasView ? show(viewName) : loadView(viewName);
   }
 
   function switchURL (viewName, options) {
@@ -97,7 +105,8 @@ Air.Module("B.view.viewManager", function(require){
   function listenURLChange() {
     beacon(window).on('popstate', function(e){
       var state  = e.state || {};
-        state.viewName && show(state.viewName);
+      saveLastView();
+      state.viewName && show(state.viewName);
     });
   }
 
@@ -140,14 +149,23 @@ Air.Module("B.view.viewManager", function(require){
     });
 
     function successCallBack(responseText){
+      // 2
       var view = new View(viewName, responseText, {
         initCallback: function(){
           hideLoading();
         }
       });
-      scopeManager.parseScope(viewName, view.getDom());
+      var scope = scopeManager.parseScope(viewName, view.getDom());
       appendView(viewName, view);
-      show(viewName);
+
+      saveLastView();
+      setActive(view);
+
+      // 3
+      beacon(scope).once(EVENTS.DATA_CHANGE, function(){
+        // 6
+        show(viewName);
+      });
     }
 
     function errorCallBack(){
@@ -155,20 +173,27 @@ Air.Module("B.view.viewManager", function(require){
     }
   }
 
+  function saveLastView() {
+    lastView = getActive();
+  }
+
+  function setActive(view) {
+    activeView = view;
+  }
 
   function switchView(view){
-    var lastView = activeView;
+    // 7
     if (lastView) {
       var lastViewName = lastView.getViewName();
       lastView && lastView.hide();
-      beacon(lastView).once(lastView.events.onHide, {
+      beacon(lastView).on(lastView.events.onHide, {
         to: view
       });
     }
 
     activeView = view;
     activeView.show();
-    beacon(activeView).once(activeView.events.onShow, {
+    beacon(activeView).on(activeView.events.onShow, {
       from: lastViewName
     });
   }

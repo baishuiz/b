@@ -11,7 +11,7 @@ describe('模板内嵌 view ', function () {
     }
     var env = {
       $templatePath : 'http://' + window.host + '/test/page_template/',
-      $resourceURL  : 'http://static.cjia.com/resource',
+      $resourceURL  : '/test/page_controller/',
       $moduleURL    : '/libs/module'
     }
 

@@ -28,26 +28,25 @@ describe('数据绑定', function () {
     });
 
     it('远程模板渲染', function (done) {
-      var activeView = b.views.getActive();
-      beacon(activeView).once(activeView.events.onHide, function(e, data) {
-        var toView = data.to;
-
-        beacon(toView).once(toView.events.onShow, function(e) {
-          b.run('remote_page_scope', function(require, $scope){
-            $scope.city = '铁岭';
-            var dom = {
-              city : document.querySelector('view[name=remote_page_scope] .city')
-            }
-
-            setTimeout(function(){
-              expect(dom.city.innerText).toEqual('铁岭');
-              done();
-            }, 0);
-          })
-        });
-      });
 
       b.views.goTo('remote_page_scope');
+
+      setTimeout(function(){
+        b.run('remote_page_scope', function(require, $scope){
+          var activeView = b.views.getActive();
+          $scope.city = '铁岭';
+          var dom = {
+            city : document.querySelector('view[name=remote_page_scope] .city')
+          }
+
+          beacon(activeView).on(activeView.events.onShow, function(e) {
+            expect(dom.city.innerText).toEqual('铁岭');
+            done();
+          });
+
+        });
+      }, 500);
+
     });
 
     it('scope 作用域', function (done) {
@@ -63,7 +62,7 @@ describe('数据绑定', function () {
 
         setTimeout(function(){
           expect(dom.text.innerText).toEqual('p - s');
-          expect($scope.$resourceURL).toEqual( 'http://static.cjia.com/resource');
+          expect($scope.$resourceURL).toEqual('/test/page_controller/');
           done();
         }, 0);
       });

@@ -26,19 +26,25 @@ describe('远程模板', function () {
 
     it('前进', function (done) {
       // 切换至列表页
+
+      // 1
       b.views.goTo('remote_page_list');
 
-      var activeView = b.views.getActive();
-      beacon(activeView).once(activeView.events.onHide, function(e, data) {
-        var toView = data.to;
-        beacon(toView).once(toView.events.onShow, function(e) {
-          // 模板 HTML元素引用
+      setTimeout(function(){
+        // 4
+        b.run('remote_page_list', function(require, $scope) {
           var activeView = b.views.getActive();
-          var activeViewName = activeView.getViewName();
-          expect(activeViewName).toEqual('remote_page_list');
-          done();
+
+          // 5
+          beacon(activeView).on(activeView.events.onShow, function(e) {
+            // 模板 HTML元素引用
+            var activeView = b.views.getActive();
+            var activeViewName = activeView.getViewName();
+            expect(activeViewName).toEqual('remote_page_list');
+            done();
+          });
         });
-      });
+      }, 500);
 
 
     });// 切换 完成
