@@ -62,37 +62,48 @@ Air.Module("B.view.View", function(require){
           onHide: beacon.createEvent('view onHide')
         };
 
-        this.show = function (){
-          dom.setAttribute('active','true');
-        },
+    this.show = function (){
+      dom.setAttribute('active','true');
+    },
 
-        this.hide = function(){
-          dom.removeAttribute('active');
-        },
+    this.hide = function(){
+      dom.removeAttribute('active');
+    },
 
-        this.init = function (){},
+    this.init = function (){},
 
-        this.onInit = function (){},
+    this.onInit = function (){},
 
-        this.onShowBefore = function (){},
+    this.onShowBefore = function (){},
 
-        this.onShowAfter = function (){},
+    this.onShowAfter = function (){},
 
-        this.onHide = function (){},
+    this.onHide = function (){},
 
-        this.getTemplete = function (){},
+    this.getTemplete = function (){},
 
-        this.runcontroller = function (){}
+    this.runcontroller = function (){}
 
-        this.getDom = function (){
-          return dom;
+    this.getDom = function (){
+      return dom;
+    }
+
+    this.getViewName = function (){
+      return viewName;
+    }
+
+    this.events = events;
+
+    this.parseSrc = function (){
+      var els = dom.querySelectorAll('[b-src]') || [];
+      for (var i = 0, len = els.length, el; i < len; i++) {
+        el = els[i];
+        var src = el.getAttribute('b-src');
+        if (src) {
+          el.setAttribute('src', src);
         }
-
-        this.getViewName = function (){
-          return viewName;
-        }
-
-        this.events = events;
+      }
+    };
 
   }
 

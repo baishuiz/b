@@ -3,7 +3,7 @@ describe('远程模板', function () {
     it('初始化', function (done) {
       // 模板 HTML 元素选择器
       var selector = {
-        activeView : 'viewport[main=true] view[active=true]'
+        activeView : 'viewport[main=true] view[active=true]',
       }
 
       var activeView = b.views.getActive();
@@ -16,7 +16,9 @@ describe('远程模板', function () {
           var activeView  = document.querySelector(selector.activeView)
 
           var activeViewContent = activeView.querySelector('p')
+          var img = activeView.querySelector('img');
           expect(activeViewContent.innerText).toEqual('hello remote page');
+          expect(img.src).toEqual('http://image.cjia.com/roommodel%2F4x3%2F801.jpg');
           done();
         });
       });

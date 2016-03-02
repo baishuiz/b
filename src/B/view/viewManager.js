@@ -124,7 +124,12 @@ Air.Module("B.view.viewManager", function(require){
 
   function show (viewName){
     var view = getViewByViewName(viewName);
-    view ? switchView(view) : throw404Event();
+    if (view) {
+      view.parseSrc();
+      switchView(view);
+    } else {
+      throw404Event();
+    }
   }
 
 
