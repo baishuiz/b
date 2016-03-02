@@ -263,20 +263,21 @@
   var nodeUtil = require('B.util.node');
   var eventDirective = require('B.directive.event');
 
+  var $rootScope = new Scope();
 
-  function getApps(dom){
-    return {}
+  function setRoot(params){
+    beacon.utility.merge($rootScope, params);
   }
 
   function generateScopeTree(childNodes, $scope){
     for (var i = 0; i < childNodes.length; i++) {
       var activeChild = childNodes[i];
-      TryParseNode(activeChild, $scope)
+      tryParseNode(activeChild, $scope)
     }
 
   }
 
-  function TryParseNode(target, $scope){
+  function tryParseNode(target, $scope){
     switch (target.nodeType) {
       case nodeUtil.type.HTML:
         parseHTML(target, $scope);
@@ -331,13 +332,6 @@
     var regMarkup = /{{.*?}}/ig;
     var text = node.nodeValue;
     if(text.match(regMarkup)){
-      if($scope.$parentScope){
-        // TODO
-        // beacon($scope.$parentScope).on(EVENTS.DATA_CHANGE, function(){
-        //   $scope.$update();
-        //   beacon($scope).on(EVENTS.DATA_CHANGE)
-        // })
-      }
 
       var txtNodeDataChange = (function(node, template){
         // 保持 template 的值，供后续替换使用
@@ -363,13 +357,17 @@
 
   }
 
-  function parseScope(scopeName,dom){
-    var scope = new Scope()
-    scopeList[scopeName] = scope;
+  function parseScope(scopeName, dom){
+    var scope = scopeList[scopeName];
+    if (!scope) {
+      scope = new Scope($rootScope);
+      delete scope.parent;
+      scopeList[scopeName] = scope;
+    }
     generateScopeTree(dom.childNodes, scope);
-  }
 
-  function init(){}
+    return scope;
+  }
 
   function getScope(scopeName) {
     return scopeList[scopeName];
@@ -377,8 +375,8 @@
 
   return {
     parseScope : parseScope,
-    init : init,
-    getScope: getScope
+    getScope: getScope,
+    setRoot: setRoot
   }
 });
 ;Air.Module('B.network.HTTP', function() {
@@ -619,29 +617,34 @@
     return url;
   }
 
+  function get(viewName) {
+    return routers[viewName] || {};
+  }
+
   var api = {
     set : set,
     getMatchedRouter : getMatchedRouter,
-    getURLPathByViewName : getURLPathByViewName
+    getURLPathByViewName : getURLPathByViewName,
+    get: get
   }
   return api;
 });
-;Air.Module("B.view.View", function(){
+;Air.Module("B.view.View", function(require){
+  var scopeManager = require('B.scope.scopeManager');
+  var EVENTS =  require('B.event.events');
 
   function createDomByString(templeteString){
     var div = document.createElement('div');
     div.innerHTML = templeteString;
-    var dom = div.childNodes[0];
-    return dom;
+    return div;
   }
 
-  function loadScript(dom, fn) {
-    var jsList = splitJS(dom);
-    runJS(jsList);
+  function loadScript(scopeList, dom, fn) {
+    runJS(scopeList, dom);
     fn && fn();
   }
 
-  function runJS(scripts){
+  function runJS(scripts, dom){
     for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
       var activeScript = scripts[scriptIndex];
 
@@ -651,23 +654,32 @@
       } else {
         tmpScript.text = activeScript.text;
       }
-      view.appendChild(tmpScript);
+      dom.appendChild(tmpScript);
 
       activeScript.parentNode.removeChild(activeScript);
     };
   }
 
-  function splitJS(dom){
-      var scripts = dom.querySelectorAll('script');
+  function splitJS(domWrapper){
+      var scripts = domWrapper.querySelectorAll('script');
       scripts = [].slice.call(scripts);
       return scripts
   }
 
   function View(viewName, dom, options){
     options = options || {};
+    // TODO 本地模板需要解析script上的{{}}
     if (beacon.isType(dom, 'String')) {
-      dom = createDomByString(dom);
-      loadScript(dom, options.initCallback);
+      var domWrapper = createDomByString(dom);
+      dom = domWrapper.querySelector('view[name="' + viewName + '"]');
+      var scopeList = splitJS(domWrapper);
+      var scriptScope = scopeManager.parseScope(viewName + 'script', { childNodes: scopeList });
+
+      beacon(scriptScope).once(EVENTS.DATA_CHANGE, function(){
+        loadScript(scopeList, dom, options.initCallback);
+      })
+
+      beacon(scriptScope).on(EVENTS.DATA_CHANGE);
     }
     // var dom = null,
     var templete = null,
@@ -733,9 +745,10 @@
   /**
    * 初始化首屏 View
    */
-  function init(path){
+  function init(env){
+    scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = path || location.pathname;
+    var URLPath = location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
@@ -847,7 +860,10 @@
   function loadView(viewName){
     showLoading();
     var env = memCache.get('env');
-    var templatePath = env.templatePath + viewName + '.html';
+    var curRouter = router.get(viewName);
+    var sign = curRouter.sign || '';
+    var extPath = sign ? '_' + sign : '';
+    var templatePath = env.$templatePath + viewName + extPath + '.html';
     var http = new HTTP();
 
     http.get(templatePath, {
@@ -920,28 +936,19 @@
   return api;
 });
 ;Air.Module("B.controller.run", function(require){
-    var run = function(controllerName, controller){
-        var scopeManager = require("B.scope.scopeManager");
-        var EVENTS = require('B.event.EVENTS');
-        var scope = scopeManager.getScope(controllerName);
+  var run = function(controllerName, controller){
+    var scopeManager = require("B.scope.scopeManager");
+    var EVENTS = require('B.event.EVENTS');
+    var scope = scopeManager.getScope(controllerName);
 
-        // beacon(scope).on(EVENTS.DATA_CHANGE, function(e, scope){
-        //   scopeList.updateShadow(scope);
-        // });
+    // TODO 需要在run之后再显示view
+    Air.run(controller, false, scope);
+    Air.run(function(){
+      beacon(scope).on(EVENTS.DATA_CHANGE, scope);
+    })
+  }
 
-    	  // try{  // TODO: 服务依赖需要Try来屏蔽错误
-          Air.run(controller, false, scope);
-          Air.run(function(){
-            beacon(scope).on(EVENTS.DATA_CHANGE, scope);
-          })
-
-          // })
-        // }catch(e){
-        //   // console.log(e);
-        // }
-    }
-
-    return run;
+  return run;
 });
 ;/**
  * @author baishuiz@gmail.com, xuemengfei@gmail.com
@@ -968,8 +975,8 @@ Air.run(function(require){
        */
       init     : function(env){
         memCache.set('env', env);
-        viewManager.init();
-
+        Air.moduleURL(env.$moduleURL);
+        viewManager.init(env);
       },
       run      : run,
       Module   : Air.Module,

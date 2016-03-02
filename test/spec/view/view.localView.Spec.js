@@ -10,9 +10,9 @@ describe('模板内嵌 view ', function () {
       activeView : 'viewport[main=true] view[active=true]'
     }
     var env = {
-      templatePath : 'http://' + window.host + '/test/page_template/',
-      resourceURL  : 'http://static.cjia.com/resource',
-      moduleURL    : 'http://static.cjia.com/module'
+      $templatePath : 'http://' + window.host + '/test/page_template/',
+      $resourceURL  : 'http://static.cjia.com/resource',
+      $moduleURL    : '/libs/module'
     }
 
     b.init(env);

@@ -1,19 +1,19 @@
-Air.Module("B.view.View", function(){
+Air.Module("B.view.View", function(require){
+  var scopeManager = require('B.scope.scopeManager');
+  var EVENTS =  require('B.event.events');
 
   function createDomByString(templeteString){
     var div = document.createElement('div');
     div.innerHTML = templeteString;
-    var dom = div.childNodes[0];
-    return dom;
+    return div;
   }
 
-  function loadScript(dom, fn) {
-    var jsList = splitJS(dom);
-    runJS(jsList);
+  function loadScript(scopeList, dom, fn) {
+    runJS(scopeList, dom);
     fn && fn();
   }
 
-  function runJS(scripts){
+  function runJS(scripts, dom){
     for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
       var activeScript = scripts[scriptIndex];
 
@@ -23,23 +23,32 @@ Air.Module("B.view.View", function(){
       } else {
         tmpScript.text = activeScript.text;
       }
-      view.appendChild(tmpScript);
+      dom.appendChild(tmpScript);
 
       activeScript.parentNode.removeChild(activeScript);
     };
   }
 
-  function splitJS(dom){
-      var scripts = dom.querySelectorAll('script');
+  function splitJS(domWrapper){
+      var scripts = domWrapper.querySelectorAll('script');
       scripts = [].slice.call(scripts);
       return scripts
   }
 
   function View(viewName, dom, options){
     options = options || {};
+    // TODO 本地模板需要解析script上的{{}}
     if (beacon.isType(dom, 'String')) {
-      dom = createDomByString(dom);
-      loadScript(dom, options.initCallback);
+      var domWrapper = createDomByString(dom);
+      dom = domWrapper.querySelector('view[name="' + viewName + '"]');
+      var scopeList = splitJS(domWrapper);
+      var scriptScope = scopeManager.parseScope(viewName + 'script', { childNodes: scopeList });
+
+      beacon(scriptScope).once(EVENTS.DATA_CHANGE, function(){
+        loadScript(scopeList, dom, options.initCallback);
+      })
+
+      beacon(scriptScope).on(EVENTS.DATA_CHANGE);
     }
     // var dom = null,
     var templete = null,

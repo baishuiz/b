@@ -63,6 +63,7 @@ describe('数据绑定', function () {
 
         setTimeout(function(){
           expect(dom.text.innerText).toEqual('p - s');
+          expect($scope.$resourceURL).toEqual( 'http://static.cjia.com/resource');
           done();
         }, 0);
       });

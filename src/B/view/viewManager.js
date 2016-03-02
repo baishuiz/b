@@ -13,9 +13,10 @@ Air.Module("B.view.viewManager", function(require){
   /**
    * 初始化首屏 View
    */
-  function init(path){
+  function init(env){
+    scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = path || location.pathname;
+    var URLPath = location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
@@ -127,7 +128,10 @@ Air.Module("B.view.viewManager", function(require){
   function loadView(viewName){
     showLoading();
     var env = memCache.get('env');
-    var templatePath = env.templatePath + viewName + '.html';
+    var curRouter = router.get(viewName);
+    var sign = curRouter.sign || '';
+    var extPath = sign ? '_' + sign : '';
+    var templatePath = env.$templatePath + viewName + extPath + '.html';
     var http = new HTTP();
 
     http.get(templatePath, {

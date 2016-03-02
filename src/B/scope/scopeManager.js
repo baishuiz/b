@@ -8,20 +8,21 @@ Air.Module('B.scope.scopeManager', function(require){
   var nodeUtil = require('B.util.node');
   var eventDirective = require('B.directive.event');
 
+  var $rootScope = new Scope();
 
-  function getApps(dom){
-    return {}
+  function setRoot(params){
+    beacon.utility.merge($rootScope, params);
   }
 
   function generateScopeTree(childNodes, $scope){
     for (var i = 0; i < childNodes.length; i++) {
       var activeChild = childNodes[i];
-      TryParseNode(activeChild, $scope)
+      tryParseNode(activeChild, $scope)
     }
 
   }
 
-  function TryParseNode(target, $scope){
+  function tryParseNode(target, $scope){
     switch (target.nodeType) {
       case nodeUtil.type.HTML:
         parseHTML(target, $scope);
@@ -76,13 +77,6 @@ Air.Module('B.scope.scopeManager', function(require){
     var regMarkup = /{{.*?}}/ig;
     var text = node.nodeValue;
     if(text.match(regMarkup)){
-      if($scope.$parentScope){
-        // TODO
-        // beacon($scope.$parentScope).on(EVENTS.DATA_CHANGE, function(){
-        //   $scope.$update();
-        //   beacon($scope).on(EVENTS.DATA_CHANGE)
-        // })
-      }
 
       var txtNodeDataChange = (function(node, template){
         // 保持 template 的值，供后续替换使用
@@ -108,13 +102,17 @@ Air.Module('B.scope.scopeManager', function(require){
 
   }
 
-  function parseScope(scopeName,dom){
-    var scope = new Scope()
-    scopeList[scopeName] = scope;
+  function parseScope(scopeName, dom){
+    var scope = scopeList[scopeName];
+    if (!scope) {
+      scope = new Scope($rootScope);
+      delete scope.parent;
+      scopeList[scopeName] = scope;
+    }
     generateScopeTree(dom.childNodes, scope);
-  }
 
-  function init(){}
+    return scope;
+  }
 
   function getScope(scopeName) {
     return scopeList[scopeName];
@@ -122,7 +120,7 @@ Air.Module('B.scope.scopeManager', function(require){
 
   return {
     parseScope : parseScope,
-    init : init,
-    getScope: getScope
+    getScope: getScope,
+    setRoot: setRoot
   }
 });

@@ -23,8 +23,8 @@ Air.run(function(require){
        */
       init     : function(env){
         memCache.set('env', env);
-        viewManager.init();
-
+        Air.moduleURL(env.$moduleURL);
+        viewManager.init(env);
       },
       run      : run,
       Module   : Air.Module,

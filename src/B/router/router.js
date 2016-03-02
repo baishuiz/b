@@ -86,10 +86,15 @@ Air.Module("B.router.router", function(){
     return url;
   }
 
+  function get(viewName) {
+    return routers[viewName] || {};
+  }
+
   var api = {
     set : set,
     getMatchedRouter : getMatchedRouter,
-    getURLPathByViewName : getURLPathByViewName
+    getURLPathByViewName : getURLPathByViewName,
+    get: get
   }
   return api;
 });
