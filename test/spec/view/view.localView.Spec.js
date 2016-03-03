@@ -33,7 +33,7 @@ describe('模板内嵌 view ', function () {
     expect(activeViewName).toEqual('page_list');
   });// 切换 完成
 
-  it('路由参数', function() {
+  it('路由参数', function(done) {
     b.views.goTo('page_list', {
       params: {
         city: 104
@@ -41,6 +41,11 @@ describe('模板内嵌 view ', function () {
       query: '?a=1&b=2'
     });
     expect(location.pathname + location.search).toEqual('/list/104?a=1&b=2');
+    b.run('page_list', function(require, $scope){
+      expect($scope.$request.params['city']).toEqual(104);
+      done();
+    });
+
   }); // 路由参数 完成
 
 

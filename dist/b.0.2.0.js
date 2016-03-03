@@ -820,15 +820,24 @@
 
 
   function goTo (viewName, options){
-    switchURL(viewName, options);
+
     var hasView = getViewByViewName(viewName);
     if (hasView) {
       saveLastView();
+      switchURL(viewName, options);
+      changeURLParams(viewName, options);
       show(viewName);
     } else {
-      loadView(viewName);
+      loadView(viewName, options);
     }
     // hasView ? show(viewName) : loadView(viewName);
+  }
+
+  function changeURLParams(viewName, options) {
+    options = options || {};
+    var $scope = scopeManager.getScope(viewName);
+    $scope['$request'] = $scope.$request || {};
+    $scope.$request.params = options.params;
   }
 
   function switchURL (viewName, options) {
@@ -837,12 +846,17 @@
       params: options.params,
       query: options.query
     });
+
+
+
     var isInit  = options.init;
     var changeURLState = isInit ? history.replaceState : history.pushState;
-    changeURLState.call(history,{
+    changeURLState.call(history, {
       viewName: viewName,
       params: options.params
     }, viewName, url);
+
+
   }
 
   function listenURLChange() {
@@ -882,7 +896,7 @@
     return mainViewport.views[viewName];
   }
 
-  function loadView(viewName){
+  function loadView(viewName, options){
     showLoading();
     var env = memCache.get('env');
     var curRouter = router.get(viewName);
@@ -904,6 +918,7 @@
         }
       });
       var scope = scopeManager.parseScope(viewName, view.getDom());
+      changeURLParams(viewName, options);
       appendView(viewName, view);
 
       saveLastView();
@@ -912,6 +927,7 @@
       // 3
       beacon(scope).once(EVENTS.DATA_CHANGE, function(){
         // 6
+        switchURL(viewName, options);
         show(viewName);
       });
     }
