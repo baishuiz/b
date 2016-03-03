@@ -830,7 +830,6 @@
     } else {
       loadView(viewName, options);
     }
-    // hasView ? show(viewName) : loadView(viewName);
   }
 
   function changeURLParams(viewName, options) {
@@ -869,14 +868,6 @@
 
   function back () {
     window.history.back();
-  }
-
-  function setMiddleware (moduleName){
-
-  }
-
-  function existView (viewName){
-
   }
 
   function show (viewName){
@@ -977,9 +968,10 @@
     return activeView;
   }
 
-  var viewProxy = function(viewportName){
+  function setMiddleware (moduleName){
 
-  };
+  }
+
   api = {
     init : init,
     goTo : goTo,

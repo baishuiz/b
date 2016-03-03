@@ -14,7 +14,7 @@ describe('服务请求', function () {
 
   b.service.set('service.roomModelSearchListOpenCity', {
       path: 'roomModelSearchListOpenCity.json',
-      expiredSecond: 0.5,
+      expiredSecond: 20,
       extend : 'default'
   });
 
@@ -63,12 +63,18 @@ describe('服务请求', function () {
     });
   });
 
+  b.service.set('service.serviceCache', {
+      path: 'serviceCache.json',
+      expiredSecond: 1,
+      extend : 'default'
+  });
+
   it('服务缓存', function(done) {
     b.run('page_service_cache', function(require, $scope){
-      var cityListService = b.service.get('service.roomModelSearchListOpenCity', $scope);
+      var serviceCache = b.service.get('service.serviceCache', $scope);
 
       var query = function(params, callback, noCache) {
-        cityListService.query(params, {
+        serviceCache.query(params, {
           noCache: noCache,
           successCallBack: function(data, fromCache){
             callback(data, fromCache);
@@ -80,6 +86,7 @@ describe('服务请求', function () {
       };
 
       // 第一次请求后记录缓存
+      // 1
       query({ a: 2, b: 3}, function(data, fromCache) {
         expect(fromCache).toEqual(undefined);
 
@@ -89,19 +96,27 @@ describe('服务请求', function () {
           expect(data.result[0].cityName).toEqual('上海');
 
           // 第三次修改参数后缓存失效，同时记录新缓存
+          // 2
           query({ a: 3, b: 4}, function(data, fromCache) {
             expect(fromCache).toEqual(undefined);
 
-            // 第四次3秒后请求，此时缓存已过期
+            // 第四次过期后请求，不使用缓存，同时记录新缓存
             setTimeout(function() {
+              // 3
               query({ a: 3, b: 4}, function(data, fromCache) {
                 expect(fromCache).toEqual(undefined);
 
-                // 第五次不使用缓存
+                // 第五次请求，使用缓存
                 query({ a: 3, b: 4}, function(data, fromCache) {
-                  expect(fromCache).toEqual(undefined);
-                  done();
-                }, true);
+                  expect(fromCache).toEqual(true);
+
+                  // 第六次请求，强制不实用缓存
+                  // 4
+                  query({ a: 3, b: 4}, function(data, fromCache) {
+                    expect(fromCache).toEqual(undefined);
+                    done();
+                  }, true);
+                });
               });
             }, 1500);
           });
