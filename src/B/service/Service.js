@@ -2,6 +2,7 @@ Air.Module('B.service.Service', function(require) {
   var HTTP = require('B.network.HTTP');
   var EVENTS =  require('B.event.events');
   var memCache = require('B.data.MemCache');
+  var middleware = require('B.util.middleware');
 
   function Service(config, scope){
     config = config || {};
@@ -25,35 +26,64 @@ Air.Module('B.service.Service', function(require) {
           return;
         }
       }
-      // TODO 中间件
+      var httpSuccessCallback = function(responseText) {
+        var responseData = null;
+        try {
+          responseData = JSON.parse(responseText);
+        } catch(e) {
+          responseData = {
+            err: true
+          };
+        }
+
+        callAfterQueryMiddleware(responseData, function(isError) {
+          if (isError) {
+            options.errorCallBack && options.errorCallBack(responseData);
+          } else {
+            // 记录缓存
+            memCache.set(cacheKey, responseData, {
+              expiredSecond: config.expiredSecond
+            });
+
+            options.successCallBack && options.successCallBack(responseData);
+          }
+
+          beacon(scope).on(EVENTS.DATA_CHANGE);
+        });
+
+      }
+      var httpErrorCallback = function(xhr) {
+        options.errorCallBack && options.errorCallBack();
+        beacon(scope).on(EVENTS.DATA_CHANGE);
+      }
+
       var requestOptions = {
         url: url,
         method: config.method,
         header: header,
-        data: JSON.stringify(requestParams),
-        successCallBack: function(responseText){
-          var responseData = null;
-          try {
-            responseData = JSON.parse(responseText);
-          } catch(e) {
-            options.errorCallBack && options.errorCallBack();
-          }
-
-          // 记录缓存
-          memCache.set(cacheKey, responseData, {
-            expiredSecond: config.expiredSecond
-          });
-
-          options.successCallBack && options.successCallBack(responseData);
-          beacon(scope).on(EVENTS.DATA_CHANGE);
-        },
-        errorCallBack: function(xhr){
-          options.errorCallBack && options.errorCallBack(xhr);
-          beacon(scope).on(EVENTS.DATA_CHANGE);
-        }
+        data: JSON.stringify(requestParams)
       }
-      http.request(requestOptions);
+
+      callBeforeQueryMiddleware(requestOptions, function(){
+        // 避免外部修改回调函数，所以在外部处理完成后再赋值
+        requestOptions.successCallBack = httpSuccessCallback;
+        requestOptions.errorCallBack = httpErrorCallback;
+
+        http.request(requestOptions);
+      });
     };
+  }
+
+  // beforeQuery 方法对外支持中间件，中间件参数为 requestOptions，中间件无返回值
+  function callBeforeQueryMiddleware(requestOptions, next) {
+    var fnName = 'beforeQuery';
+    middleware.run(fnName, requestOptions, next);
+  }
+
+  // afterQuery 方法对外支持中间件，中间件参数为 requestOptions，中间件返回是否失败
+  function callAfterQueryMiddleware(responseData, next) {
+    var fnName = 'afterQuery';
+    middleware.run(fnName, responseData, next);
   }
 
   return Service;

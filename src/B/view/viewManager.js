@@ -5,11 +5,11 @@ Air.Module("B.view.viewManager", function(require){
   var memCache = require('B.data.memCache');
   var scopeManager = require('B.scope.scopeManager');
   var EVENTS =  require('B.event.events');
+  var middleware = require('B.util.middleware');
   var viewList = [],
       viewportList = [],
       activeView = null,
-      mainViewport = null,
-      middleware = []
+      mainViewport = null;
   var lastView = null;
 
   /**
@@ -77,16 +77,22 @@ Air.Module("B.view.viewManager", function(require){
 
 
   function goTo (viewName, options){
-
-    var hasView = getViewByViewName(viewName);
-    if (hasView) {
-      saveLastView();
-      switchURL(viewName, options);
-      changeURLParams(viewName, options);
-      show(viewName);
-    } else {
-      loadView(viewName, options);
+    var fnName = 'goTo';
+    var paramObj = { viewName: viewName };
+    var next = function(){
+      var hasView = getViewByViewName(viewName);
+      if (hasView) {
+        saveLastView();
+        switchURL(viewName, options);
+        changeURLParams(viewName, options);
+        show(viewName);
+      } else {
+        loadView(viewName, options);
+      }
     }
+
+    // goTo 方法对外支持中间件，中间件参数为 paramObj
+    middleware.run(fnName, paramObj, next);
   }
 
   function changeURLParams(viewName, options) {
@@ -225,15 +231,11 @@ Air.Module("B.view.viewManager", function(require){
     return activeView;
   }
 
-  function setMiddleware (moduleName){
-
-  }
-
   api = {
     init : init,
     goTo : goTo,
     back : back,
-    setMiddleware : setMiddleware,
+    setMiddleware : middleware.set,
     showLoading : showLoading,
     hideLoading : hideLoading,
     getActive : getActive

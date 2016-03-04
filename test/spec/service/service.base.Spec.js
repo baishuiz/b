@@ -64,9 +64,9 @@ describe('服务请求', function () {
   });
 
   b.service.set('service.serviceCache', {
-      path: 'serviceCache.json',
-      expiredSecond: 1,
-      extend : 'default'
+    path: 'serviceCache.json',
+    expiredSecond: 1,
+    extend : 'default'
   });
 
   it('服务缓存', function(done) {
@@ -121,6 +121,80 @@ describe('服务请求', function () {
             }, 1500);
           });
         });
+      });
+    });
+
+  });
+
+  b.service.set('service.serviceMiddleware1', {
+    path: 'serviceMiddleware1.json',
+    expiredSecond: 1,
+    extend : 'default'
+  });
+
+  it('beforeQuery 中间件', function(done) {
+
+    b.service.setMiddleware('beforeQuery', function(requestParam, next) {
+      // beforeQuery 中间件验证：如果是 middleware1 服务，则修改请求为 middlerware2 的地址
+      if (requestParam.url.indexOf('serviceMiddleware1.json')) {
+        requestParam.url = requestParam.url.replace('serviceMiddleware1.json', 'serviceMiddleware2.json');
+      }
+      next();
+    });
+
+    b.run('page_service_middleware_before', function(require, $scope){
+      var serviceMiddleware1 = b.service.get('service.serviceMiddleware1', $scope);
+
+      serviceMiddleware1.query({
+        a: 1,
+        b: 2
+      }, {
+        noCache: true,
+        successCallBack: function(data, fromCache){
+          expect(data.result).toEqual(2);
+          done();
+        },
+        errorCallBack: function(data) {
+          console.log(data);
+        }
+      });
+    });
+
+  });
+
+  it('afterQuery 中间件', function(done) {
+
+    b.service.set('service.serviceMiddleware3', {
+      path: 'serviceMiddleware3.json',
+      expiredSecond: 1,
+      extend : 'default'
+    });
+
+    b.service.setMiddleware('afterQuery', function(responseData, next) {
+      var isError = false;
+
+      if (responseData.name === 'serviceMiddleware3') {
+        isError = true;
+      }
+
+      next(isError);
+    });
+
+    b.run('page_service_middleware_after', function(require, $scope){
+      var serviceMiddleware3 = b.service.get('service.serviceMiddleware3', $scope);
+
+      serviceMiddleware3.query({
+        a: 1,
+        b: 2
+      }, {
+        noCache: true,
+        successCallBack: function(data, fromCache){
+          console.log(data);
+        },
+        errorCallBack: function(data) {
+          expect(data.result).toEqual(3);
+          done();
+        }
       });
     });
 

@@ -2,6 +2,7 @@ Air.Module('B.service.serviceFactory', function(require) {
   var configList = [];
   var serviceList = [];
   var Service = require('B.service.Service');
+  var middleware = require('B.util.middleware');
 
   function setConfig(configName, config) {
     if (configName) {
@@ -36,6 +37,7 @@ Air.Module('B.service.serviceFactory', function(require) {
   return {
     setConfig: setConfig,
     set: set,
-    get : get
+    get : get,
+    setMiddleware: middleware.set
   }
 });
