@@ -217,6 +217,8 @@ describe('服务请求', function () {
       extend : 'default'
     });
 
+    // 已在 connect 的中间件中将 timeoutService.json 延迟 1s
+
     b.run('page_service_timeout', function(require, $scope) {
       var timeoutService = b.service.get('service.timeoutService', $scope);
 
