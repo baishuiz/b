@@ -42,6 +42,10 @@ Air.Module('B.network.HTTP', function() {
         successCallBack : options.successCallBack,
         errorCallBack : options.errorCallBack
       });
+    },
+
+    abort: function() {
+      this.xhr.abort();
     }
   }
   return XHR;

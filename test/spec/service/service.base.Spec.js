@@ -1,4 +1,12 @@
 describe('服务请求', function () {
+
+  var ERROR_CODE = {
+    parse: 1, // JSON 解析出错
+    timeout: 2, // 超时
+    network: 3, // 网络错误
+    business: 4 // 业务错误（由中间件控制）
+  }
+
   b.service.setConfig('default', {
     host: window.host + '/test/service/',
     method: 'GET',
@@ -10,6 +18,7 @@ describe('服务请求', function () {
     path: '',
     params: null,
     expiredSecond: null,
+    timeout: 0.5
   });
 
   b.service.set('service.roomModelSearchListOpenCity', {
@@ -30,8 +39,8 @@ describe('服务请求', function () {
           expect(data.result[0].cityName).toEqual('上海');
           done();
         },
-        errorCallBack: function(xhr) {
-          throw new Error(xhr);
+        errorCallBack: function(errorCode) {
+          console.log(errorCode)
         }
       })
     });
@@ -56,8 +65,8 @@ describe('服务请求', function () {
             done();
           }, 0);
         },
-        errorCallBack: function(xhr) {
-          throw new Error(xhr);
+        errorCallBack: function(errorCode) {
+          console.log(errorCode)
         }
       });
     });
@@ -79,8 +88,8 @@ describe('服务请求', function () {
           successCallBack: function(data, fromCache){
             callback(data, fromCache);
           },
-          errorCallBack: function(xhr) {
-            throw new Error(xhr);
+          errorCallBack: function(errorCode) {
+            console.log(errorCode)
           }
         });
       };
@@ -136,7 +145,7 @@ describe('服务请求', function () {
 
     b.service.setMiddleware('beforeQuery', function(requestParam, next) {
       // beforeQuery 中间件验证：如果是 middleware1 服务，则修改请求为 middlerware2 的地址
-      if (requestParam.url.indexOf('serviceMiddleware1.json')) {
+      if (requestParam.url.indexOf('serviceMiddleware1.json') !== -1) {
         requestParam.url = requestParam.url.replace('serviceMiddleware1.json', 'serviceMiddleware2.json');
       }
       next();
@@ -154,8 +163,8 @@ describe('服务请求', function () {
           expect(data.result).toEqual(2);
           done();
         },
-        errorCallBack: function(data) {
-          console.log(data);
+        errorCallBack: function(errorCode) {
+          console.log(errorCode)
         }
       });
     });
@@ -191,11 +200,40 @@ describe('服务请求', function () {
         successCallBack: function(data, fromCache){
           console.log(data);
         },
-        errorCallBack: function(data) {
+        errorCallBack: function(errorCode, data) {
+          expect(errorCode).toEqual(ERROR_CODE.business);
           expect(data.result).toEqual(3);
           done();
         }
       });
+    });
+
+  });
+
+  it('服务超时', function(done) {
+    b.service.set('service.timeoutService', {
+      path: 'timeoutService.json',
+      expiredSecond: 1,
+      extend : 'default'
+    });
+
+    b.run('page_service_timeout', function(require, $scope) {
+      var timeoutService = b.service.get('service.timeoutService', $scope);
+
+      timeoutService.query({
+        a: 1,
+        b: 2
+      }, {
+        noCache: true,
+        successCallBack: function(data, fromCache){
+          console.log(data);
+        },
+        errorCallBack: function(errorCode) {
+          expect(errorCode).toEqual(ERROR_CODE.timeout);
+          done();
+        }
+      });
+
     });
 
   });

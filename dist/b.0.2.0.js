@@ -493,6 +493,10 @@
         successCallBack : options.successCallBack,
         errorCallBack : options.errorCallBack
       });
+    },
+
+    abort: function() {
+      this.xhr.abort();
     }
   }
   return XHR;
@@ -502,6 +506,13 @@
   var EVENTS =  require('B.event.events');
   var memCache = require('B.data.MemCache');
   var middleware = require('B.util.middleware');
+
+  var ERROR_CODE = {
+    parse: 1, // JSON 解析出错
+    timeout: 2, // 超时
+    network: 3, // 网络错误
+    business: 4 // 业务错误（由中间件控制）
+  }
 
   function Service(config, scope){
     config = config || {};
@@ -513,8 +524,11 @@
 
     this.query = function(requestParams, options){
       options = options || {};
+      var timeoutSeconds = beacon.isType(config.timeout, 'Number') ? config.timeout : 30;
       var url = config.protocol + '://' + config.host + config.path;
       var cacheKey = url + JSON.stringify(requestParams);
+      var finished = false;
+      var timer = null;
 
       if (!options.noCache) {
         var cachedData = memCache.get(cacheKey);
@@ -525,34 +539,55 @@
           return;
         }
       }
+
+      var startTimeoutCount = function() {
+        timer = setTimeout(function(){
+          http.abort();
+        }, timeoutSeconds * 1000);
+      }
+
+      var clearTimeoutCount = function() {
+        clearTimeout(timer);
+      }
+
       var httpSuccessCallback = function(responseText) {
+        clearTimeoutCount();
         var responseData = null;
+        var parseError = false;
         try {
           responseData = JSON.parse(responseText);
         } catch(e) {
-          responseData = {
-            err: true
-          };
+          parseError = true;
         }
 
-        callAfterQueryMiddleware(responseData, function(isError) {
-          if (isError) {
-            options.errorCallBack && options.errorCallBack(responseData);
-          } else {
-            // 记录缓存
-            memCache.set(cacheKey, responseData, {
-              expiredSecond: config.expiredSecond
-            });
-
-            options.successCallBack && options.successCallBack(responseData);
-          }
-
+        if (parseError) {
+          options.errorCallBack && options.errorCallBack(ERROR_CODE.parse, responseText);
           beacon(scope).on(EVENTS.DATA_CHANGE);
-        });
+          return;
+        } else {
+          callAfterQueryMiddleware(responseData, function(isError) {
+            if (isError) {
+              options.errorCallBack && options.errorCallBack(ERROR_CODE.business, responseData);
+            } else {
+              // 记录缓存
+              memCache.set(cacheKey, responseData, {
+                expiredSecond: config.expiredSecond
+              });
 
+              options.successCallBack && options.successCallBack(responseData);
+            }
+
+            beacon(scope).on(EVENTS.DATA_CHANGE);
+          });
+        }
       }
+
       var httpErrorCallback = function(xhr) {
-        options.errorCallBack && options.errorCallBack();
+        clearTimeoutCount();
+
+        var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
+        options.errorCallBack && options.errorCallBack(errorCode);
+
         beacon(scope).on(EVENTS.DATA_CHANGE);
       }
 
@@ -561,7 +596,7 @@
         method: config.method,
         header: header,
         data: JSON.stringify(requestParams)
-      }
+      };
 
       callBeforeQueryMiddleware(requestOptions, function(){
         // 避免外部修改回调函数，所以在外部处理完成后再赋值
@@ -569,6 +604,7 @@
         requestOptions.errorCallBack = httpErrorCallback;
 
         http.request(requestOptions);
+        startTimeoutCount();
       });
     };
   }
