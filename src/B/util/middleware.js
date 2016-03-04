@@ -1,16 +1,27 @@
 Air.Module('B.util.middleware', function(){
   var middlewares = {};
 
-  function set(fnName, fn) {
+  function add(fnName, fn) {
     if (fnName && fn) {
       middlewares[fnName] = middlewares[fnName] || [];
       middlewares[fnName].push(fn);
     }
   }
 
+  function remove(fnName, fn) {
+    if (fnName && fn) {
+      var list = middlewares[fnName] || [];
+      var index = list.indexOf(fn);
+      if (index !== -1) {
+        list.splice(index, 1);
+      }
+    }
+  }
+
   function run(fnName, paramObj, next) {
     var fns = middlewares[fnName];
     var fnLength = fns && fns.length;
+    next = next || function(){};
 
     if (fnLength) {
       var fnIndex = 0;
@@ -32,7 +43,8 @@ Air.Module('B.util.middleware', function(){
   }
 
   return {
-    set: set,
-    run: run
+    add: add,
+    run: run,
+    remove: remove
   };
 });

@@ -2,10 +2,6 @@ describe('远程模板', function () {
 
   it('初始化', function (done) {
     // 模板 HTML 元素选择器
-    var selector = {
-      activeView : 'viewport[main=true] view[active=true]',
-    }
-
     var activeView = b.views.getActive();
     beacon(activeView).once(activeView.events.onHide, function(e, data) {
 
@@ -13,7 +9,7 @@ describe('远程模板', function () {
 
       beacon(toView).once(toView.events.onShow, function(e) {
         // 模板 HTML元素引用
-        var activeView  = document.querySelector(selector.activeView)
+        var activeView = b.views.getActive().getDom();
 
         var activeViewContent = activeView.querySelector('p')
         var img = activeView.querySelector('img');
@@ -68,9 +64,9 @@ describe('远程模板', function () {
   }); // 后退 完成
 
 
-  it('中间件', function(done) {
+  it('beforeGoTo 中间件', function(done) {
     // 中间件1
-    b.views.setMiddleware('goTo', function(paramObj, next) {
+    b.views.addMiddleware('beforeGoTo', function(paramObj, next) {
       if (paramObj.viewName === 'remote_page_view_middleware_1') {
         b.views.goTo('remote_page_view_middleware_2');
       } else {
@@ -78,7 +74,7 @@ describe('远程模板', function () {
       }
     });
     // 中间件2
-    b.views.setMiddleware('goTo', function(paramObj, next) {
+    b.views.addMiddleware('beforeGoTo', function(paramObj, next) {
       if (paramObj.viewName === 'remote_page_view_middleware_3') {
         b.views.goTo('remote_page_view_middleware_4');
       } else {

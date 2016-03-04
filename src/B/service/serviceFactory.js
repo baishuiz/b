@@ -38,6 +38,7 @@ Air.Module('B.service.serviceFactory', function(require) {
     setConfig: setConfig,
     set: set,
     get : get,
-    setMiddleware: middleware.set
+    addMiddleware : middleware.add,
+    removeMiddleware : middleware.remove
   }
 });

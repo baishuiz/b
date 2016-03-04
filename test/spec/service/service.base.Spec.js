@@ -143,7 +143,7 @@ describe('服务请求', function () {
 
   it('beforeQuery 中间件', function(done) {
 
-    b.service.setMiddleware('beforeQuery', function(requestParam, next) {
+    b.service.addMiddleware('beforeQuery', function(requestParam, next) {
       // beforeQuery 中间件验证：如果是 middleware1 服务，则修改请求为 middlerware2 的地址
       if (requestParam.url.indexOf('serviceMiddleware1.json') !== -1) {
         requestParam.url = requestParam.url.replace('serviceMiddleware1.json', 'serviceMiddleware2.json');
@@ -179,7 +179,7 @@ describe('服务请求', function () {
       extend : 'default'
     });
 
-    b.service.setMiddleware('afterQuery', function(responseData, next) {
+    b.service.addMiddleware('afterQuery', function(responseData, next) {
       var isError = false;
 
       if (responseData.name === 'serviceMiddleware3') {

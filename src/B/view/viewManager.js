@@ -77,7 +77,7 @@ Air.Module("B.view.viewManager", function(require){
 
 
   function goTo (viewName, options){
-    var fnName = 'goTo';
+    var fnName = 'beforeGoTo';
     var paramObj = { viewName: viewName };
     var next = function(){
       var hasView = getViewByViewName(viewName);
@@ -104,6 +104,7 @@ Air.Module("B.view.viewManager", function(require){
 
   function switchURL (viewName, options) {
     options = options || {};
+    var fromUrl = location.href;
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
       query: options.query
@@ -119,6 +120,13 @@ Air.Module("B.view.viewManager", function(require){
     }, viewName, url);
 
 
+    var fnName = 'afterURLChange';
+    var paramObj = {
+      from: fromUrl,
+      to: url
+    };
+    // switchURL 方法对外支持中间件，中间件参数为 paramObj
+    middleware.run(fnName, paramObj);
   }
 
   function listenURLChange() {
@@ -235,7 +243,8 @@ Air.Module("B.view.viewManager", function(require){
     init : init,
     goTo : goTo,
     back : back,
-    setMiddleware : middleware.set,
+    addMiddleware : middleware.add,
+    removeMiddleware : middleware.remove,
     showLoading : showLoading,
     hideLoading : hideLoading,
     getActive : getActive

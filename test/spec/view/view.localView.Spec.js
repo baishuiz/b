@@ -33,23 +33,9 @@ describe('模板内嵌 view ', function () {
     expect(activeViewName).toEqual('page_list');
   });// 切换 完成
 
-  it('路由参数', function(done) {
-    b.views.goTo('page_list', {
-      params: {
-        city: 104
-      },
-      query: '?a=1&b=2'
-    });
-    expect(location.pathname + location.search).toEqual('/list/104?a=1&b=2');
-    b.run('page_list', function(require, $scope){
-      expect($scope.$request.params['city']).toEqual(104);
-      done();
-    });
-
-  }); // 路由参数 完成
-
 
   it('后退', function (done) {
+    b.views.goTo('page_list');
     b.views.goTo('page_detail');
     b.views.back();
 
@@ -65,5 +51,46 @@ describe('模板内嵌 view ', function () {
       });
     });
   }); // 后退 完成
+
+  it('路由参数', function(done) {
+    b.views.goTo('page_list', {
+      params: {
+        city: 104
+      },
+      query: '?a=1&b=2'
+    });
+    expect(location.pathname + location.search).toEqual('/list/104?a=1&b=2');
+    b.run('page_list', function(require, $scope){
+      expect($scope.$request.params['city']).toEqual(104);
+      done();
+    });
+
+  }); // 路由参数 完成
+
+  it('afterURLChange 中间件', function(done) {
+    var changeSwitch = true;
+    b.views.goTo('page_url_change_before');
+    var changeCallback = function(changeObj, next){
+      if (changeSwitch) {
+        changeSwitch = false
+        b.views.removeMiddleware('afterURLChange', changeCallback);
+        next();
+
+        // done 会截断后续 js 的执行，导致无法show page_url_change_after，所以用timeout
+        setTimeout(function(){
+          expect(changeObj.from).toEqual('http://' + window.host + '/page_url_change_before');
+          expect(changeObj.to).toEqual('http://' + window.host + '/page_url_change_after');
+          done();
+        }, 0);
+      } else {
+        next();
+      }
+    }
+    b.views.addMiddleware('afterURLChange', changeCallback);
+
+    b.views.goTo('page_url_change_after');
+    changeSwitch = false;
+
+  });
 
 }); // 模板内嵌 view over

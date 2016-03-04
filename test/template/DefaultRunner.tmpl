@@ -25,6 +25,8 @@ viewport view[active="true"]{display:block}
     <p>Hello</p>
     <span class="flower" attr="{{attr}}">{{flower}}</span>
   </view>
+  <view name="page_url_change_before"></view>
+  <view name="page_url_change_after"></view>
   <view name="page_detail">
     <p>{{parentValue}}</p>
     <view name="page_detail_subview">
@@ -170,6 +172,16 @@ viewport view[active="true"]{display:block}
       b.router.set({
         rule : '/remote_page_scope',
         viewName : 'remote_page_scope'
+      })
+
+      b.router.set({
+        rule : '/page_url_change_before',
+        viewName : 'page_url_change_before'
+      });
+
+      b.router.set({
+        rule : '/page_url_change_after',
+        viewName : 'page_url_change_after'
       })
 
     }());
