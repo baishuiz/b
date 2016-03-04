@@ -50,8 +50,9 @@ viewport view[active="true"]{display:block}
     <a href="javascript:void(0)" class="btn" b-event="click clickHandle('click'); focus focusHandle('focus')">Hello Event</a>
   </view>
   <view name="page_repeat">
+    <p>{{notice}}</p>
     <ul>
-      <li b-repeat="item in list">
+      <li b-repeat="item in list" name="{{item.name}}{{notice}}">
         {{ item.name }}
       </li>
     </ul>
@@ -100,6 +101,12 @@ viewport view[active="true"]{display:block}
         </div>
       </div>
     </div>
+  </view>
+  <view name="page_model_bind">
+    <input b-model="username" type="text" class="username"></input>
+  </view>
+  <view name="page_model_input">
+    <input b-model="username" type="text" class="username"></input>
   </view>
 </viewport>
 
@@ -192,6 +199,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/event/event.base.Spec.js"></script>
   
   <script src="test/spec/repeat/repeat.base.Spec.js"></script>
+  
+  <script src="test/spec/model/model.base.Spec.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   

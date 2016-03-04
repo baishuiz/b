@@ -119,11 +119,8 @@
 ;Air.Module("B.event.events", function(){
   var events = {
     DATA_CHANGE        : beacon.createEvent("data change"),
-    REPEAT_DATA_CHANGE : beacon.createEvent("repeat data change"),
-    REPEAT_DONE        : beacon.createEvent("repeat done"),
     URL_CHANGE         : beacon.createEvent("url change"),
     PAGE404            : beacon.createEvent("")
-
   }
   return events;
 });
@@ -172,6 +169,39 @@
 
   }
 
+  return api;
+})
+;Air.Module('B.directive.model', function(require){
+  var nodeUtil  = require('B.util.node'),
+      util      = require('B.util.util'),
+      EVENTS    = require("B.event.events");
+
+  var attrName = 'b-model';
+
+  var api = function(target, $scope){
+      var activeModel = null;
+      if(!nodeUtil(target).hasAttribute(attrName)){
+        return;
+      }
+      var dataPath = target.getAttribute(attrName)
+                     .replace(/{{|}}/ig,'');
+
+      beacon(target).on('input', function(){
+        var target = this;
+
+        new Function('$scope','target','$scope.' + dataPath + '= target.value.trim()')($scope, target)
+        activeModel = true;
+        beacon($scope).on(EVENTS.DATA_CHANGE);
+        activeModel = false;
+      });
+
+      beacon($scope).on(EVENTS.DATA_CHANGE, function(e){
+        if(!activeModel){
+          var value = Air.NS(dataPath, $scope);
+          target.value = !util.isEmpty(value) ? (value.trim ? value.trim() : value) : "";
+        }
+      });
+  }
   return api;
 })
 ;Air.Module('B.scope.Scope', function() {
@@ -294,7 +324,7 @@
 ;Air.Module('B.scope.scopeManager', function(require){
   var scopeList = [];
   var repeat = require('B.directive.repeat');
-  // var model =  require('B.directive.model');
+  var initModel =  require('B.directive.model');
   var EVENTS =  require('B.event.events');
   var util = require('B.util.util');
   var Scope =  require('B.scope.Scope');
@@ -345,6 +375,7 @@
     for (var i = 0, len = repeatItems.length, repeatItem; i < len; i++) {
       repeatItem = repeatItems[i];
       generateScopeTree([repeatItem.node], repeatItem.$scope);
+      generateScopeTree(repeatItem.node.attributes, repeatItem.$scope);
       beacon(repeatItem.$scope).on(EVENTS.DATA_CHANGE);
     }
   }
@@ -353,6 +384,7 @@
     $scope = tryGenerateViewScope(target, $scope);
 
     eventDirective(target, $scope);
+    initModel(target, $scope);
 
     if (repeat.needRepeat(target)) {
       beacon($scope).on(EVENTS.DATA_CHANGE, function(){

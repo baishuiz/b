@@ -27,6 +27,7 @@ module.exports = function(grunt){
                         './src/B/data/memCache.js',
                         './src/B/event/events.js',
                         './src/B/directive/event.js',
+                        './src/B/directive/model.js',
                         './src/B/scope/Scope.js',
                         './src/B/directive/repeat.js',
                         './src/B/scope/scopeManager.js',
@@ -59,7 +60,8 @@ module.exports = function(grunt){
                   './test/spec/scope/*Spec.js',
                   './test/spec/service/*Spec.js',
                   './test/spec/event/*Spec.js',
-                  './test/spec/repeat/*Spec.js'
+                  './test/spec/repeat/*Spec.js',
+                  './test/spec/model/*Spec.js'
                 ],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',
@@ -83,7 +85,8 @@ module.exports = function(grunt){
                   './test/spec/scope/*Spec.js',
                   './test/spec/service/*Spec.js',
                   './test/spec/event/*Spec.js',
-                  './test/spec/repeat/*Spec.js'
+                  './test/spec/repeat/*Spec.js',
+                  './test/spec/model/*Spec.js'
                 ],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',

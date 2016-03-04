@@ -1,7 +1,7 @@
 Air.Module('B.scope.scopeManager', function(require){
   var scopeList = [];
   var repeat = require('B.directive.repeat');
-  // var model =  require('B.directive.model');
+  var initModel =  require('B.directive.model');
   var EVENTS =  require('B.event.events');
   var util = require('B.util.util');
   var Scope =  require('B.scope.Scope');
@@ -52,6 +52,7 @@ Air.Module('B.scope.scopeManager', function(require){
     for (var i = 0, len = repeatItems.length, repeatItem; i < len; i++) {
       repeatItem = repeatItems[i];
       generateScopeTree([repeatItem.node], repeatItem.$scope);
+      generateScopeTree(repeatItem.node.attributes, repeatItem.$scope);
       beacon(repeatItem.$scope).on(EVENTS.DATA_CHANGE);
     }
   }
@@ -60,6 +61,7 @@ Air.Module('B.scope.scopeManager', function(require){
     $scope = tryGenerateViewScope(target, $scope);
 
     eventDirective(target, $scope);
+    initModel(target, $scope);
 
     if (repeat.needRepeat(target)) {
       beacon($scope).on(EVENTS.DATA_CHANGE, function(){

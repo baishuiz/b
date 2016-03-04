@@ -2,6 +2,7 @@ describe('repeat', function () {
 
   it('repeat 基础', function (done) {
     b.run('page_repeat', function(require, $scope){
+      $scope.notice = ", welcome";
       $scope.list = [
         {
           name: 'Name 1'
@@ -23,6 +24,7 @@ describe('repeat', function () {
         expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 1');
         expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 2');
         expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 3');
+        expect(dom.list.querySelector('li:nth-child(3)').getAttribute('name')).toEqual('Name 3, welcome');
         done();
       }, 0);
     });
