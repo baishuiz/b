@@ -60,10 +60,10 @@ Air.Module('B.scope.scopeManager', function(require){
 
   function parseHTML(target, $scope){
     $scope = tryGenerateViewScope(target, $scope);
-
+    initModel(target, $scope);
     eventDirective(target, $scope);
     showDirective(target, $scope)
-    initModel(target, $scope);
+
 
     if (repeat.needRepeat(target)) {
       beacon($scope).on(EVENTS.DATA_CHANGE, function(){

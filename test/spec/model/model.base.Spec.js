@@ -22,6 +22,10 @@ describe('model', function () {
 
     b.views.goTo('page_model_input');
     b.run('page_model_input', function(require, $scope) {
+      $scope.$event = {
+        inputHandle : function(){console.log('hello')}
+      }
+
       // scope 赋值
       $scope.username = '123';
       var dom = {
