@@ -8,6 +8,13 @@ Air.Module("B.view.View", function(require){
     return div;
   }
 
+  function loadStyle(styleList, dom) {
+    for (var i = 0, len = styleList.length, style; i < len; i++) {
+      style = styleList[i];
+      dom.appendChild(style);
+    }
+  }
+
   function loadScript(scopeList, dom, fn) {
     runJS(scopeList, dom);
     fn && fn();
@@ -29,10 +36,21 @@ Air.Module("B.view.View", function(require){
     };
   }
 
-  function splitJS(domWrapper){
-      var scripts = domWrapper.querySelectorAll('script');
+  function splitDom(domWrapper, selector){
+      var scripts = domWrapper.querySelectorAll(selector);
       scripts = [].slice.call(scripts);
       return scripts
+  }
+
+  function parseTag(tagName, viewName, dom, domWrapper, fn) {
+    var domList = splitDom(domWrapper, tagName);
+    var tagScope = scopeManager.parseScope(viewName + tagName, { childNodes: domList });
+
+    beacon(tagScope).once(EVENTS.DATA_CHANGE, function(){
+      fn && fn(domList);
+    })
+
+    beacon(tagScope).on(EVENTS.DATA_CHANGE);
   }
 
   function View(viewName, dom, options){
@@ -41,14 +59,13 @@ Air.Module("B.view.View", function(require){
     if (beacon.isType(dom, 'String')) {
       var domWrapper = createDomByString(dom);
       dom = domWrapper.querySelector('view[name="' + viewName + '"]');
-      var scopeList = splitJS(domWrapper);
-      var scriptScope = scopeManager.parseScope(viewName + 'script', { childNodes: scopeList });
 
-      beacon(scriptScope).once(EVENTS.DATA_CHANGE, function(){
-        loadScript(scopeList, dom, options.initCallback);
-      })
-
-      beacon(scriptScope).on(EVENTS.DATA_CHANGE);
+      parseTag('style', viewName, dom, domWrapper, function(tagList){
+        loadStyle(tagList, dom);
+      });
+      parseTag('script', viewName, dom, domWrapper, function(tagList){
+        loadScript(tagList, dom, options.initCallback);
+      });
     }
     // var dom = null,
     var templete = null,
