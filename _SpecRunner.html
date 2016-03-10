@@ -111,6 +111,9 @@ viewport view[active="true"]{display:block}
   <view name="page_model_input">
     <input b-model="username" type="text" class="username"></input>
   </view>
+  <view name="page_b-show">
+    <p b-show="logined" b-event="click switchi()"></p>
+  </view>
 </viewport>
 
 <viewport class=".footer">
@@ -133,7 +136,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/b.0.2.0.min.js"></script>
+  <script src="dist/b.0.2.0.js"></script>
   
 
 
@@ -214,6 +217,10 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/repeat/repeat.base.Spec.js"></script>
   
   <script src="test/spec/model/model.base.Spec.js"></script>
+  
+  <script src="test/spec/b-show/show.base.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   

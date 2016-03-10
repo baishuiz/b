@@ -183,6 +183,35 @@
 
   return api;
 })
+;Air.Module('B.directive.show', function(require){
+  var node      = require('B.util.node'),
+      EVENTS    = require('B.event.events');
+
+  var attribute = 'b-show';
+  var api = function(target, $scope){
+    var isShowElement = node(target).hasAttribute(attribute);
+    isShowElement && processShowElement(target, $scope);
+  }
+
+  function processShowElement(target, $scope){
+    beacon($scope).on(EVENTS.DATA_CHANGE, watchElement);
+    function watchElement(){
+      var dataPath = target.getAttribute(attribute);
+      var displayStatus = Air.NS(dataPath, $scope);
+      displayStatus ? show(target) : hide(target);
+    }
+  }
+
+  function show(target){
+    target.style.display = 'block';
+  }
+
+  function hide(target){
+    target.style.display = 'none';
+  }
+
+  return api;
+});
 ;Air.Module('B.directive.model', function(require){
   var nodeUtil  = require('B.util.node'),
       util      = require('B.util.util'),
@@ -342,6 +371,7 @@
   var Scope =  require('B.scope.Scope');
   var nodeUtil = require('B.util.node');
   var eventDirective = require('B.directive.event');
+  var showDirective = require('B.directive.show');
 
   var $rootScope = new Scope();
 
@@ -396,6 +426,7 @@
     $scope = tryGenerateViewScope(target, $scope);
 
     eventDirective(target, $scope);
+    showDirective(target, $scope)
     initModel(target, $scope);
 
     if (repeat.needRepeat(target)) {

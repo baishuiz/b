@@ -7,6 +7,7 @@ Air.Module('B.scope.scopeManager', function(require){
   var Scope =  require('B.scope.Scope');
   var nodeUtil = require('B.util.node');
   var eventDirective = require('B.directive.event');
+  var showDirective = require('B.directive.show');
 
   var $rootScope = new Scope();
 
@@ -61,6 +62,7 @@ Air.Module('B.scope.scopeManager', function(require){
     $scope = tryGenerateViewScope(target, $scope);
 
     eventDirective(target, $scope);
+    showDirective(target, $scope)
     initModel(target, $scope);
 
     if (repeat.needRepeat(target)) {
