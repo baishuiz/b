@@ -3,17 +3,16 @@ describe('b-show', function () {
     p : document.querySelector('view[name=page_b-show] P')
   }
   it('可见状态初始化', function (done) {
+    b.views.goTo('page_b-show');
     b.run('page_b-show', function(require, $scope){
-      $scope.logined = false;
       $scope.$event = {
         switchi : function(){
-          $scope.logined = !$scope.logined;
+          $scope.logined = true;
         }
       }
 
-
       setTimeout(function(){
-        expect(dom.p.style.display).toEqual('none');
+        expect(window.getComputedStyle(dom.p)['display']).toEqual('none');
         done();
       }, 0);
     });
@@ -21,7 +20,7 @@ describe('b-show', function () {
 
   it('切换可见状态', function(done){
     beacon(dom.p).once('click', function(){
-      expect(dom.p.style.display).toEqual('block');
+      expect(window.getComputedStyle(dom.p)['display']).toEqual('block');
       done();
     });
 

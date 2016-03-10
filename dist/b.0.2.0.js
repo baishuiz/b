@@ -185,7 +185,8 @@
 })
 ;Air.Module('B.directive.show', function(require){
   var node      = require('B.util.node'),
-      EVENTS    = require('B.event.events');
+      EVENTS    = require('B.event.events'),
+      util      = require('B.util.util');
 
   var attribute = 'b-show';
   var api = function(target, $scope){
@@ -198,11 +199,13 @@
     function watchElement(){
       var dataPath = target.getAttribute(attribute);
       var displayStatus = Air.NS(dataPath, $scope);
+      displayStatus = util.isEmpty(displayStatus) ? false : displayStatus;
       displayStatus ? show(target) : hide(target);
     }
   }
 
   function show(target){
+    // TODO 判断display值
     target.style.display = 'block';
   }
 

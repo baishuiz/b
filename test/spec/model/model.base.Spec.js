@@ -23,7 +23,7 @@ describe('model', function () {
     b.views.goTo('page_model_input');
     b.run('page_model_input', function(require, $scope) {
       $scope.$event = {
-        inputHandle : function(){console.log('hello')}
+        inputHandle : function(){}
       }
 
       // scope 赋值
