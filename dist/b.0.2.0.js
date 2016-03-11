@@ -278,6 +278,7 @@
     var condition = template.getAttribute(attrName);
     var dataPath  = condition.replace(/\S+\s+in\s+(\S+)/ig, '$1');
     var itemName  = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
+    template.repeatDataPath = dataPath;
 
     var data = Air.NS(dataPath, scope);
 
@@ -307,10 +308,10 @@
   }
 
   function unbind(node){
-    for(var i=0; i<node.childNodes.length; i++){
-      beacon(node.childNodes[i]).off();
-      unbind(node.childNodes[i]);
-    }
+    // for(var i=0; i<node.childNodes.length; i++){
+    //   beacon(node.childNodes[i]).off();
+    //   unbind(node.childNodes[i]);
+    // }
   }
 
   function cacheNodes(template, node){
@@ -353,8 +354,16 @@
     return target;
   }
 
-  function needRepeat(target) {
-    return nodeUtil(target).hasAttribute(attrName);
+  function needRepeat(target, $scope) {
+    var isRepeatDirective = nodeUtil(target).hasAttribute(attrName);
+    var noRepeated = !target.repeatDataPath;
+    target.cachedNodes = target.cachedNodes || [];
+    var dataChange;
+    if(target.repeatDataPath){
+      dataChange = Air.NS(target.repeatDataPath, $scope).length !== target.cachedNodes.length
+    }
+    // return isRepeatDirective;
+    return (isRepeatDirective && noRepeated)  || dataChange
   }
 
   return {
@@ -429,10 +438,11 @@
     showDirective(target, $scope)
 
 
-    if (repeat.needRepeat(target)) {
+    if (repeat.needRepeat(target, $scope)) {
       beacon($scope).on(EVENTS.DATA_CHANGE, function(){
-        // TODO 检查repeat需要的data有无变化
-        generateRepeatScopeTree(target, $scope);
+        
+        var needRepeat = repeat.needRepeat(target, $scope)
+        needRepeat && generateRepeatScopeTree(target, $scope);
       });
       generateRepeatScopeTree(target, $scope);
     } else {

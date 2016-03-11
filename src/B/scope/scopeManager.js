@@ -65,10 +65,11 @@ Air.Module('B.scope.scopeManager', function(require){
     showDirective(target, $scope)
 
 
-    if (repeat.needRepeat(target)) {
+    if (repeat.needRepeat(target, $scope)) {
       beacon($scope).on(EVENTS.DATA_CHANGE, function(){
-        // TODO 检查repeat需要的data有无变化
-        generateRepeatScopeTree(target, $scope);
+        
+        var needRepeat = repeat.needRepeat(target, $scope)
+        needRepeat && generateRepeatScopeTree(target, $scope);
       });
       generateRepeatScopeTree(target, $scope);
     } else {
