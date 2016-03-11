@@ -112,7 +112,12 @@ viewport view[active="true"]{display:block}
     <input b-event="input inputHandle()" b-model="username" type="text" class="username"></input>
   </view>
   <view name="page_b-show">
+    <style>#page_b-show_table { display: none; }</style>
     <p b-show="logined" b-event="click switchi()"></p>
+    <table b-show="logined" id="page_b-show_table"></table>
+    <ul>
+      <li b-show="logined" id="page_b-show_list_item"></li>
+    </ul>
   </view>
 </viewport>
 
