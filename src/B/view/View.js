@@ -4,7 +4,7 @@ Air.Module("B.view.View", function(require){
 
   function createDomByString(templeteString){
     var div = document.createElement('div');
-    div.innerHTML = templeteString;
+    div.innerHTML = 'X<div></div>' + templeteString; // 兼容 IE8
     return div;
   }
 
@@ -16,7 +16,9 @@ Air.Module("B.view.View", function(require){
   }
 
   function loadScript(scopeList, dom, fn) {
-    runJS(scopeList, dom);
+    setTimeout(function(){ // 兼容IE8 本地缓存造成的执行顺序bug
+      runJS(scopeList, dom);
+    },0)
     fn && fn();
   }
 
@@ -26,24 +28,29 @@ Air.Module("B.view.View", function(require){
 
       var tmpScript = document.createElement('script');
       if (activeScript.src) {
-        tmpScript.src = activeScript.src;
+        // tmpScript.src = activeScript.src;
+        Air.loadJS(activeScript.src);
       } else {
         tmpScript.text = activeScript.text;
+        dom.appendChild(tmpScript);
       }
-      dom.appendChild(tmpScript);
+
 
       activeScript.parentNode.removeChild(activeScript);
     };
   }
 
   function splitDom(domWrapper, selector){
-      var scripts = domWrapper.querySelectorAll(selector);
-      scripts = [].slice.call(scripts);
-      return scripts
+    //var scripts = domWrapper.querySelectorAll(selector);
+    var scripts = domWrapper.getElementsByTagName(selector); // 兼容IE8 自定义tag
+    // scripts = [].concat.apply([], scripts)//[].slice.call(scripts); //兼容 IE8
+    return scripts
   }
 
   function parseTag(tagName, viewName, dom, domWrapper, fn) {
     var domList = splitDom(domWrapper, tagName);
+
+    // TODO : scope 命名 修改为 viewName::tagname 以 避免与view命名冲突
     var tagScope = scopeManager.parseScope(viewName + tagName, { childNodes: domList });
 
     beacon(tagScope).once(EVENTS.DATA_CHANGE, function(){
@@ -57,8 +64,16 @@ Air.Module("B.view.View", function(require){
     options = options || {};
     // TODO 本地模板需要解析script上的{{}}
     if (beacon.isType(dom, 'String')) {
+      if(!DOMParser){
+        dom = dom.replace(/<(\/?)\s*(view)[^>]*>/g,"<$1cjia:$2>") // 兼容IE8 自定义tag
+      }
+
       var domWrapper = createDomByString(dom);
-      dom = domWrapper.querySelector('view[name="' + viewName + '"]');
+      //dom = domWrapper.querySelector('view[name="' + viewName + '"]');
+
+      // 兼容 ie 8 自定义 tag
+      // TODO : 精简代码
+      dom = domWrapper.querySelector('view[name="' + viewName + '"]') || domWrapper.getElementsByTagName('cjia:view')[0] || domWrapper.getElementsByTagName('view')[0];
 
       parseTag('style', viewName, dom, domWrapper, function(tagList){
         loadStyle(tagList, dom);

@@ -2,6 +2,7 @@ Air.Module('B.directive.repeat', function(require){
   var attrName = 'b-repeat';
   var nodeUtil = require('B.util.node');
   var Scope = require('B.scope.Scope');
+  var EVENTS =  require('B.event.events');
 
   function init(target, scope) {
     var placeholder = generatePlaceholder(target);
@@ -26,7 +27,8 @@ Air.Module('B.directive.repeat', function(require){
 
     return {
       data: data,
-      itemName: itemName
+      itemName: itemName,
+      dataPath : dataPath
     };
   }
 
@@ -108,8 +110,27 @@ Air.Module('B.directive.repeat', function(require){
     return (isRepeatDirective && noRepeated)  || dataChange
   }
 
+  function listenDataChange(target, $scope, callback){
+
+    // beacon($scope).on(EVENTS.DATA_CHANGE, function(){
+    //   var obj = getRepeatData(target, $scope)
+    //   Object.observe(obj.data, function(){
+    //     callback()
+    //   })
+    // });
+
+    Object.observe($scope, function(dataChanges){
+      var obj = getRepeatData(target, $scope)
+      for(var i=0;i<dataChanges.length;i++){
+        dataChanges[i].name === obj.dataPath && callback()
+      }
+
+    })
+  }
+
   return {
     init: init,
-    needRepeat: needRepeat
+    needRepeat: needRepeat,
+    listenDataChange : listenDataChange
   };
 });

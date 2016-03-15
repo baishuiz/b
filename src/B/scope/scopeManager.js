@@ -38,7 +38,8 @@ Air.Module('B.scope.scopeManager', function(require){
   }
 
   function tryGenerateViewScope(target, $scope) {
-    if (target.tagName.toLowerCase() === 'view') {
+    // TODO: 验证 target.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
+    if (target.tagName.toLowerCase() === 'view' || target.tagName.toLowerCase() === 'cjia:view') {
       var $subScope = new Scope($scope);
       var subScopeName = target.getAttribute('name');
       scopeList[subScopeName] = $subScope;
@@ -66,12 +67,15 @@ Air.Module('B.scope.scopeManager', function(require){
 
 
     if (repeat.needRepeat(target, $scope)) {
-      beacon($scope).on(EVENTS.DATA_CHANGE, function(){
-        
-        var needRepeat = repeat.needRepeat(target, $scope)
-        needRepeat && generateRepeatScopeTree(target, $scope);
-      });
+      // beacon($scope).on(EVENTS.DATA_CHANGE, function(){
+      //
+      //   var needRepeat = repeat.needRepeat(target, $scope)
+      //   needRepeat && generateRepeatScopeTree(target, $scope);
+      // });
       generateRepeatScopeTree(target, $scope);
+      repeat.listenDataChange(target, $scope, function(){
+        generateRepeatScopeTree(target, $scope);
+      })
     } else {
       generateScopeTree(target.attributes, $scope);
       generateScopeTree(target.childNodes, $scope);
@@ -91,7 +95,8 @@ Air.Module('B.scope.scopeManager', function(require){
           for (var i = markups.length - 1; i >= 0; i--) {
             var markup   = markups[i];
             var dataPath = markup.replace(/{{|}}/ig,"");
-            dataPath = dataPath.trim();
+            // TODO :  新增String.prototype.trim
+            dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');;
             var data = Air.NS(dataPath, $scope);
             data = util.isEmpty(data) ? '' : data;
             text = text.replace(markup, data);
