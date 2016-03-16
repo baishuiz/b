@@ -20,10 +20,10 @@ Air.Module("B.view.View", function(require){
   }
 
   function loadScript(scopeList, dom, fn) {
-    // setTimeout(function(){ // 兼容IE8 本地缓存造成的执行顺序bug
-    //   runJS(scopeList, dom);
-    // },0)
-    var scripts= dom.querySelector('script');
+    setTimeout(function(){ // 兼容IE8 本地缓存造成的执行顺序bug
+      runJS(scopeList, dom);
+    },0)
+    // var scripts= dom.querySelector('script');
     runJS(scopeList, dom);
     fn && fn();
   }

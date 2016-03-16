@@ -122,19 +122,21 @@ describe('repeat', function () {
         }
       ];
 
-
+      Object.observe($scope.list, function(x){
+        expect(dom.list.querySelectorAll('li').length).toEqual(4);
+        expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 11');
+        expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
+        expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('good');
+        expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
+        done();
+      });
       $scope.$event = {
         'clickHandle' : function(e, msg){
           $scope.list[this.$index] = { name: msg };
           $scope.list[3] = { name: 'Name 44'};
-          setTimeout(function(){
-            expect(dom.list.querySelectorAll('li').length).toEqual(4);
-            expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 11');
-            expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
-            expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('good');
-            expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
-            done();
-          }, 3000);
+
+
+          $scope.a =1
         }
       }
       //
