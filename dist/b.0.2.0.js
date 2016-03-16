@@ -1674,7 +1674,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
   function createDomByString(templeteString){
     var div = document.createElement('div');
-    if(!DOMParser){
+    if(typeof DOMParser === 'undefined'){
       div.innerHTML = 'X<div></div>' + templeteString; // 兼容 IE8
     } else {
       div.innerHTML = templeteString;
@@ -1689,13 +1689,11 @@ Object.observe || (function(O, A, root, _undefined) {
     }
   }
 
-  function loadScript(scopeList, dom, fn) {
-    // setTimeout(function(){ // 兼容IE8 本地缓存造成的执行顺序bug
-    //   runJS(scopeList, dom);
-    // },0)
-    var scripts= dom.querySelector('script');
-    runJS(scopeList, dom);
-    fn && fn();
+  function loadScript(scriptList, dom, fn) {
+    setTimeout(function(){ // 兼容IE8 本地缓存造成的执行顺序bug
+      runJS(scriptList, dom);
+      fn && fn();
+    },0)
   }
 
   function runJS(scripts, dom){
@@ -1740,7 +1738,7 @@ Object.observe || (function(O, A, root, _undefined) {
     options = options || {};
     // TODO 本地模板需要解析script上的{{}}
     if (beacon.isType(dom, 'String')) {
-      if(!DOMParser){
+      if(typeof DOMParser === 'undefined'){
         dom = dom.replace(/<(\/?)\s*(view)[^>]*>/g,"<$1cjia:$2>") // 兼容IE8 自定义tag
       }
 
