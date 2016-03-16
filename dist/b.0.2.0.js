@@ -1695,21 +1695,16 @@ Object.observe || (function(O, A, root, _undefined) {
     }
   }
 
-<<<<<<< HEAD
+
   function loadScript(scopeList, dom, fn) {
+    // var scripts= dom.querySelector('script');
     setTimeout(function(){ // 兼容IE8 本地缓存造成的执行顺序bug
       runJS(scopeList, dom);
     },0)
     // var scripts= dom.querySelector('script');
     runJS(scopeList, dom);
     fn && fn();
-=======
-  function loadScript(scriptList, dom, fn) {
-    setTimeout(function(){ // 兼容IE8 本地缓存造成的执行顺序bug
-      runJS(scriptList, dom);
-      fn && fn();
-    },0)
->>>>>>> 1771dee14e74bc16ca308bd8fb8a62bb3761ef5a
+
   }
 
   function runJS(scripts, dom){
