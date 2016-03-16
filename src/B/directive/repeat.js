@@ -110,22 +110,27 @@ Air.Module('B.directive.repeat', function(require){
     return (isRepeatDirective && noRepeated)  || dataChange
   }
 
+
+
   function listenDataChange(target, $scope, callback){
 
-    // beacon($scope).on(EVENTS.DATA_CHANGE, function(){
-    //   var obj = getRepeatData(target, $scope)
-    //   Object.observe(obj.data, function(){
-    //     callback()
-    //   })
-    // });
+    beacon($scope).once(EVENTS.RUN_COMPLETE, function(){
+      var obj = getRepeatData(target, $scope);
+      callback();
+      Object.observe($scope[obj.dataPath], function(dataChanges){
+        // var obj = getRepeatData(target, $scope)
+        for(var i=0;i<dataChanges.length;i++){
+          (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === $scope[obj.dataPath])  && callback()
+        }
+      });
+    });
 
     Object.observe($scope, function(dataChanges){
       var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
         dataChanges[i].name === obj.dataPath && callback()
       }
-
-    })
+    });
   }
 
   return {

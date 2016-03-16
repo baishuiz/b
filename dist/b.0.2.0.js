@@ -872,6 +872,7 @@ Object.observe || (function(O, A, root, _undefined) {
 ;Air.Module("B.event.events", function(){
   var events = {
     DATA_CHANGE        : beacon.createEvent("data change"),
+    RUN_COMPLETE       : beacon.createEvent("run complete"),
     URL_CHANGE         : beacon.createEvent("url change"),
     PAGE404            : beacon.createEvent("")
   }
@@ -1189,22 +1190,27 @@ Object.observe || (function(O, A, root, _undefined) {
     return (isRepeatDirective && noRepeated)  || dataChange
   }
 
+
+
   function listenDataChange(target, $scope, callback){
 
-    // beacon($scope).on(EVENTS.DATA_CHANGE, function(){
-    //   var obj = getRepeatData(target, $scope)
-    //   Object.observe(obj.data, function(){
-    //     callback()
-    //   })
-    // });
+    beacon($scope).once(EVENTS.RUN_COMPLETE, function(){
+      var obj = getRepeatData(target, $scope);
+      callback();
+      Object.observe($scope[obj.dataPath], function(dataChanges){
+        // var obj = getRepeatData(target, $scope)
+        for(var i=0;i<dataChanges.length;i++){
+          (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === $scope[obj.dataPath])  && callback()
+        }
+      });
+    });
 
     Object.observe($scope, function(dataChanges){
       var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
         dataChanges[i].name === obj.dataPath && callback()
       }
-
-    })
+    });
   }
 
   return {
@@ -2085,6 +2091,7 @@ Object.observe || (function(O, A, root, _undefined) {
     Air.run(controller, false, scope);
     Air.run(function(){
       beacon(scope).on(EVENTS.DATA_CHANGE, scope);
+      beacon(scope).on(EVENTS.RUN_COMPLETE);
     })
   }
 

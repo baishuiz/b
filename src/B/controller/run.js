@@ -8,6 +8,7 @@ Air.Module("B.controller.run", function(require){
     Air.run(controller, false, scope);
     Air.run(function(){
       beacon(scope).on(EVENTS.DATA_CHANGE, scope);
+      beacon(scope).on(EVENTS.RUN_COMPLETE);
     })
   }
 
