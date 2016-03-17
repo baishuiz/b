@@ -62,7 +62,7 @@ Air.Module('B.service.Service', function(require) {
           beacon(scope).on(EVENTS.DATA_CHANGE);
           return;
         } else {
-          callAfterQueryMiddleware(responseData, function(isError) {
+          callAfterQueryMiddleware({xhr: http.xhr, data: responseData}, function(isError) {
             if (isError) {
               options.errorCallBack && options.errorCallBack(ERROR_CODE.business, responseData);
             } else {
@@ -83,7 +83,9 @@ Air.Module('B.service.Service', function(require) {
         clearTimeoutCount();
 
         var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
-        options.errorCallBack && options.errorCallBack(errorCode);
+        callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr}, function(errorInfo){
+          options.errorCallBack && options.errorCallBack(errorCode, errorInfo);
+        });
 
         beacon(scope).on(EVENTS.DATA_CHANGE);
       }
@@ -103,6 +105,10 @@ Air.Module('B.service.Service', function(require) {
         http.request(requestOptions);
         startTimeoutCount();
       });
+    };
+
+    this.abort = function(){
+      http.abort();
     };
   }
 

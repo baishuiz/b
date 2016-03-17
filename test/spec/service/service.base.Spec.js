@@ -179,7 +179,8 @@ describe('服务请求', function () {
       extend : 'default'
     });
 
-    b.service.addMiddleware('afterQuery', function(responseData, next) {
+    b.service.addMiddleware('afterQuery', function(response, next) {
+      var responseData = response.data || {};
       var isError = false;
 
       if (responseData.name === 'serviceMiddleware3') {
