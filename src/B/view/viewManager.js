@@ -136,7 +136,24 @@ Air.Module("B.view.viewManager", function(require){
     beacon(window).on('popstate', function(e){
       var state  = e.state || {};
       saveLastView();
-      state.viewName && show(state.viewName);
+      if (state.viewName) {
+        var hasView = getViewByViewName(state.viewName);
+        if (hasView) {
+          show(state.viewName);
+        } else {
+          var URLPath = location.pathname;
+          var activeRouter = router.getMatchedRouter(URLPath);
+          if (activeRouter) {
+            goTo(activeRouter.viewName, {
+              init: true,
+              params: activeRouter.params,
+              query: location.search
+            });
+          } else {
+            throw404Event();
+          }
+        }
+      }
     });
   }
 
