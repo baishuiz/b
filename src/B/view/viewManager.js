@@ -27,7 +27,7 @@ Air.Module("B.view.viewManager", function(require){
         query: location.search
       });
     } else {
-      throw404Event();
+      throw404();
     }
     listenURLChange();
   }
@@ -150,7 +150,7 @@ Air.Module("B.view.viewManager", function(require){
               query: location.search
             });
           } else {
-            throw404Event();
+            throw404();
           }
         }
       }
@@ -167,12 +167,15 @@ Air.Module("B.view.viewManager", function(require){
       view.parseSrc();
       switchView(view);
     } else {
-      throw404Event();
+      throw404();
     }
   }
 
 
-  function throw404Event(){};
+  function throw404(){
+    var fnName = 'viewNotFound';
+    middleware.run(fnName);
+  };
 
   function getViewByViewName(viewName){
     return mainViewport.views[viewName];
@@ -215,7 +218,7 @@ Air.Module("B.view.viewManager", function(require){
     }
 
     function errorCallBack(){
-      throw404Event();
+      throw404();
     }
   }
 

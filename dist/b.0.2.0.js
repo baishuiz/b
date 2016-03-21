@@ -1862,7 +1862,7 @@ Object.observe || (function(O, A, root, _undefined) {
         query: location.search
       });
     } else {
-      throw404Event();
+      throw404();
     }
     listenURLChange();
   }
@@ -1985,7 +1985,7 @@ Object.observe || (function(O, A, root, _undefined) {
               query: location.search
             });
           } else {
-            throw404Event();
+            throw404();
           }
         }
       }
@@ -2002,12 +2002,15 @@ Object.observe || (function(O, A, root, _undefined) {
       view.parseSrc();
       switchView(view);
     } else {
-      throw404Event();
+      throw404();
     }
   }
 
 
-  function throw404Event(){};
+  function throw404(){
+    var fnName = 'viewNotFound';
+    middleware.run(fnName);
+  };
 
   function getViewByViewName(viewName){
     return mainViewport.views[viewName];
@@ -2050,7 +2053,7 @@ Object.observe || (function(O, A, root, _undefined) {
     }
 
     function errorCallBack(){
-      throw404Event();
+      throw404();
     }
   }
 
