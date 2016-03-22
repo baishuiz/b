@@ -44,15 +44,14 @@ Air.Module("B.view.View", function(require){
         dom.appendChild(tmpScript);
       }
 
-
-      activeScript.parentNode.removeChild(activeScript);
+      activeScript.parentNode && activeScript.parentNode.removeChild(activeScript);
     };
   }
 
   function splitDom(domWrapper, selector){
     //var scripts = domWrapper.querySelectorAll(selector);
     var scripts = domWrapper.getElementsByTagName(selector); // 兼容IE8 自定义tag
-    // scripts = [].concat.apply([], scripts)//[].slice.call(scripts); //兼容 IE8
+    scripts = [].concat.apply([], scripts)//[].slice.call(scripts); //兼容 IE8
     return scripts
   }
 
