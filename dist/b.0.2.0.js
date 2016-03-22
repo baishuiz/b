@@ -1331,7 +1331,12 @@ Object.observe || (function(O, A, root, _undefined) {
         }
       })(node, node.nodeValue);
 
+      var ancestorScope = getAncestorScope($scope);
       beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
+      ancestorScope !== $scope && beacon(ancestorScope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
+
+
+
     }
 
   }
@@ -1352,10 +1357,18 @@ Object.observe || (function(O, A, root, _undefined) {
     return scopeList[scopeName];
   }
 
+  function getAncestorScope($scope) {
+    if ($scope.parent) {
+      return getAncestorScope($scope.parent);
+    }
+    return $scope;
+  }
+
   return {
     parseScope : parseScope,
     getScope: getScope,
-    setRoot: setRoot
+    setRoot: setRoot,
+    getAncestorScope : getAncestorScope
   }
 });
 ;Air.Module('B.network.HTTP', function() {
@@ -2118,6 +2131,7 @@ Object.observe || (function(O, A, root, _undefined) {
     var scopeManager = require("B.scope.scopeManager");
     var EVENTS = require('B.event.EVENTS');
     var scope = scopeManager.getScope(controllerName);
+    
 
     // TODO 需要在run之后再显示view
     Air.run(controller, false, scope);
