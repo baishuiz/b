@@ -107,7 +107,8 @@ Air.Module('B.scope.scopeManager', function(require){
         }
       })(node, node.nodeValue);
 
-      beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
+      var ancestorScope = getAncestorScope($scope);
+      beacon(ancestorScope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
     }
 
   }
@@ -128,9 +129,17 @@ Air.Module('B.scope.scopeManager', function(require){
     return scopeList[scopeName];
   }
 
+  function getAncestorScope($scope) {
+    if ($scope.parent) {
+      return getAncestorScope($scope.parent);
+    }
+    return $scope;
+  }
+
   return {
     parseScope : parseScope,
     getScope: getScope,
-    setRoot: setRoot
+    setRoot: setRoot,
+    getAncestorScope : getAncestorScope
   }
 });

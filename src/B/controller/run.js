@@ -3,6 +3,7 @@ Air.Module("B.controller.run", function(require){
     var scopeManager = require("B.scope.scopeManager");
     var EVENTS = require('B.event.EVENTS');
     var scope = scopeManager.getScope(controllerName);
+    
 
     // TODO 需要在run之后再显示view
     Air.run(controller, false, scope);
