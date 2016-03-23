@@ -241,4 +241,42 @@ describe('服务请求', function () {
 
   });
 
+
+  it('服务事件', function(done) {
+    b.service.set('service.eventTest', {
+      path: 'event.json',
+      extend : 'default'
+    });
+
+    b.service.set('service.nullService', {
+      path: 'nullService.json',
+      extend : 'default'
+    });
+
+    b.run('page_service_event', function(require, $scope) {
+      var eventService = b.service.get('service.eventTest', $scope);
+      eventService.query({});
+      eventService.on(eventService.EVENTS.SUCCESS, function(e, response){
+          $scope.serviceEvent = response.city
+          setTimeout(function(){
+            var dom = document.querySelector('view[name=page_service_event] p')
+            expect(dom.innerHTML).toEqual('上海');
+            done();
+          },0)
+      })
+
+      var nullService = b.service.get('service.nullService', $scope);
+      nullService.query({});
+      eventService.on(eventService.EVENTS.ERROR, function(e, error, response){
+          $scope.error = 'error'
+          setTimeout(function(){
+            var dom = document.querySelector('view[name=page_service_event] span')
+            expect(dom.innerHTML).toEqual('error');
+            done();
+          },0)
+      })
+    });
+
+  });
+
 });

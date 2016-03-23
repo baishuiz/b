@@ -16,8 +16,24 @@ Air.Module('B.service.Service', function(require) {
     var header = config.header || {};
     header['Content-Type'] = 'application/json;charset=utf-8';
 
+    var self = this;
     var requestParams = null;
     var http = new HTTP();
+
+    var SERVICEEVENTS = {
+        SUCCESS: beacon.createEvent("service response success"),
+        ERROR: beacon.createEvent("service response error")
+    }
+
+    this.EVENTS = SERVICEEVENTS;
+
+    this.on = function(event, handle){
+      beacon(self).on(event, handle);
+    }
+
+    this.off = function(event, handle){
+      beacon(self).off(event, handle);
+    }
 
     this.query = function(requestParams, options){
       options = options || {};
@@ -32,6 +48,7 @@ Air.Module('B.service.Service', function(require) {
         if (cachedData) {
           var fromCache = true;
           options.successCallBack && options.successCallBack(cachedData, fromCache);
+          beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
           beacon(scope).on(EVENTS.DATA_CHANGE);
           return;
         }
@@ -59,12 +76,20 @@ Air.Module('B.service.Service', function(require) {
 
         if (parseError) {
           options.errorCallBack && options.errorCallBack(ERROR_CODE.parse, responseText);
+          beacon(self).on(SERVICEEVENTS.ERROR, {
+            error : ERROR_CODE.parse,
+            response : responseText
+          });
           beacon(scope).on(EVENTS.DATA_CHANGE);
           return;
         } else {
           callAfterQueryMiddleware({xhr: http.xhr, data: responseData}, function(isError) {
             if (isError) {
               options.errorCallBack && options.errorCallBack(ERROR_CODE.business, responseData);
+              beacon(self).on(SERVICEEVENTS.ERROR, {
+                error : ERROR_CODE.business,
+                response : responseData
+              });
             } else {
               // 记录缓存
               memCache.set(cacheKey, responseData, {
@@ -72,9 +97,11 @@ Air.Module('B.service.Service', function(require) {
               });
 
               options.successCallBack && options.successCallBack(responseData);
+              beacon(self).on(SERVICEEVENTS.SUCCESS, responseData);
             }
 
             beacon(scope).on(EVENTS.DATA_CHANGE);
+
           });
         }
       }
@@ -85,9 +112,14 @@ Air.Module('B.service.Service', function(require) {
         var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
         callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr}, function(errorInfo){
           options.errorCallBack && options.errorCallBack(errorCode, errorInfo);
+          beacon(self).on(SERVICEEVENTS.ERROR, {
+            error : errorCode,
+            response : errorInfo
+          });
         });
 
         beacon(scope).on(EVENTS.DATA_CHANGE);
+
       }
 
       var requestOptions = {
