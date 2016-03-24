@@ -59,6 +59,9 @@ viewport view[active="true"]{display:block}
         {{ item.name }}
       </li>
     </ul>
+    <div class='listB' >
+      <span b-repeat="item in a.b.list">{{item.name}}</span>
+    </div>
   </view>
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
@@ -79,6 +82,9 @@ viewport view[active="true"]{display:block}
     <ul>
       <li b-repeat="item in list" b-event="click clickHandle('good')">{{item.name}}</li>
     </ul>
+    <div class="listB">
+      <span b-repeat="item in a.b.list">{{item.name}}</span>
+    </div>
   </view>
   <view name="page_repeat_with_event_inner">
     <ul>
@@ -121,7 +127,7 @@ viewport view[active="true"]{display:block}
   </view>
 
   <view name="page_service_event">
-      <p>{{serviceEvent}}</p>
+      <p b-repeat="city in hot.cities">{{city}}</p>
       <span>{{error}}</span>
   </view>
 </viewport>

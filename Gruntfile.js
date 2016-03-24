@@ -70,7 +70,7 @@ module.exports = function(grunt){
               coverage: './dist/<%=output.fileName %>',
               options: {
                 // '--web-security' : false,
-                // '--local-to-remote-url-access' : true,
+                 '--local-to-remote-url-access' : true,
                 // '--ignore-ssl-errors' : true,
                 specs: [
                   './test/spec/view/*Spec.js',

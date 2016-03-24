@@ -257,12 +257,18 @@ describe('服务请求', function () {
       var eventService = b.service.get('service.eventTest', $scope);
       eventService.query({});
       eventService.on(eventService.EVENTS.SUCCESS, function(e, response){
-          $scope.serviceEvent = response.city
+          $scope.hot = {cities:response }
+          // console.log(JSON.stringify($scope.hot))
           setTimeout(function(){
-            var dom = document.querySelector('view[name=page_service_event] p')
-            expect(dom.innerHTML).toEqual('上海');
+            var dom = document.querySelector('view[name=page_service_event]')
+            // expect(dom.innerHTML).toEqual('上海');
+
+            expect(dom.querySelectorAll('p').length).toEqual(3);
+            expect(dom.querySelector('p:nth-child(1)').innerText.trim()).toEqual('上海');
+            expect(dom.querySelector('p:nth-child(2)').innerText.trim()).toEqual('北京');
+            expect(dom.querySelector('p:nth-child(3)').innerText.trim()).toEqual('广州');
             done();
-          },0)
+          },1000)
       })
 
       var nullService = b.service.get('service.nullService', $scope);

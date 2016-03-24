@@ -15,8 +15,19 @@ describe('repeat', function () {
         }
       ];
 
+      $scope.a = {
+        b: {
+          list :[
+            {name: 'T1'},
+            {name: 'T2'},
+            {name: 'T3'}
+          ]
+        }
+      }
+
       var dom = {
-        list : document.querySelector('view[name=page_repeat]>ul')
+        list : document.querySelector('view[name=page_repeat]>ul'),
+        listB: document.querySelector('view[name=page_repeat]>.listB')
       }
 
       setTimeout(function(){
@@ -25,6 +36,13 @@ describe('repeat', function () {
         expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 2');
         expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 3');
         expect(dom.list.querySelector('li:nth-child(3)').getAttribute('name')).toEqual('Name 3, welcome');
+
+
+        expect(dom.listB.querySelectorAll('span').length).toEqual(3);
+        expect(dom.listB.querySelector('span:nth-child(1)').innerText.trim()).toEqual('T1');
+        expect(dom.listB.querySelector('span:nth-child(2)').innerText.trim()).toEqual('T2');
+        expect(dom.listB.querySelector('span:nth-child(3)').innerText.trim()).toEqual('T3');
+        // expect(dom.listB.querySelector('li:nth-child(3)').getAttribute('name')).toEqual('Name 3, welcome');
         done();
       }, 1000);
     });
@@ -108,7 +126,8 @@ describe('repeat', function () {
   it('repeat 元素上绑定事件', function(done){
     b.run('page_repeat_with_event_outer', function(require, $scope){
       var dom = {
-        list : document.querySelector('view[name=page_repeat_with_event_outer]>ul')
+        list : document.querySelector('view[name=page_repeat_with_event_outer]>ul'),
+        listB: document.querySelector('view[name=page_repeat]>.listB')
       }
       $scope.list = [
         {
@@ -125,24 +144,35 @@ describe('repeat', function () {
 
       $scope.$event = {
         'clickHandle' : function(e, msg){
-          // $scope.list[this.$index] = { name: msg };
-          // $scope.list[3] = { name: 'Name 44'};
+          $scope.list[this.$index] = { name: msg };
+          $scope.list[3] = { name: 'Name 44'};
+          //
+          // a = [
+          //   {
+          //     name: 'Name 11'
+          //   },
+          //   {
+          //     name: 'Name 22'
+          //   },
+          //   {
+          //     name: 'Name 33'
+          //   }
+          // ];
+          //
+          // a[this.$index] = { name: msg };
+          // a[3] = { name: 'Name 44'};
+          // $scope.list = a;
 
-          a = [
-            {
-              name: 'Name 11'
-            },
-            {
-              name: 'Name 22'
-            },
-            {
-              name: 'Name 33'
+          $scope.a = {
+            b: {
+              list :[
+                {name: 'T1'},
+                {name: 'T2'},
+                {name: 'T3'}
+              ]
             }
-          ];
+          }
 
-          a[this.$index] = { name: msg };
-          a[3] = { name: 'Name 44'};
-          $scope.list = a;
         }
       }
       //
@@ -152,12 +182,17 @@ describe('repeat', function () {
         expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
         expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 33');
 
-        Object.observe($scope, function(x){
+        Object.observe($scope.list, function(x){
           expect(dom.list.querySelectorAll('li').length).toEqual(4);
           expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 11');
           expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
           expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('good');
           expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
+
+          expect(dom.listB.querySelectorAll('span').length).toEqual(3);
+          expect(dom.listB.querySelector('span:nth-child(1)').innerText.trim()).toEqual('T1');
+          expect(dom.listB.querySelector('span:nth-child(2)').innerText.trim()).toEqual('T2');
+          expect(dom.listB.querySelector('span:nth-child(3)').innerText.trim()).toEqual('T3');
           done();
         });
         var target = dom.list.querySelector('li:nth-child(3)');

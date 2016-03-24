@@ -111,24 +111,47 @@ Air.Module('B.directive.repeat', function(require){
   }
 
 
-
+  // TODO: 重构
   function listenDataChange(target, $scope, callback){
 
     beacon($scope).once(EVENTS.RUN_COMPLETE, function(){
       var obj = getRepeatData(target, $scope);
       callback();
-      Object.observe($scope[obj.dataPath], function(dataChanges){
-        // var obj = getRepeatData(target, $scope)
-        for(var i=0;i<dataChanges.length;i++){
-          (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === $scope[obj.dataPath])  && callback()
+
+      //===
+      var r = obj.dataPath.split('.');
+      var activeT = ""
+      for(var i=0;i<r.length; i++){
+        if(activeT){
+           activeT = activeT + '.' + r[i];
+        } else {
+          activeT =  r[i]
         }
-      });
+
+        var targetT = Air.NS(activeT, $scope);
+        Object.observe(targetT, function(dataChanges){
+          // var obj = getRepeatData(target, $scope)
+          for(var i=0;i<dataChanges.length;i++){
+            (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === targetT)  && callback()
+          }
+        });
+
+
+      }
+      //===
+
+      // Object.observe($scope[obj.dataPath], function(dataChanges){
+      //   // var obj = getRepeatData(target, $scope)
+      //   for(var i=0;i<dataChanges.length;i++){
+      //     (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === $scope[obj.dataPath])  && callback()
+      //   }
+      // });
     });
 
     Object.observe($scope, function(dataChanges){
       var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
-        dataChanges[i].name === obj.dataPath && callback()
+        dataChanges[i].name === obj.dataPath.split('.')[0] && callback()
       }
     });
   }
