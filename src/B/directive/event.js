@@ -30,13 +30,15 @@ Air.Module('B.directive.event', function(require){
         var cmd = target.getAttribute(attribute);
         var cmdList = cmd.split(";")
         var handleStr = cmdList[eventIndex].replace(eventName,'')
-        var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
+        var eventHandleName = handleStr.replace(reg,'').replace(/\s/g,'');
         var eventParam = handleStr.match(reg)[2]
         var params = eval("["+eventParam+"]");
         params.unshift(e);
         this.$index = $scope.$index;
+
         var scope = getParentScope($scope);
-        scope.$event[eventHandle].apply(this, params);
+        var eventHandle = $scope.$event[eventHandleName]  || scope.$event[eventHandleName]
+        eventHandle.apply(this, params);
         beacon(scope).on(EVENTS.DATA_CHANGE, scope);
       });
     }

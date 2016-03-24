@@ -40,10 +40,14 @@ Air.Module('B.scope.scopeManager', function(require){
   function tryGenerateViewScope(target, $scope) {
     // TODO: 验证 target.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
     if (target.tagName.toLowerCase() === 'view' || target.tagName.toLowerCase() === 'cjia:view') {
-      var $subScope = new Scope($scope);
       var subScopeName = target.getAttribute('name');
-      scopeList[subScopeName] = $subScope;
-      $scope = $subScope;
+      if (scopeList[subScopeName]) {
+        $scope = scopeList[subScopeName];
+      } else {
+        var $subScope = new Scope($scope);
+        scopeList[subScopeName] = $subScope;
+        $scope = $subScope;
+      }
     }
 
     return $scope;

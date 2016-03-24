@@ -913,13 +913,15 @@ Object.observe || (function(O, A, root, _undefined) {
         var cmd = target.getAttribute(attribute);
         var cmdList = cmd.split(";")
         var handleStr = cmdList[eventIndex].replace(eventName,'')
-        var eventHandle = handleStr.replace(reg,'').replace(/\s/g,'');
+        var eventHandleName = handleStr.replace(reg,'').replace(/\s/g,'');
         var eventParam = handleStr.match(reg)[2]
         var params = eval("["+eventParam+"]");
         params.unshift(e);
         this.$index = $scope.$index;
+
         var scope = getParentScope($scope);
-        scope.$event[eventHandle].apply(this, params);
+        var eventHandle = $scope.$event[eventHandleName]  || scope.$event[eventHandleName]
+        eventHandle.apply(this, params);
         beacon(scope).on(EVENTS.DATA_CHANGE, scope);
       });
     }
@@ -1287,10 +1289,14 @@ Object.observe || (function(O, A, root, _undefined) {
   function tryGenerateViewScope(target, $scope) {
     // TODO: 验证 target.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
     if (target.tagName.toLowerCase() === 'view' || target.tagName.toLowerCase() === 'cjia:view') {
-      var $subScope = new Scope($scope);
       var subScopeName = target.getAttribute('name');
-      scopeList[subScopeName] = $subScope;
-      $scope = $subScope;
+      if (scopeList[subScopeName]) {
+        $scope = scopeList[subScopeName];
+      } else {
+        var $subScope = new Scope($scope);
+        scopeList[subScopeName] = $subScope;
+        $scope = $subScope;
+      }
     }
 
     return $scope;
