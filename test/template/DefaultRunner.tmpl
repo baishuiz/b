@@ -126,6 +126,10 @@ viewport view[active="true"]{display:block}
     </ul>
   </view>
 
+  <view name="page_b-property">
+    <input b-event="click switchi()" b-property="{readOnly: readonly, disabled: disable}" id="page_b-property-input" />
+  </view>
+
   <view name="page_service_event">
       <p b-repeat="city in hot.cities">{{city}}</p>
       <span>{{error}}</span>

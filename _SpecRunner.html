@@ -126,6 +126,10 @@ viewport view[active="true"]{display:block}
     </ul>
   </view>
 
+  <view name="page_b-property">
+    <input b-event="click switchi()" b-property="{readOnly: readonly, disabled: disable}" id="page_b-property-input" />
+  </view>
+
   <view name="page_service_event">
       <p b-repeat="city in hot.cities">{{city}}</p>
       <span>{{error}}</span>
@@ -152,7 +156,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/b.0.2.0.min.js"></script>
+  <script src="dist/b.0.2.0.js"></script>
   
 
 
@@ -235,6 +239,10 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/model/model.base.Spec.js"></script>
   
   <script src="test/spec/b-show/show.base.Spec.js"></script>
+  
+  <script src="test/spec/b-property/b-property.base.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   

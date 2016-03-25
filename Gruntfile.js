@@ -44,6 +44,7 @@ module.exports = function(grunt){
                         './src/B/event/events.js',
                         './src/B/directive/event.js',
                         './src/B/directive/show.js',
+                        './src/B/directive/property.js',
                         './src/B/directive/model.js',
                         './src/B/scope/Scope.js',
                         './src/B/directive/repeat.js',
@@ -79,7 +80,8 @@ module.exports = function(grunt){
                   './test/spec/event/*Spec.js',
                   './test/spec/repeat/*Spec.js',
                   './test/spec/model/*Spec.js',
-                  './test/spec/b-show/*Spec.js'
+                  './test/spec/b-show/*Spec.js',
+                  './test/spec/b-property/*Spec.js'
                 ],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',
@@ -105,7 +107,8 @@ module.exports = function(grunt){
                   './test/spec/event/*Spec.js',
                   './test/spec/repeat/*Spec.js',
                   './test/spec/model/*Spec.js',
-                  './test/spec/b-show/*Spec.js'
+                  './test/spec/b-show/*Spec.js',
+                  './test/spec/b-property/*Spec.js'
                 ],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',
