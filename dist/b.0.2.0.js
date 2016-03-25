@@ -1592,7 +1592,7 @@ Object.observe || (function(O, A, root, _undefined) {
               });
             } else {
               // 记录缓存
-              memCache.set(cacheKey, responseData, {
+              config.expiredSecond && memCache.set(cacheKey, responseData, {
                 expiredSecond: config.expiredSecond
               });
 
