@@ -92,7 +92,7 @@ Air.Module('B.service.Service', function(require) {
               });
             } else {
               // 记录缓存
-              memCache.set(cacheKey, responseData, {
+              config.expiredSecond && memCache.set(cacheKey, responseData, {
                 expiredSecond: config.expiredSecond
               });
 
