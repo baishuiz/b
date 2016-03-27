@@ -103,7 +103,9 @@ Air.Module('B.scope.scopeManager', function(require){
             var dataPath = markup.replace(/{{|}}/ig,"");
             // TODO :  新增String.prototype.trim
             dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');;
-            var data = Air.NS(dataPath, $scope);
+            // var data = Air.NS(dataPath, $scope);
+            var expression = getExpression(dataPath);
+            var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
             data = util.isEmpty(data) ? '' : data;
             text = text.replace(markup, data);
           };
@@ -112,6 +114,16 @@ Air.Module('B.scope.scopeManager', function(require){
           }
         }
       })(node, node.nodeValue);
+
+      function getExpression(dataPath){
+        return dataPath.replace(/([$\w\.]+)\b/g, function(token){
+           if(/^\d+$/.test(token)){
+             return token
+           } else {
+             return 'Air.NS("' + token + '", $scope)'
+           }
+        })
+      }
 
       var ancestorScope = getAncestorScope($scope);
       beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);

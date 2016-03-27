@@ -3,11 +3,17 @@ describe('数据绑定', function () {
     it('本地模板渲染', function (done) {
       b.run('page_default', function(require, $scope){
         $scope.flower = 'sun';
+        $scope.cityTL = 'tieling'
+        $scope.citySH = 'shanghai'
         var dom = {
-          flower : document.querySelector('view[name=page_default] .flower')
+          flower : document.querySelector('view[name=page_default] .flower'),
+          flower_A : document.querySelector('view[name=page_default] .flower_A'),
+          flower_B : document.querySelector('view[name=page_default] .flower_B')
         }
         setTimeout(function(){
           expect(dom.flower.innerText).toEqual('sun');
+          expect(dom.flower_A.innerText).toEqual('shanghai');
+          expect(dom.flower_B.innerText).toEqual('tieling');
           done();
         }, 0);
       })

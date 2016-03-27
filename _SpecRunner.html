@@ -20,6 +20,8 @@ viewport view[active="true"]{display:block}
   <view name="page_default" >
     <p>Hello</p>
     <span class="flower" attr="{{attr}}">{{flower}}</span>
+    <span class="flower_A" attr="{{attr}}">{{1+1==2 ? citySH : cityTL}}</span>
+    <span class="flower_B" attr="{{attr}}">{{1+1==2 ? cityTL : citySH}}</span>
   </view>
   <view name="page_list">
     <p>Hello</p>
@@ -156,7 +158,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/b.0.2.0.js"></script>
+  <script src="dist/b.0.2.0.min.js"></script>
   
 
 
@@ -241,8 +243,6 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/b-show/show.base.Spec.js"></script>
   
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
-  
-  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   
