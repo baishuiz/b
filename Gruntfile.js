@@ -56,6 +56,7 @@ module.exports = function(grunt){
                         './src/B/view/View.js',
                         './src/B/view/viewManager.js',
                         './src/B/controller/run.js',
+                        './src/B/TDK/TDK.js',
 
 
 
@@ -81,7 +82,8 @@ module.exports = function(grunt){
                   './test/spec/repeat/*Spec.js',
                   './test/spec/model/*Spec.js',
                   './test/spec/b-show/*Spec.js',
-                  './test/spec/b-property/*Spec.js'
+                  './test/spec/b-property/*Spec.js',
+                  './test/spec/TDK/*Spec.js'
                 ],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',
@@ -108,7 +110,8 @@ module.exports = function(grunt){
                   './test/spec/repeat/*Spec.js',
                   './test/spec/model/*Spec.js',
                   './test/spec/b-show/*Spec.js',
-                  './test/spec/b-property/*Spec.js'
+                  './test/spec/b-property/*Spec.js',
+                  './test/spec/TDK/*Spec.js'
                 ],
                 keepRunner: true,
                 host: 'http://127.0.0.1:8000/',

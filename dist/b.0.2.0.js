@@ -2261,6 +2261,44 @@ Object.observe || (function(O, A, root, _undefined) {
 
   return run;
 });
+;Air.Module("B.TDK.TDK", function(){
+ function setTitle(title){
+   document.title = title  || document.title;
+   return document.title;
+ }
+
+ function setDescription(description){
+   var descElement = getMetaElement('description')
+   descElement.content = description || descElement.content;
+   return descElement.content;
+ }
+
+ function setKeywords(keywords){
+   var keywordElement = getMetaElement('keywords')
+   keywordElement.content = keywords || keywordElement.content;
+   return keywordElement.content;
+ }
+
+ function getMetaElement(metaName){
+   var element = document.head.querySelector('meta[name=' + metaName + ']');
+   element = element || createMetaElement(metaName);
+   return element;
+ }
+
+ function createMetaElement(metaName){
+   var element = document.createElement('meta');
+   element.setAttribute('name', metaName);
+   document.head.appendChild(element);
+   return element;
+ }
+
+  var api = {
+    setTitle : setTitle,
+    setDescription : setDescription,
+    setKeywords : setKeywords
+  }
+  return api;
+});
 ;/**
  * @author baishuiz@gmail.com, xuemengfei@gmail.com
  * @version v0.2.0
@@ -2271,6 +2309,7 @@ Air.run(function(require){
       memCache = require('B.data.memCache'),
       run = require('B.controller.run'),
       serviceFactory = require('B.service.serviceFactory');
+      TDK = require('B.TDK.TDK');
   void function main(){
     var FRAMEWORK_NAME = "b";
     var api = {
@@ -2291,6 +2330,7 @@ Air.run(function(require){
       },
       run      : run,
       Module   : Air.Module,
+      TDK      : TDK,
       domReady : function(){}
     };
     window[FRAMEWORK_NAME] = api;

@@ -8,6 +8,7 @@ Air.run(function(require){
       memCache = require('B.data.memCache'),
       run = require('B.controller.run'),
       serviceFactory = require('B.service.serviceFactory');
+      TDK = require('B.TDK.TDK');
   void function main(){
     var FRAMEWORK_NAME = "b";
     var api = {
@@ -28,6 +29,7 @@ Air.run(function(require){
       },
       run      : run,
       Module   : Air.Module,
+      TDK      : TDK,
       domReady : function(){}
     };
     window[FRAMEWORK_NAME] = api;
