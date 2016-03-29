@@ -1408,7 +1408,7 @@ Object.observe || (function(O, A, root, _undefined) {
             var markup   = markups[i];
             var dataPath = markup.replace(/{{|}}/ig,"");
             // TODO :  新增String.prototype.trim
-            dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');;
+            dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');
             // var data = util.getData(dataPath, $scope);
             var expression = getExpression(dataPath);
             var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
@@ -1422,8 +1422,9 @@ Object.observe || (function(O, A, root, _undefined) {
       })(node, node.nodeValue);
 
       function getExpression(dataPath){
-        return dataPath.replace(/([$\w\.]+)\b/g, function(token){
-           if(/^\d+$/.test(token)){
+        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9]+)\s*\1?/g, function(token){
+           token = token.trim();
+           if(/^\d+$/.test(token) || /^['"]/.test(token) ){
              return token
            } else {
              return 'util.getData("' + token + '", $scope)'
@@ -1862,18 +1863,15 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function runJS(scripts, dom){
-    for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
+    for (var scriptIndex = 0; scriptIndex < scripts.length; scriptIndex++) {
       var activeScript = scripts[scriptIndex];
-
       var tmpScript = document.createElement('script');
       if (activeScript.src) {
-        // tmpScript.src = activeScript.src;
         Air.loadJS(activeScript.src);
       } else {
         tmpScript.text = activeScript.text;
         dom.appendChild(tmpScript);
       }
-
       activeScript.parentNode && activeScript.parentNode.removeChild(activeScript);
     };
   }

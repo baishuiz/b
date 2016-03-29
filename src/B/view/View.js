@@ -32,18 +32,15 @@ Air.Module("B.view.View", function(require){
   }
 
   function runJS(scripts, dom){
-    for (var scriptIndex = scripts.length - 1; scriptIndex >= 0; scriptIndex--) {
+    for (var scriptIndex = 0; scriptIndex < scripts.length; scriptIndex++) {
       var activeScript = scripts[scriptIndex];
-
       var tmpScript = document.createElement('script');
       if (activeScript.src) {
-        // tmpScript.src = activeScript.src;
         Air.loadJS(activeScript.src);
       } else {
         tmpScript.text = activeScript.text;
         dom.appendChild(tmpScript);
       }
-
       activeScript.parentNode && activeScript.parentNode.removeChild(activeScript);
     };
   }

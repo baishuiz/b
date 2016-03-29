@@ -102,7 +102,7 @@ Air.Module('B.scope.scopeManager', function(require){
             var markup   = markups[i];
             var dataPath = markup.replace(/{{|}}/ig,"");
             // TODO :  新增String.prototype.trim
-            dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');;
+            dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');
             // var data = util.getData(dataPath, $scope);
             var expression = getExpression(dataPath);
             var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
@@ -116,8 +116,9 @@ Air.Module('B.scope.scopeManager', function(require){
       })(node, node.nodeValue);
 
       function getExpression(dataPath){
-        return dataPath.replace(/([$\w\.]+)\b/g, function(token){
-           if(/^\d+$/.test(token)){
+        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9]+)\s*\1?/g, function(token){
+           token = token.trim();
+           if(/^\d+$/.test(token) || /^['"]/.test(token) ){
              return token
            } else {
              return 'util.getData("' + token + '", $scope)'
