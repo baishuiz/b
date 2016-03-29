@@ -90,13 +90,23 @@ Air.Module('B.directive.repeat', function(require){
         });
       }
       placeholder.parentNode.insertBefore(tmpParent, placeholder);
+      fixSelectElement(placeholder, template)
     }
     return repeatItems;
   }
 
   function getTemplate(target) {
+    // fixSelectElement(target);
     target.parentNode && target.parentNode.removeChild(target);
     return target;
+  }
+
+  function fixSelectElement(placeholder, target){
+    if(target.nodeName.toLowerCase()=='option'){
+      setTimeout(function(){
+        placeholder.parentNode.value = placeholder.parentNode.defaultValue;
+      },0);
+    }
   }
 
   function needRepeat(target, $scope) {

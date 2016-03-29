@@ -1124,7 +1124,7 @@ Object.observe || (function(O, A, root, _undefined) {
       beacon($scope).on(EVENTS.DATA_CHANGE, function(e){
         if(!activeModel){
           var value = util.getData(dataPath, $scope);
-          target.value = !util.isEmpty(value) ? (value.trim ? value.trim() : value) : "";
+          target.defaultValue = target.value = !util.isEmpty(value) ? (value.trim ? value.trim() : value) : "";
         }
       });
   }
@@ -1233,13 +1233,23 @@ Object.observe || (function(O, A, root, _undefined) {
         });
       }
       placeholder.parentNode.insertBefore(tmpParent, placeholder);
+      fixSelectElement(placeholder, template)
     }
     return repeatItems;
   }
 
   function getTemplate(target) {
+    // fixSelectElement(target);
     target.parentNode && target.parentNode.removeChild(target);
     return target;
+  }
+
+  function fixSelectElement(placeholder, target){
+    if(target.nodeName.toLowerCase()=='option'){
+      setTimeout(function(){
+        placeholder.parentNode.value = placeholder.parentNode.defaultValue;
+      },0);
+    }
   }
 
   function needRepeat(target, $scope) {
