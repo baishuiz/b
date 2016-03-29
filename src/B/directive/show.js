@@ -14,7 +14,7 @@ Air.Module('B.directive.show', function(require) {
 
     function watchElement() {
       var dataPath = target.getAttribute(attribute);
-      var displayStatus = Air.NS(dataPath, $scope);
+      var displayStatus = util.getData(dataPath, $scope);
       displayStatus = util.isEmpty(displayStatus) ? false : displayStatus;
       displayStatus ? showHide(target, true) : showHide(target);
     }

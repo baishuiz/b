@@ -3,6 +3,7 @@ Air.Module('B.directive.repeat', function(require){
   var nodeUtil = require('B.util.node');
   var Scope = require('B.scope.Scope');
   var EVENTS =  require('B.event.events');
+  var util =  require('B.util.util');
 
   function init(target, scope) {
     var placeholder = generatePlaceholder(target);
@@ -23,7 +24,7 @@ Air.Module('B.directive.repeat', function(require){
     var itemName  = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
     template.repeatDataPath = dataPath;
 
-    var data = Air.NS(dataPath, scope);
+    var data = util.getData(dataPath, scope);
 
     return {
       data: data,
@@ -104,7 +105,7 @@ Air.Module('B.directive.repeat', function(require){
     target.cachedNodes = target.cachedNodes || [];
     var dataChange;
     if(target.repeatDataPath){
-      dataChange = Air.NS(target.repeatDataPath, $scope).length !== target.cachedNodes.length
+      dataChange = util.getData(target.repeatDataPath, $scope).length !== target.cachedNodes.length
     }
     // return isRepeatDirective;
     return (isRepeatDirective && noRepeated)  || dataChange
@@ -128,15 +129,13 @@ Air.Module('B.directive.repeat', function(require){
           activeT =  r[i]
         }
 
-        var targetT = Air.NS(activeT, $scope);
-        Object.observe(targetT, function(dataChanges){
+        var targetT = util.getData(activeT, $scope);
+        targetT && Object.observe(targetT, function(dataChanges){
           // var obj = getRepeatData(target, $scope)
           for(var i=0;i<dataChanges.length;i++){
             (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === targetT)  && callback()
           }
         });
-
-
       }
       //===
 

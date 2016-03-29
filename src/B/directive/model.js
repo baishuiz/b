@@ -24,7 +24,7 @@ Air.Module('B.directive.model', function(require){
 
       beacon($scope).on(EVENTS.DATA_CHANGE, function(e){
         if(!activeModel){
-          var value = Air.NS(dataPath, $scope);
+          var value = util.getData(dataPath, $scope);
           target.value = !util.isEmpty(value) ? (value.trim ? value.trim() : value) : "";
         }
       });

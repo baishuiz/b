@@ -231,6 +231,7 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function switchView(view){
+    // if(activeView === view){return};
     // 7
     if (lastView) {
       var lastViewName = lastView.getViewName();

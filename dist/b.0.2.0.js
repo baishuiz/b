@@ -831,6 +831,20 @@ Object.observe || (function(O, A, root, _undefined) {
         result[keys[i]] = keys[i];
       };
       return result;
+    },
+
+    getData : function(pathString, root){
+      var nsPath = pathString.split("."),
+          ns = root || window || {},
+          root = ns;
+      for (var i = 0, len = nsPath.length; i < len; i++) {
+          if(ns[nsPath[i]] === undefined){
+            return
+          } else {
+              ns = ns[nsPath[i]];
+          }
+      };
+      return ns;
     }
   };
   return util;
@@ -946,7 +960,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
     function watchElement() {
       var dataPath = target.getAttribute(attribute);
-      var displayStatus = Air.NS(dataPath, $scope);
+      var displayStatus = util.getData(dataPath, $scope);
       displayStatus = util.isEmpty(displayStatus) ? false : displayStatus;
       displayStatus ? showHide(target, true) : showHide(target);
     }
@@ -1061,7 +1075,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
   function bindValue(activeProperty, target, $scope){
     beacon($scope).on(EVENTS.DATA_CHANGE, function(){
-      var value = Air.NS(activeProperty.dataPath, $scope);
+      var value = util.getData(activeProperty.dataPath, $scope);
       target[activeProperty.name] = value;
     });
   }
@@ -1109,7 +1123,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
       beacon($scope).on(EVENTS.DATA_CHANGE, function(e){
         if(!activeModel){
-          var value = Air.NS(dataPath, $scope);
+          var value = util.getData(dataPath, $scope);
           target.value = !util.isEmpty(value) ? (value.trim ? value.trim() : value) : "";
         }
       });
@@ -1132,6 +1146,7 @@ Object.observe || (function(O, A, root, _undefined) {
   var nodeUtil = require('B.util.node');
   var Scope = require('B.scope.Scope');
   var EVENTS =  require('B.event.events');
+  var util =  require('B.util.util');
 
   function init(target, scope) {
     var placeholder = generatePlaceholder(target);
@@ -1152,7 +1167,7 @@ Object.observe || (function(O, A, root, _undefined) {
     var itemName  = condition.match(/(\S+)\s+in\s+(\S+)/i)[1];
     template.repeatDataPath = dataPath;
 
-    var data = Air.NS(dataPath, scope);
+    var data = util.getData(dataPath, scope);
 
     return {
       data: data,
@@ -1233,7 +1248,7 @@ Object.observe || (function(O, A, root, _undefined) {
     target.cachedNodes = target.cachedNodes || [];
     var dataChange;
     if(target.repeatDataPath){
-      dataChange = Air.NS(target.repeatDataPath, $scope).length !== target.cachedNodes.length
+      dataChange = util.getData(target.repeatDataPath, $scope).length !== target.cachedNodes.length
     }
     // return isRepeatDirective;
     return (isRepeatDirective && noRepeated)  || dataChange
@@ -1257,15 +1272,13 @@ Object.observe || (function(O, A, root, _undefined) {
           activeT =  r[i]
         }
 
-        var targetT = Air.NS(activeT, $scope);
-        Object.observe(targetT, function(dataChanges){
+        var targetT = util.getData(activeT, $scope);
+        targetT && Object.observe(targetT, function(dataChanges){
           // var obj = getRepeatData(target, $scope)
           for(var i=0;i<dataChanges.length;i++){
             (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === targetT)  && callback()
           }
         });
-
-
       }
       //===
 
@@ -1396,7 +1409,7 @@ Object.observe || (function(O, A, root, _undefined) {
             var dataPath = markup.replace(/{{|}}/ig,"");
             // TODO :  新增String.prototype.trim
             dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');;
-            // var data = Air.NS(dataPath, $scope);
+            // var data = util.getData(dataPath, $scope);
             var expression = getExpression(dataPath);
             var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
             data = util.isEmpty(data) ? '' : data;
@@ -1413,11 +1426,11 @@ Object.observe || (function(O, A, root, _undefined) {
            if(/^\d+$/.test(token)){
              return token
            } else {
-             return 'Air.NS("' + token + '", $scope)'
+             return 'util.getData("' + token + '", $scope)'
            }
         })
       }
-
+      // txtNodeDataChange();
       var ancestorScope = getAncestorScope($scope);
       beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
       ancestorScope !== $scope && beacon(ancestorScope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
@@ -2200,6 +2213,7 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function switchView(view){
+    // if(activeView === view){return};
     // 7
     if (lastView) {
       var lastViewName = lastView.getViewName();

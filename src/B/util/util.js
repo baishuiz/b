@@ -23,6 +23,20 @@ Air.Module('B.util.util', function() {
         result[keys[i]] = keys[i];
       };
       return result;
+    },
+
+    getData : function(pathString, root){
+      var nsPath = pathString.split("."),
+          ns = root || window || {},
+          root = ns;
+      for (var i = 0, len = nsPath.length; i < len; i++) {
+          if(ns[nsPath[i]] === undefined){
+            return
+          } else {
+              ns = ns[nsPath[i]];
+          }
+      };
+      return ns;
     }
   };
   return util;

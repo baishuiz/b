@@ -20,7 +20,7 @@ Air.Module('B.directive.property', function(require) {
 
   function bindValue(activeProperty, target, $scope){
     beacon($scope).on(EVENTS.DATA_CHANGE, function(){
-      var value = Air.NS(activeProperty.dataPath, $scope);
+      var value = util.getData(activeProperty.dataPath, $scope);
       target[activeProperty.name] = value;
     });
   }
