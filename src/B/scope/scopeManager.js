@@ -9,6 +9,7 @@ Air.Module('B.scope.scopeManager', function(require){
   var eventDirective = require('B.directive.event');
   var showDirective = require('B.directive.show');
   var propertyDirective = require('B.directive.property');
+  var memCache = require('B.data.memCache');
 
   var $rootScope = new Scope();
 
@@ -41,13 +42,26 @@ Air.Module('B.scope.scopeManager', function(require){
   function tryGenerateViewScope(target, $scope) {
     // TODO: 验证 target.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
     if (target.tagName.toLowerCase() === 'view' || target.tagName.toLowerCase() === 'cjia:view') {
-      var subScopeName = target.getAttribute('name');
+      var scopeKey = target.getAttribute('b-scope-key');
+      var viewName = target.getAttribute('name');
+      var subScopeName = scopeKey || viewName;
       if (scopeList[subScopeName]) {
         $scope = scopeList[subScopeName];
       } else {
         var $subScope = new Scope($scope);
         scopeList[subScopeName] = $subScope;
         $scope = $subScope;
+      }
+
+      if (scopeKey) {
+        var controllerMap = memCache.get('controllerMap') || {};
+        var controller = controllerMap[viewName];
+
+        if (controller) {
+          setTimeout(function(){
+            b.run(viewName, controller);
+          }, 0);
+        }
       }
     }
 

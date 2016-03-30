@@ -1325,6 +1325,7 @@ Object.observe || (function(O, A, root, _undefined) {
   var eventDirective = require('B.directive.event');
   var showDirective = require('B.directive.show');
   var propertyDirective = require('B.directive.property');
+  var memCache = require('B.data.memCache');
 
   var $rootScope = new Scope();
 
@@ -1357,13 +1358,26 @@ Object.observe || (function(O, A, root, _undefined) {
   function tryGenerateViewScope(target, $scope) {
     // TODO: 验证 target.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
     if (target.tagName.toLowerCase() === 'view' || target.tagName.toLowerCase() === 'cjia:view') {
-      var subScopeName = target.getAttribute('name');
+      var scopeKey = target.getAttribute('b-scope-key');
+      var viewName = target.getAttribute('name');
+      var subScopeName = scopeKey || viewName;
       if (scopeList[subScopeName]) {
         $scope = scopeList[subScopeName];
       } else {
         var $subScope = new Scope($scope);
         scopeList[subScopeName] = $subScope;
         $scope = $subScope;
+      }
+
+      if (scopeKey) {
+        var controllerMap = memCache.get('controllerMap') || {};
+        var controller = controllerMap[viewName];
+
+        if (controller) {
+          setTimeout(function(){
+            b.run(viewName, controller);
+          }, 0);
+        }
       }
     }
 
@@ -1867,7 +1881,7 @@ Object.observe || (function(O, A, root, _undefined) {
       runJS(scopeList, dom);
     },0)
     // var scripts= dom.querySelector('script');
-    runJS(scopeList, dom);
+    // runJS(scopeList, dom);
     fn && fn();
 
   }
@@ -2171,6 +2185,12 @@ Object.observe || (function(O, A, root, _undefined) {
     return mainViewport.views[viewName];
   }
 
+  function getScopeKeyByViewName(viewName) {
+    var viewDom = activeView.getDom().querySelector('view[name="' + viewName + '"]');
+
+    return viewDom && viewDom.getAttribute('b-scope-key') || '';
+  }
+
   function loadView(viewName, options){
     showLoading();
     var env = memCache.get('env');
@@ -2265,17 +2285,31 @@ Object.observe || (function(O, A, root, _undefined) {
     removeMiddleware : middleware.remove,
     showLoading : showLoading,
     hideLoading : hideLoading,
-    getActive : getActive
+    getActive : getActive,
+    getScopeKeyByViewName: getScopeKeyByViewName
   }
 
   return api;
 });
 ;Air.Module("B.controller.run", function(require){
+  var memCache = require('B.data.memCache');
   var run = function(controllerName, controller){
     var scopeManager = require("B.scope.scopeManager");
+    var viewManager = require("B.view.viewManager");
     var EVENTS = require('B.event.EVENTS');
-    var scope = scopeManager.getScope(controllerName);
-    
+    var scopeKey = viewManager.getScopeKeyByViewName(controllerName);
+    var scope = scopeManager.getScope(scopeKey || controllerName);
+
+    if (scopeKey) {
+      var controllerMap = memCache.get('controllerMap');
+      if (!controllerMap) {
+        controllerMap = {};
+        memCache.set('controllerMap', controllerMap);
+      }
+
+      controllerMap[controllerName] = controller;
+      memCache.set('controllerMap', controllerMap);
+    }
 
     // TODO 需要在run之后再显示view
     Air.run(controller, false, scope);

@@ -26,7 +26,7 @@ Air.Module("B.view.View", function(require){
       runJS(scopeList, dom);
     },0)
     // var scripts= dom.querySelector('script');
-    runJS(scopeList, dom);
+    // runJS(scopeList, dom);
     fn && fn();
 
   }

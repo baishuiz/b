@@ -181,6 +181,12 @@ Air.Module("B.view.viewManager", function(require){
     return mainViewport.views[viewName];
   }
 
+  function getScopeKeyByViewName(viewName) {
+    var viewDom = activeView.getDom().querySelector('view[name="' + viewName + '"]');
+
+    return viewDom && viewDom.getAttribute('b-scope-key') || '';
+  }
+
   function loadView(viewName, options){
     showLoading();
     var env = memCache.get('env');
@@ -275,7 +281,8 @@ Air.Module("B.view.viewManager", function(require){
     removeMiddleware : middleware.remove,
     showLoading : showLoading,
     hideLoading : hideLoading,
-    getActive : getActive
+    getActive : getActive,
+    getScopeKeyByViewName: getScopeKeyByViewName
   }
 
   return api;
