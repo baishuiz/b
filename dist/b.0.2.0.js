@@ -2229,6 +2229,8 @@ Object.observe || (function(O, A, root, _undefined) {
       beacon(lastView).on(lastView.events.onHide, {
         to: view
       });
+      var $lastScope = scopeManager.getScope(lastViewName);
+      beacon($lastScope).on(EVENTS.DATA_CHANGE);
     }
 
     activeView = view;
@@ -2236,6 +2238,8 @@ Object.observe || (function(O, A, root, _undefined) {
     beacon(activeView).on(activeView.events.onShow, {
       from: lastViewName
     });
+    var $scope = scopeManager.getScope(view.getViewName());
+    beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
   function hide(viewName){
