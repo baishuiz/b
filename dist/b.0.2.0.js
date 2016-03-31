@@ -2026,7 +2026,7 @@ Object.observe || (function(O, A, root, _undefined) {
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
-        init: true,
+        replace: true,
         params: activeRouter.params,
         query: location.search
       });
@@ -2119,8 +2119,8 @@ Object.observe || (function(O, A, root, _undefined) {
 
 
     // TODO: 兼容IE8、IE9 url 变化，计划采用锚点方案
-    var isInit  = options.init;
-    var changeURLState = isInit ? history.replaceState : history.pushState;
+    var isReplace  = options.replace;
+    var changeURLState = isReplace ? history.replaceState : history.pushState;
     changeURLState && changeURLState.call(history, {
       viewName: viewName,
       params: options.params
@@ -2149,7 +2149,7 @@ Object.observe || (function(O, A, root, _undefined) {
           var activeRouter = router.getMatchedRouter(URLPath);
           if (activeRouter) {
             goTo(activeRouter.viewName, {
-              init: true,
+              replace: true,
               params: activeRouter.params,
               query: location.search
             });

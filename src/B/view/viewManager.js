@@ -22,7 +22,7 @@ Air.Module("B.view.viewManager", function(require){
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
-        init: true,
+        replace: true,
         params: activeRouter.params,
         query: location.search
       });
@@ -115,8 +115,8 @@ Air.Module("B.view.viewManager", function(require){
 
 
     // TODO: 兼容IE8、IE9 url 变化，计划采用锚点方案
-    var isInit  = options.init;
-    var changeURLState = isInit ? history.replaceState : history.pushState;
+    var isReplace  = options.replace;
+    var changeURLState = isReplace ? history.replaceState : history.pushState;
     changeURLState && changeURLState.call(history, {
       viewName: viewName,
       params: options.params
@@ -145,7 +145,7 @@ Air.Module("B.view.viewManager", function(require){
           var activeRouter = router.getMatchedRouter(URLPath);
           if (activeRouter) {
             goTo(activeRouter.viewName, {
-              init: true,
+              replace: true,
               params: activeRouter.params,
               query: location.search
             });
