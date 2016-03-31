@@ -45,6 +45,7 @@ viewport view[active="true"]{display:block}
   <view name="page_service_middleware_before"></view>
   <view name="page_service_middleware_after"></view>
   <view name="page_service_timeout"></view>
+  <view name="page_service_queue"></view>
   <view name="page_event">
     <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello')">Hello Event</a>
   </view>
@@ -158,7 +159,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/b.0.2.0.min.js"></script>
+  <script src="dist/b.0.2.0.js"></script>
   
 
 
@@ -245,6 +246,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   
   <script src="test/spec/TDK/TDK.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   

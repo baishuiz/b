@@ -201,7 +201,8 @@ Air.Module("B.view.viewManager", function(require){
       errorCallBack : errorCallBack
     });
 
-    function successCallBack(responseText){
+    function successCallBack(xhr){
+      var responseText = xhr.responseText;
       // 2
       var view = new View(viewName, responseText, {
         initCallback: function(){

@@ -45,6 +45,7 @@ describe('数据绑定', function () {
             city : document.querySelector('view[name=remote_page_scope] .city')
           }
 
+          // TODO
           var cityListService = b.service.get('service.roomModelSearchListOpenCity', $scope);
           cityListService.query({
             a: 1,
@@ -55,6 +56,7 @@ describe('数据绑定', function () {
             errorCallBack: function(errorCode) {
               // console.log(errorCode)
             }
+          });
 
           beacon(activeView).on(activeView.events.onShow, function(e) {
             expect(dom.city.innerText).toEqual('铁岭');

@@ -43,7 +43,7 @@ describe('远程模板', function () {
         path: 'roomModelSearchListOpenCity.json',
         expiredSecond: 20,
         extend : 'default'
-    });  
+    });
 
     // 1
     b.views.goTo('remote_page_list');
@@ -60,7 +60,6 @@ describe('远程模板', function () {
         }, {
           noCache: true,
           successCallBack: function(data){
-            console.log('success')
           },
           errorCallBack: function(errorCode) {
             // console.log(errorCode)
@@ -70,7 +69,6 @@ describe('远程模板', function () {
 
         // 5
         beacon(activeView).on(activeView.events.onShow, function(e) {
-          console.log('onshow')
           // 模板 HTML元素引用
           var activeView = b.views.getActive();
           var activeViewName = activeView.getViewName();
