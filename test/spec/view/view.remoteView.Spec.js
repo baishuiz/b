@@ -25,6 +25,26 @@ describe('远程模板', function () {
   it('前进', function (done) {
     // 切换至列表页
 
+    b.service.setConfig('default', {
+      host: window.host + '/test/service/',
+      method: 'GET',
+      protocol: 'HTTP',
+      header: {
+        header: '',
+        userToken: ''
+      },
+      path: '',
+      params: null,
+      expiredSecond: null,
+      timeout: 0.5
+    });
+
+    b.service.set('service.roomModelSearchListOpenCity', {
+        path: 'roomModelSearchListOpenCity.json',
+        expiredSecond: 20,
+        extend : 'default'
+    });  
+
     // 1
     b.views.goTo('remote_page_list');
 
@@ -33,8 +53,24 @@ describe('远程模板', function () {
       b.run('remote_page_list', function(require, $scope) {
         var activeView = b.views.getActive();
 
+        var cityListService = b.service.get('service.roomModelSearchListOpenCity', $scope);
+        cityListService.query({
+          a: 1,
+          b: 2
+        }, {
+          noCache: true,
+          successCallBack: function(data){
+            console.log('success')
+          },
+          errorCallBack: function(errorCode) {
+            // console.log(errorCode)
+          }
+        })
+
+
         // 5
         beacon(activeView).on(activeView.events.onShow, function(e) {
+          console.log('onshow')
           // 模板 HTML元素引用
           var activeView = b.views.getActive();
           var activeViewName = activeView.getViewName();

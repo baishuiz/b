@@ -40,15 +40,28 @@ describe('数据绑定', function () {
       setTimeout(function(){
         b.run('remote_page_scope', function(require, $scope){
           var activeView = b.views.getActive();
-          $scope.city = '铁岭';
+
           var dom = {
             city : document.querySelector('view[name=remote_page_scope] .city')
           }
+
+          var cityListService = b.service.get('service.roomModelSearchListOpenCity', $scope);
+          cityListService.query({
+            a: 1,
+            b: 2
+          }, {
+            successCallBack: function(data){
+            },
+            errorCallBack: function(errorCode) {
+              // console.log(errorCode)
+            }
 
           beacon(activeView).on(activeView.events.onShow, function(e) {
             expect(dom.city.innerText).toEqual('铁岭');
             done();
           });
+
+          $scope.city = '铁岭';
 
         });
       }, 500);
