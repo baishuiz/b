@@ -126,6 +126,27 @@ module.exports = function(grunt){
             }
           }
         }
+      ,jshint: {
+        options: {
+          curly: true,
+          eqeqeq: true,
+          eqnull: true,
+          browser: true,
+          globals: {
+            jQuery: true
+          },
+        },
+        uses_defaults: ['./dist/<%= output.fileName %>']//,
+        // with_overrides: {
+        //   options: {
+        //     curly: false,
+        //     undef: true,
+        //   },
+        //   files: {
+        //     src: ['dir3/**/*.js', 'dir4/**/*.js']
+        //   },
+        // }
+      }
 
     });
 
