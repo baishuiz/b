@@ -1512,7 +1512,7 @@ Object.observe || (function(O, A, root, _undefined) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState === state.complete) {
         if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304) {
-          request.successCallBack && request.successCallBack(xhr.responseText);
+          request.successCallBack && request.successCallBack(xhr);
         } else {
           request.errorCallBack && request.errorCallBack(xhr);
         }
@@ -1554,6 +1554,8 @@ Object.observe || (function(O, A, root, _undefined) {
   var memCache = require('B.data.MemCache');
   var middleware = require('B.util.middleware');
 
+  var serviceQueue = {};
+
   var ERROR_CODE = {
     parse: 1, // JSON 解析出错
     timeout: 2, // 超时
@@ -1592,8 +1594,9 @@ Object.observe || (function(O, A, root, _undefined) {
       var cacheKey = url + JSON.stringify(requestParams);
       var finished = false;
       var timer = null;
+      var curServiceQueue = serviceQueue[cacheKey];
 
-      if (!options.noCache) {
+      if (!options.noCache && !curServiceQueue) {
         var cachedData = memCache.get(cacheKey);
         if (cachedData) {
           var fromCache = true;
@@ -1614,14 +1617,23 @@ Object.observe || (function(O, A, root, _undefined) {
         clearTimeout(timer);
       }
 
-      var httpSuccessCallback = function(responseText) {
+      var httpSuccessCallback = function(xhrOrResponseData, isQueue) {
         clearTimeoutCount();
+        xhrOrResponseData = xhrOrResponseData || {};
+        var responseText = '';
         var responseData = null;
         var parseError = false;
-        try {
-          responseData = JSON.parse(responseText);
-        } catch(e) {
-          parseError = true;
+
+        // 不是队列进入的，并且readState为4，则解析json
+        if (!isQueue && xhrOrResponseData.readyState === 4) {
+          responseText = xhrOrResponseData.responseText;
+          try {
+            responseData = JSON.parse(responseText);
+          } catch(e) {
+            parseError = true;
+          }
+        } else { // 否则，为队列传入的responseData
+          responseData = xhrOrResponseData;
         }
 
         if (parseError) {
@@ -1631,6 +1643,10 @@ Object.observe || (function(O, A, root, _undefined) {
             response : responseText
           });
           beacon(scope).on(EVENTS.DATA_CHANGE);
+          if (!isQueue) {
+            var isError = true;
+            runQueue(isError, xhrOrResponseData);
+          }
           return;
         } else {
           callAfterQueryMiddleware({xhr: http.xhr, data: responseData}, function(isError) {
@@ -1640,23 +1656,48 @@ Object.observe || (function(O, A, root, _undefined) {
                 error : ERROR_CODE.business,
                 response : responseData
               });
+              if (!isQueue) {
+                var isError = true;
+                runQueue(isError, xhrOrResponseData);
+              }
             } else {
-              // 记录缓存
-              config.expiredSecond && memCache.set(cacheKey, responseData, {
-                expiredSecond: config.expiredSecond
-              });
+              var useCache = false;
+              if (!options.noCache) {
+                var cachedData = memCache.get(cacheKey);
+                if (cachedData) {
+                  var fromCache = true;
+                  useCache = true;
+                  options.successCallBack && options.successCallBack(cachedData, fromCache);
+                  beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
+                  beacon(scope).on(EVENTS.DATA_CHANGE);
+                }
+              }
 
-              options.successCallBack && options.successCallBack(responseData);
-              beacon(self).on(SERVICEEVENTS.SUCCESS, responseData);
+              if (!useCache) {
+                // 记录缓存
+                config.expiredSecond && memCache.set(cacheKey, responseData, {
+                  expiredSecond: config.expiredSecond
+                });
+
+                options.successCallBack && options.successCallBack(responseData);
+                beacon(self).on(SERVICEEVENTS.SUCCESS, responseData);
+
+                if (!isQueue) {
+                  var isError = false;
+                  runQueue(isError, responseData);
+                }
+              }
             }
 
             beacon(scope).on(EVENTS.DATA_CHANGE);
+
+            tryClearQueue();
 
           });
         }
       }
 
-      var httpErrorCallback = function(xhr) {
+      var httpErrorCallback = function(xhr, isQueue) {
         clearTimeoutCount();
 
         var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
@@ -1666,10 +1707,41 @@ Object.observe || (function(O, A, root, _undefined) {
             error : errorCode,
             response : errorInfo
           });
+
+          if (!isQueue) {
+            var isError = true;
+            runQueue(isError, xhr);
+          }
+
+          tryClearQueue();
         });
 
         beacon(scope).on(EVENTS.DATA_CHANGE);
 
+      }
+
+      function runQueue(isError, xhrOrResponseData) {
+        var args = [].slice.call(arguments, 1);
+        var isQueue = true;
+        if (curServiceQueue && curServiceQueue.length) {
+          for (var curService; curService = curServiceQueue.shift();) {
+            if (curService) {
+              if (isError) {
+                curService.httpErrorCallback && curService.httpErrorCallback.call(self, xhrOrResponseData, isQueue);
+              } else {
+                curService.httpSuccessCallback && curService.httpSuccessCallback.call(self, xhrOrResponseData, isQueue);
+              }
+            }
+          }
+          tryClearQueue();
+        }
+      }
+
+      // 服务请求完，如果队列为空，则删除队列
+      function tryClearQueue() {
+        if (curServiceQueue && !curServiceQueue.length) {
+          delete serviceQueue[cacheKey];
+        }
       }
 
       var requestOptions = {
@@ -1680,12 +1752,23 @@ Object.observe || (function(O, A, root, _undefined) {
       };
 
       callBeforeQueryMiddleware(requestOptions, function(){
-        // 避免外部修改回调函数，所以在外部处理完成后再赋值
-        requestOptions.successCallBack = httpSuccessCallback;
-        requestOptions.errorCallBack = httpErrorCallback;
 
-        http.request(requestOptions);
-        startTimeoutCount();
+        // 首次进入，队列不存在
+        if (!curServiceQueue) {
+          curServiceQueue = serviceQueue[cacheKey] = [];
+
+          // 避免外部修改回调函数，所以在外部处理完成后再赋值
+          requestOptions.successCallBack = httpSuccessCallback;
+          requestOptions.errorCallBack = httpErrorCallback;
+
+          http.request(requestOptions);
+          startTimeoutCount();
+        } else {
+          curServiceQueue.push({
+            httpSuccessCallback: httpSuccessCallback,
+            httpErrorCallback: httpErrorCallback
+          })
+        }
       });
     };
 
@@ -2026,7 +2109,7 @@ Object.observe || (function(O, A, root, _undefined) {
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
-        init: true,
+        replace: true,
         params: activeRouter.params,
         query: location.search
       });
@@ -2119,8 +2202,8 @@ Object.observe || (function(O, A, root, _undefined) {
 
 
     // TODO: 兼容IE8、IE9 url 变化，计划采用锚点方案
-    var isInit  = options.init;
-    var changeURLState = isInit ? history.replaceState : history.pushState;
+    var isReplace  = options.replace;
+    var changeURLState = isReplace ? history.replaceState : history.pushState;
     changeURLState && changeURLState.call(history, {
       viewName: viewName,
       params: options.params
@@ -2149,7 +2232,7 @@ Object.observe || (function(O, A, root, _undefined) {
           var activeRouter = router.getMatchedRouter(URLPath);
           if (activeRouter) {
             goTo(activeRouter.viewName, {
-              init: true,
+              replace: true,
               params: activeRouter.params,
               query: location.search
             });
@@ -2205,7 +2288,8 @@ Object.observe || (function(O, A, root, _undefined) {
       errorCallBack : errorCallBack
     });
 
-    function successCallBack(responseText){
+    function successCallBack(xhr){
+      var responseText = xhr.responseText;
       // 2
       var view = new View(viewName, responseText, {
         initCallback: function(){

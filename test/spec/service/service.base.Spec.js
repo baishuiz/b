@@ -229,7 +229,6 @@ describe('服务请求', function () {
       }, {
         noCache: true,
         successCallBack: function(data, fromCache){
-          console.log(data);
         },
         errorCallBack: function(errorCode) {
           expect(errorCode).toEqual(ERROR_CODE.timeout);
@@ -281,6 +280,40 @@ describe('服务请求', function () {
             done();
           },0)
       })
+    });
+
+  });
+
+
+  it('服务队列', function(done) {
+    b.service.set('service.queueService', {
+      path: 'queueService.json',
+      extend : 'default'
+    });
+
+    b.run('page_service_queue', function(require, $scope) {
+      var queueService = b.service.get('service.queueService', $scope);
+
+      var count = 0;
+      queueService.query(null, {
+        successCallBack: function() {
+          count++;
+          expect(count).toEqual(1);
+        }
+      });
+      queueService.query(null, {
+        successCallBack: function() {
+          count++;
+          expect(count).toEqual(2);
+        }
+      });
+      queueService.query(null, {
+        successCallBack: function() {
+          count++;
+          expect(count).toEqual(3);
+          done();
+        }
+      });
     });
 
   });
