@@ -52,9 +52,10 @@ describe('数据绑定', function () {
             b: 2
           }, {
             successCallBack: function(data){
+              console.log("******* success")
             },
             errorCallBack: function(errorCode) {
-              // console.log(errorCode)
+               console.log("************* error")
             }
           });
 

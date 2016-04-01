@@ -131,7 +131,6 @@ Air.Module('B.service.Service', function(require) {
 
                 options.successCallBack && options.successCallBack(responseData);
                 beacon(self).on(SERVICEEVENTS.SUCCESS, responseData);
-
                 if (!isQueue) {
                   var isError = false;
                   runQueue(isError, responseData);

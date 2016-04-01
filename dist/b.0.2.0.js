@@ -1681,7 +1681,6 @@ Object.observe || (function(O, A, root, _undefined) {
 
                 options.successCallBack && options.successCallBack(responseData);
                 beacon(self).on(SERVICEEVENTS.SUCCESS, responseData);
-
                 if (!isQueue) {
                   var isError = false;
                   runQueue(isError, responseData);
@@ -2304,7 +2303,7 @@ Object.observe || (function(O, A, root, _undefined) {
       setActive(view);
 
       // 3
-      beacon(scope).once(EVENTS.DATA_CHANGE, function(){
+      beacon(scope).once(EVENTS.RUN_COMPLETE, function(){
         // 6
         switchURL(viewName, options);
         show(viewName);

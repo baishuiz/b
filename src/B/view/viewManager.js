@@ -217,7 +217,7 @@ Air.Module("B.view.viewManager", function(require){
       setActive(view);
 
       // 3
-      beacon(scope).once(EVENTS.DATA_CHANGE, function(){
+      beacon(scope).once(EVENTS.RUN_COMPLETE, function(){
         // 6
         switchURL(viewName, options);
         show(viewName);
