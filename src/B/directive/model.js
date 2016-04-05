@@ -2,9 +2,7 @@ Air.Module('B.directive.model', function(require){
   var nodeUtil  = require('B.util.node'),
       util      = require('B.util.util'),
       EVENTS    = require("B.event.events");
-
   var attrName = 'b-model';
-
   var api = function(target, $scope){
       var activeModel = null;
       if(!nodeUtil(target).hasAttribute(attrName)){
@@ -15,19 +13,23 @@ Air.Module('B.directive.model', function(require){
 
       beacon(target).on('input', function(){
         var target = this;
-
         new Function('$scope','target','$scope.' + dataPath + '= target.value.trim()')($scope, target)
         activeModel = true;
-        beacon($scope).on(EVENTS.DATA_CHANGE);
+        beacon($scope).on(EVENTS.DATA_CHANGE, {fromBModel:true});
         activeModel = false;
       });
 
-      beacon($scope).on(EVENTS.DATA_CHANGE, function(e){
-        if(!activeModel){
-          var value = util.getData(dataPath, $scope);
-          target.defaultValue = target.value = !util.isEmpty(value) ? (value.trim ? value.trim() : value) : "";
-        }
-      });
+      beacon($scope).on(EVENTS.DATA_CHANGE, modelChangeHandle);
+      function modelChangeHandle(e, data){
+        data = data || {};
+        if(data.fromBModel){return};
+        var value = util.getData(dataPath, $scope);
+        var result = !util.isEmpty(value)
+                     ? (value.trim ? value.trim() : value)
+                     : "";
+        target.defaultValue = result;
+        target.value = result;
+      }
   }
   return api;
 })
