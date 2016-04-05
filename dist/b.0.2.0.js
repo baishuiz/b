@@ -1126,8 +1126,11 @@ Object.observe || (function(O, A, root, _undefined) {
         var result = !util.isEmpty(value)
                      ? (value.trim ? value.trim() : value)
                      : "";
-        target.defaultValue = result;
-        target.value = result;
+                     
+        if(target.value !== value) {
+         target.defaultValue = result;
+         target.value = result;
+        }
       }
   }
   return api;
