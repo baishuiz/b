@@ -1451,7 +1451,7 @@ Object.observe || (function(O, A, root, _undefined) {
       })(node, node.nodeValue);
 
       function getExpression(dataPath){
-        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9]+)\s*\1?/g, function(token){
+        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
            token = token.trim();
            if(/^\d+$/.test(token) || /^['"]/.test(token) ){
              return token
