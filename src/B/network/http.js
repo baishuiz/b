@@ -13,7 +13,7 @@ Air.Module('B.network.HTTP', function() {
     var request = this;
     xhr.onreadystatechange = function() {
       if (xhr.readyState === state.complete) {
-        if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304) {
+        if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304 || (xhr.status == 0 && request.requestURL.match(/^file:/))) {
           request.successCallBack && request.successCallBack(xhr);
         } else {
           request.errorCallBack && request.errorCallBack(xhr);
@@ -25,6 +25,7 @@ Air.Module('B.network.HTTP', function() {
 
   XHR.prototype = {
     request: function(options) {
+      this.requestURL = options.url;
       this.successCallBack = options.successCallBack;
       this.errorCallBack = options.errorCallBack;
       this.xhr.open(options.method, options.url, true);
