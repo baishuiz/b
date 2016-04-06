@@ -1110,13 +1110,19 @@ Object.observe || (function(O, A, root, _undefined) {
       var dataPath = target.getAttribute(attrName)
                      .replace(/{{|}}/ig,'');
 
-      beacon(target).on('input', function(){
+      function onInput(e){
         var target = this;
         new Function('$scope','target','$scope.' + dataPath + '= target.value.trim()')($scope, target)
         activeModel = true;
         beacon($scope).on(EVENTS.DATA_CHANGE, {fromBModel:true});
         activeModel = false;
-      });
+
+        var removedEvent = e.type === 'input' ? 'change' : 'input';
+        beacon(target).off(removedEvent, onInput);
+      }
+
+      beacon(target).on('input', onInput);
+      beacon(target).on('change', onInput);
 
       beacon($scope).on(EVENTS.DATA_CHANGE, modelChangeHandle);
       function modelChangeHandle(e, data){
@@ -1126,7 +1132,7 @@ Object.observe || (function(O, A, root, _undefined) {
         var result = !util.isEmpty(value)
                      ? (value.trim ? value.trim() : value)
                      : "";
-                     
+
         if(target.value !== value) {
          target.defaultValue = result;
          target.value = result;
