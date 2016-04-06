@@ -132,12 +132,12 @@ Air.Module('B.scope.scopeManager', function(require){
       function getExpression(dataPath){
         return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
            token = token.trim();
-           if(/^\d+$/.test(token) || /^['"]/.test(token) ){
+           if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token
            } else {
              return 'util.getData("' + token + '", $scope)'
            }
-        })
+        });
       }
       // txtNodeDataChange();
       var ancestorScope = getAncestorScope($scope);

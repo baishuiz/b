@@ -13,7 +13,7 @@ describe('数据绑定', function () {
         setTimeout(function(){
           expect(dom.flower.innerText).toEqual('sun');
           expect(dom.flower_A.innerText).toEqual('shanghai');
-          expect(dom.flower_B.innerText).toEqual('tieling');
+          expect(dom.flower_B.innerText).toEqual('tie ling');
           done();
         }, 0);
       })
