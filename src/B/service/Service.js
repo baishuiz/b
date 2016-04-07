@@ -152,6 +152,7 @@ Air.Module('B.service.Service', function(require) {
 
         if (self.noTriggerEvent) {
           self.noTriggerEvent = false;
+          tryClearQueue();
           return;
         }
 

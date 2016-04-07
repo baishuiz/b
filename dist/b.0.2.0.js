@@ -1714,6 +1714,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
         if (self.noTriggerEvent) {
           self.noTriggerEvent = false;
+          tryClearQueue();
           return;
         }
 
