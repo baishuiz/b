@@ -1575,7 +1575,7 @@ Object.observe || (function(O, A, root, _undefined) {
     business: 4 // 业务错误（由中间件控制）
   }
 
-  function Service(config, scope){
+  function Service(config, scope, controlEvents){
     config = config || {};
     var header = config.header || {};
     header['Content-Type'] = 'application/json;charset=utf-8';
@@ -1620,6 +1620,8 @@ Object.observe || (function(O, A, root, _undefined) {
         }
       }
 
+      controlEvents.onQuery && controlEvents.onQuery();
+
       var startTimeoutCount = function() {
         timer = setTimeout(function(){
           http.abort();
@@ -1636,6 +1638,8 @@ Object.observe || (function(O, A, root, _undefined) {
         var responseText = '';
         var responseData = null;
         var parseError = false;
+
+        controlEvents.onComplete && controlEvents.onComplete();
 
         // 不是队列进入的，并且readState为4，则解析json
         if (!isQueue && xhrOrResponseData.readyState === 4) {
@@ -1712,9 +1716,12 @@ Object.observe || (function(O, A, root, _undefined) {
       var httpErrorCallback = function(xhr, isQueue) {
         clearTimeoutCount();
 
+        controlEvents.onComplete && controlEvents.onComplete();
+        tryClearQueue();
+
+        // abortAll时不触发事件
         if (self.noTriggerEvent) {
           self.noTriggerEvent = false;
-          tryClearQueue();
           return;
         }
 
@@ -1731,8 +1738,6 @@ Object.observe || (function(O, A, root, _undefined) {
             var isError = true;
             runQueue(isError, xhr);
           }
-
-          tryClearQueue();
         });
 
         beacon(scope).on(EVENTS.DATA_CHANGE);
@@ -1843,8 +1848,17 @@ Object.observe || (function(O, A, root, _undefined) {
   function get(serviceName, scope) {
     var serviceConfig = serviceList[serviceName];
     if (serviceConfig) {
-      var service = new Service(serviceConfig, scope);
-      serviceInstanceList.push(service);
+      var service = new Service(serviceConfig, scope, {
+        onQuery: function() {
+          serviceInstanceList.push(service);
+        },
+        onComplete: function() {
+          var index = serviceInstanceList.indexOf(service);
+          if (index !== -1) {
+            serviceInstanceList.splice(index, 1);
+          }
+        }
+      });
       return service;
     } else {
       throw new Error(serviceName + ' not found');

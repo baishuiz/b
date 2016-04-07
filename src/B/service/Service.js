@@ -13,7 +13,7 @@ Air.Module('B.service.Service', function(require) {
     business: 4 // 业务错误（由中间件控制）
   }
 
-  function Service(config, scope){
+  function Service(config, scope, controlEvents){
     config = config || {};
     var header = config.header || {};
     header['Content-Type'] = 'application/json;charset=utf-8';
@@ -58,6 +58,8 @@ Air.Module('B.service.Service', function(require) {
         }
       }
 
+      controlEvents.onQuery && controlEvents.onQuery();
+
       var startTimeoutCount = function() {
         timer = setTimeout(function(){
           http.abort();
@@ -74,6 +76,8 @@ Air.Module('B.service.Service', function(require) {
         var responseText = '';
         var responseData = null;
         var parseError = false;
+
+        controlEvents.onComplete && controlEvents.onComplete();
 
         // 不是队列进入的，并且readState为4，则解析json
         if (!isQueue && xhrOrResponseData.readyState === 4) {
@@ -150,9 +154,12 @@ Air.Module('B.service.Service', function(require) {
       var httpErrorCallback = function(xhr, isQueue) {
         clearTimeoutCount();
 
+        controlEvents.onComplete && controlEvents.onComplete();
+        tryClearQueue();
+
+        // abortAll时不触发事件
         if (self.noTriggerEvent) {
           self.noTriggerEvent = false;
-          tryClearQueue();
           return;
         }
 
@@ -169,8 +176,6 @@ Air.Module('B.service.Service', function(require) {
             var isError = true;
             runQueue(isError, xhr);
           }
-
-          tryClearQueue();
         });
 
         beacon(scope).on(EVENTS.DATA_CHANGE);
