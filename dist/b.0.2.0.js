@@ -1425,7 +1425,7 @@ Object.observe || (function(O, A, root, _undefined) {
       })
     } else {
       generateScopeTree(target.attributes, $scope);
-      generateScopeTree(target.childNodes, $scope);
+      generateScopeTree([].concat.apply([], target.childNodes), $scope);
     }
   }
 
@@ -1484,7 +1484,7 @@ Object.observe || (function(O, A, root, _undefined) {
       delete scope.parent;
       scopeList[scopeName] = scope;
     }
-    generateScopeTree(dom.childNodes, scope);
+    generateScopeTree([].concat.apply([], dom.childNodes), scope);
 
     return scope;
   }
