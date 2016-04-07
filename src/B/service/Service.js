@@ -21,10 +21,11 @@ Air.Module('B.service.Service', function(require) {
     var self = this;
     var requestParams = null;
     var http = new HTTP();
+    this.noTriggerEvent = false; // 不触发事件
 
     var SERVICEEVENTS = {
-        SUCCESS: beacon.createEvent("service response success"),
-        ERROR: beacon.createEvent("service response error")
+      SUCCESS: beacon.createEvent("service response success"),
+      ERROR: beacon.createEvent("service response error")
     }
 
     this.EVENTS = SERVICEEVENTS;
@@ -149,6 +150,12 @@ Air.Module('B.service.Service', function(require) {
       var httpErrorCallback = function(xhr, isQueue) {
         clearTimeoutCount();
 
+        if (self.noTriggerEvent) {
+          self.noTriggerEvent = false;
+          return;
+        }
+
+        // status = 0 为abort后进入的，算做超时
         var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
         callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr}, function(errorInfo){
           options.errorCallBack && options.errorCallBack(errorCode, errorInfo);
@@ -221,7 +228,8 @@ Air.Module('B.service.Service', function(require) {
       });
     };
 
-    this.abort = function(){
+    this.abort = function(noTriggerEvent){
+      self.noTriggerEvent = noTriggerEvent;
       http.abort();
     };
   }

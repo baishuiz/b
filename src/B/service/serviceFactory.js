@@ -3,6 +3,7 @@ Air.Module('B.service.serviceFactory', function(require) {
   var serviceList = [];
   var Service = require('B.service.Service');
   var middleware = require('B.util.middleware');
+  var serviceInstanceList = [];
 
   function setConfig(configName, config) {
     if (configName) {
@@ -28,9 +29,18 @@ Air.Module('B.service.serviceFactory', function(require) {
   function get(serviceName, scope) {
     var serviceConfig = serviceList[serviceName];
     if (serviceConfig) {
-      return new Service(serviceConfig, scope);
+      var service = new Service(serviceConfig, scope);
+      serviceInstanceList.push(service);
+      return service;
     } else {
       throw new Error(serviceName + ' not found');
+    }
+  }
+
+  function abortAll() {
+    for (var i = 0, len = serviceInstanceList.length, service; i < len; i++) {
+      service = serviceInstanceList[i];
+      service && service.abort(true);
     }
   }
 
@@ -39,6 +49,7 @@ Air.Module('B.service.serviceFactory', function(require) {
     set: set,
     get : get,
     addMiddleware : middleware.add,
-    removeMiddleware : middleware.remove
+    removeMiddleware : middleware.remove,
+    abortAll: abortAll
   }
 });

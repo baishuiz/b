@@ -1583,10 +1583,11 @@ Object.observe || (function(O, A, root, _undefined) {
     var self = this;
     var requestParams = null;
     var http = new HTTP();
+    this.noTriggerEvent = false; // 不触发事件
 
     var SERVICEEVENTS = {
-        SUCCESS: beacon.createEvent("service response success"),
-        ERROR: beacon.createEvent("service response error")
+      SUCCESS: beacon.createEvent("service response success"),
+      ERROR: beacon.createEvent("service response error")
     }
 
     this.EVENTS = SERVICEEVENTS;
@@ -1711,6 +1712,12 @@ Object.observe || (function(O, A, root, _undefined) {
       var httpErrorCallback = function(xhr, isQueue) {
         clearTimeoutCount();
 
+        if (self.noTriggerEvent) {
+          self.noTriggerEvent = false;
+          return;
+        }
+
+        // status = 0 为abort后进入的，算做超时
         var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
         callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr}, function(errorInfo){
           options.errorCallBack && options.errorCallBack(errorCode, errorInfo);
@@ -1783,7 +1790,8 @@ Object.observe || (function(O, A, root, _undefined) {
       });
     };
 
-    this.abort = function(){
+    this.abort = function(noTriggerEvent){
+      self.noTriggerEvent = noTriggerEvent;
       http.abort();
     };
   }
@@ -1808,6 +1816,7 @@ Object.observe || (function(O, A, root, _undefined) {
   var serviceList = [];
   var Service = require('B.service.Service');
   var middleware = require('B.util.middleware');
+  var serviceInstanceList = [];
 
   function setConfig(configName, config) {
     if (configName) {
@@ -1833,9 +1842,18 @@ Object.observe || (function(O, A, root, _undefined) {
   function get(serviceName, scope) {
     var serviceConfig = serviceList[serviceName];
     if (serviceConfig) {
-      return new Service(serviceConfig, scope);
+      var service = new Service(serviceConfig, scope);
+      serviceInstanceList.push(service);
+      return service;
     } else {
       throw new Error(serviceName + ' not found');
+    }
+  }
+
+  function abortAll() {
+    for (var i = 0, len = serviceInstanceList.length, service; i < len; i++) {
+      service = serviceInstanceList[i];
+      service && service.abort(true);
     }
   }
 
@@ -1844,7 +1862,8 @@ Object.observe || (function(O, A, root, _undefined) {
     set: set,
     get : get,
     addMiddleware : middleware.add,
-    removeMiddleware : middleware.remove
+    removeMiddleware : middleware.remove,
+    abortAll: abortAll
   }
 });
 ;Air.Module("B.router.router", function(){
