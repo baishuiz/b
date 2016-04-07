@@ -1609,13 +1609,26 @@ Object.observe || (function(O, A, root, _undefined) {
       var timer = null;
       var curServiceQueue = serviceQueue[cacheKey];
 
-      if (!options.noCache && !curServiceQueue) {
-        var cachedData = memCache.get(cacheKey);
-        if (cachedData) {
+      var tryReturnCacheData = function() {
+        var cachedDataText = memCache.get(cacheKey);
+        var cachedData;
+        try {
+          cachedData = JSON.parse(cachedDataText);
+
           var fromCache = true;
           options.successCallBack && options.successCallBack(cachedData, fromCache);
           beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
           beacon(scope).on(EVENTS.DATA_CHANGE);
+
+          return true;
+        } catch(e) {
+          return false;
+        }
+      }
+
+      if (!options.noCache && !curServiceQueue) {
+        var getCacheSuccess = tryReturnCacheData();
+        if (getCacheSuccess) {
           return;
         }
       }
@@ -1680,19 +1693,12 @@ Object.observe || (function(O, A, root, _undefined) {
             } else {
               var useCache = false;
               if (!options.noCache) {
-                var cachedData = memCache.get(cacheKey);
-                if (cachedData) {
-                  var fromCache = true;
-                  useCache = true;
-                  options.successCallBack && options.successCallBack(cachedData, fromCache);
-                  beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-                  beacon(scope).on(EVENTS.DATA_CHANGE);
-                }
+                useCache = tryReturnCacheData();
               }
 
               if (!useCache) {
                 // 记录缓存
-                config.expiredSecond && memCache.set(cacheKey, responseData, {
+                config.expiredSecond && memCache.set(cacheKey, responseText, {
                   expiredSecond: config.expiredSecond
                 });
 

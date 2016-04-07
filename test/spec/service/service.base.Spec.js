@@ -94,14 +94,16 @@ describe('服务请求', function () {
         });
       };
 
-      // 第一次请求后记录缓存
+      // 第一次请求后记录缓存，并修改数据内容
       // 1
       query({ a: 2, b: 3}, function(data, fromCache) {
         expect(fromCache).toEqual(undefined);
+        data.result.length = 0;
 
-        // 第二次请求直接从缓存读取
+        // 第二次请求直接从缓存读取，并验证数据内容
         query({ a: 2, b: 3}, function(data, fromCache) {
           expect(fromCache).toEqual(true);
+          expect(data.result.length).toEqual(14);
           expect(data.result[0].cityName).toEqual('上海');
 
           // 第三次修改参数后缓存失效，同时记录新缓存
