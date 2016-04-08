@@ -109,6 +109,7 @@ Air.Module('B.scope.scopeManager', function(require){
 
       var txtNodeDataChange = (function(node, template){
         // 保持 template 的值，供后续替换使用
+        var init = true;
         return function(){
           var text = template;
           var markups = text.match(regMarkup) || [];
@@ -118,7 +119,8 @@ Air.Module('B.scope.scopeManager', function(require){
             // TODO :  新增String.prototype.trim
             dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');
             // var data = util.getData(dataPath, $scope);
-            var expression = getExpression(dataPath);
+            var expression = getExpression(dataPath, init);
+            init = false;
             var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
             data = util.isEmpty(data) ? '' : data;
             text = text.replace(markup, data);
@@ -129,23 +131,24 @@ Air.Module('B.scope.scopeManager', function(require){
         }
       })(node, node.nodeValue);
 
-      function getExpression(dataPath){
+      function getExpression(dataPath, init){
         return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
            token = token.trim();
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token
            } else {
+
+             init && $scope.listenDataChange(token, function(){
+               txtNodeDataChange();
+             })
              return 'util.getData("' + token + '", $scope)'
            }
         });
       }
-      // txtNodeDataChange();
-      var ancestorScope = getAncestorScope($scope);
-      beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
-      ancestorScope !== $scope && beacon(ancestorScope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
-
-
-
+      txtNodeDataChange();
+      // var ancestorScope = getAncestorScope($scope);
+      // beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
+      //  ancestorScope !== $scope && beacon(ancestorScope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
     }
 
   }

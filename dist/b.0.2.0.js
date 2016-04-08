@@ -1141,13 +1141,50 @@ Object.observe || (function(O, A, root, _undefined) {
   }
   return api;
 })
-;Air.Module('B.scope.Scope', function() {
+;Air.Module('B.scope.Scope', function(require) {
+  var EVENTS =  require('B.event.events');
+  var util =  require('B.util.util');
   var Scope = function(parent){
     this.parent = parent
   }
 
+  var proto = {};
+
+  // TODO: 重构
+  proto.listenDataChange =  function (dataPath, callback){
+      var self = this;
+      beacon(self).once(EVENTS.RUN_COMPLETE, function(){
+        callback();
+
+        //===
+        var r = dataPath.split('.');
+        var activeT = ""
+        for(var i = 0; i < r.length-1; i++){
+          if(activeT){
+             activeT = activeT + '.' + r[i];
+          } else {
+            activeT =  r[i]
+          }
+
+          var targetT = util.getData(activeT, self);
+          targetT && Object.observe(targetT, function(dataChanges){
+            // var obj = getRepeatData(target, $scope)
+            for(var i = 0; i < dataChanges.length; i++){
+              (dataChanges[i].name === dataPath|| dataChanges[i].object === targetT)  && callback()
+            }
+          });
+        }
+      });
+
+      Object.observe(self, function(dataChanges){
+        for(var i=0;i<dataChanges.length;i++){
+          dataChanges[i].name === dataPath.split('.')[0] && callback()
+        }
+      });
+    }
+
   var api = function(parent){
-        Scope.prototype = parent || {};
+        Scope.prototype = parent || proto;
         return new Scope(parent);
   }
   return api;
@@ -1436,6 +1473,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
       var txtNodeDataChange = (function(node, template){
         // 保持 template 的值，供后续替换使用
+        var init = true;
         return function(){
           var text = template;
           var markups = text.match(regMarkup) || [];
@@ -1445,7 +1483,8 @@ Object.observe || (function(O, A, root, _undefined) {
             // TODO :  新增String.prototype.trim
             dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');
             // var data = util.getData(dataPath, $scope);
-            var expression = getExpression(dataPath);
+            var expression = getExpression(dataPath, init);
+            init = false;
             var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
             data = util.isEmpty(data) ? '' : data;
             text = text.replace(markup, data);
@@ -1456,23 +1495,24 @@ Object.observe || (function(O, A, root, _undefined) {
         }
       })(node, node.nodeValue);
 
-      function getExpression(dataPath){
+      function getExpression(dataPath, init){
         return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
            token = token.trim();
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token
            } else {
+
+             init && $scope.listenDataChange(token, function(){
+               txtNodeDataChange();
+             })
              return 'util.getData("' + token + '", $scope)'
            }
         });
       }
-      // txtNodeDataChange();
-      var ancestorScope = getAncestorScope($scope);
-      beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
-      ancestorScope !== $scope && beacon(ancestorScope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
-
-
-
+      txtNodeDataChange();
+      // var ancestorScope = getAncestorScope($scope);
+      // beacon($scope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
+      //  ancestorScope !== $scope && beacon(ancestorScope).on(EVENTS.DATA_CHANGE, txtNodeDataChange);
     }
 
   }
