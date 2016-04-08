@@ -98,7 +98,7 @@ Air.Module('B.scope.scopeManager', function(require){
       })
     } else {
       generateScopeTree(target.attributes, $scope);
-      generateScopeTree(target.childNodes, $scope);
+      generateScopeTree([].concat.apply([], target.childNodes), $scope);
     }
   }
 
@@ -157,7 +157,7 @@ Air.Module('B.scope.scopeManager', function(require){
       delete scope.parent;
       scopeList[scopeName] = scope;
     }
-    generateScopeTree(dom.childNodes, scope);
+    generateScopeTree([].concat.apply([], dom.childNodes), scope);
 
     return scope;
   }

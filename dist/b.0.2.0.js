@@ -1110,13 +1110,19 @@ Object.observe || (function(O, A, root, _undefined) {
       var dataPath = target.getAttribute(attrName)
                      .replace(/{{|}}/ig,'');
 
-      beacon(target).on('input', function(){
+      function onInput(e){
         var target = this;
         new Function('$scope','target','$scope.' + dataPath + '= target.value.trim()')($scope, target)
         activeModel = true;
         beacon($scope).on(EVENTS.DATA_CHANGE, {fromBModel:true});
         activeModel = false;
-      });
+
+        var removedEvent = e.type === 'input' ? 'change' : 'input';
+        beacon(target).off(removedEvent, onInput);
+      }
+
+      beacon(target).on('input', onInput);
+      beacon(target).on('change', onInput);
 
       beacon($scope).on(EVENTS.DATA_CHANGE, modelChangeHandle);
       function modelChangeHandle(e, data){
@@ -1126,7 +1132,7 @@ Object.observe || (function(O, A, root, _undefined) {
         var result = !util.isEmpty(value)
                      ? (value.trim ? value.trim() : value)
                      : "";
-                     
+
         if(target.value !== value) {
          target.defaultValue = result;
          target.value = result;
@@ -1419,7 +1425,7 @@ Object.observe || (function(O, A, root, _undefined) {
       })
     } else {
       generateScopeTree(target.attributes, $scope);
-      generateScopeTree(target.childNodes, $scope);
+      generateScopeTree([].concat.apply([], target.childNodes), $scope);
     }
   }
 
@@ -1478,7 +1484,7 @@ Object.observe || (function(O, A, root, _undefined) {
       delete scope.parent;
       scopeList[scopeName] = scope;
     }
-    generateScopeTree(dom.childNodes, scope);
+    generateScopeTree([].concat.apply([], dom.childNodes), scope);
 
     return scope;
   }
@@ -1516,7 +1522,7 @@ Object.observe || (function(O, A, root, _undefined) {
     var request = this;
     xhr.onreadystatechange = function() {
       if (xhr.readyState === state.complete) {
-        if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304) {
+        if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304 || (xhr.status == 0 && request.requestURL.match(/^file:/))) {
           request.successCallBack && request.successCallBack(xhr);
         } else {
           request.errorCallBack && request.errorCallBack(xhr);
@@ -1528,6 +1534,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
   XHR.prototype = {
     request: function(options) {
+      this.requestURL = options.url;
       this.successCallBack = options.successCallBack;
       this.errorCallBack = options.errorCallBack;
       this.xhr.open(options.method, options.url, true);
@@ -1568,7 +1575,7 @@ Object.observe || (function(O, A, root, _undefined) {
     business: 4 // 业务错误（由中间件控制）
   }
 
-  function Service(config, scope){
+  function Service(config, scope, controlEvents){
     config = config || {};
     var header = config.header || {};
     header['Content-Type'] = 'application/json;charset=utf-8';
@@ -1576,10 +1583,11 @@ Object.observe || (function(O, A, root, _undefined) {
     var self = this;
     var requestParams = null;
     var http = new HTTP();
+    this.noTriggerEvent = false; // 不触发事件
 
     var SERVICEEVENTS = {
-        SUCCESS: beacon.createEvent("service response success"),
-        ERROR: beacon.createEvent("service response error")
+      SUCCESS: beacon.createEvent("service response success"),
+      ERROR: beacon.createEvent("service response error")
     }
 
     this.EVENTS = SERVICEEVENTS;
@@ -1601,16 +1609,31 @@ Object.observe || (function(O, A, root, _undefined) {
       var timer = null;
       var curServiceQueue = serviceQueue[cacheKey];
 
-      if (!options.noCache && !curServiceQueue) {
-        var cachedData = memCache.get(cacheKey);
-        if (cachedData) {
+      var tryReturnCacheData = function() {
+        var cachedDataText = memCache.get(cacheKey);
+        var cachedData;
+        try {
+          cachedData = JSON.parse(cachedDataText);
+
           var fromCache = true;
           options.successCallBack && options.successCallBack(cachedData, fromCache);
           beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
           beacon(scope).on(EVENTS.DATA_CHANGE);
+
+          return true;
+        } catch(e) {
+          return false;
+        }
+      }
+
+      if (!options.noCache && !curServiceQueue) {
+        var getCacheSuccess = tryReturnCacheData();
+        if (getCacheSuccess) {
           return;
         }
       }
+
+      controlEvents.onQuery && controlEvents.onQuery();
 
       var startTimeoutCount = function() {
         timer = setTimeout(function(){
@@ -1628,6 +1651,8 @@ Object.observe || (function(O, A, root, _undefined) {
         var responseText = '';
         var responseData = null;
         var parseError = false;
+
+        controlEvents.onComplete && controlEvents.onComplete();
 
         // 不是队列进入的，并且readState为4，则解析json
         if (!isQueue && xhrOrResponseData.readyState === 4) {
@@ -1668,19 +1693,12 @@ Object.observe || (function(O, A, root, _undefined) {
             } else {
               var useCache = false;
               if (!options.noCache) {
-                var cachedData = memCache.get(cacheKey);
-                if (cachedData) {
-                  var fromCache = true;
-                  useCache = true;
-                  options.successCallBack && options.successCallBack(cachedData, fromCache);
-                  beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-                  beacon(scope).on(EVENTS.DATA_CHANGE);
-                }
+                useCache = tryReturnCacheData();
               }
 
               if (!useCache) {
                 // 记录缓存
-                config.expiredSecond && memCache.set(cacheKey, responseData, {
+                config.expiredSecond && memCache.set(cacheKey, responseText, {
                   expiredSecond: config.expiredSecond
                 });
 
@@ -1704,6 +1722,16 @@ Object.observe || (function(O, A, root, _undefined) {
       var httpErrorCallback = function(xhr, isQueue) {
         clearTimeoutCount();
 
+        controlEvents.onComplete && controlEvents.onComplete();
+        tryClearQueue();
+
+        // abortAll时不触发事件
+        if (self.noTriggerEvent) {
+          self.noTriggerEvent = false;
+          return;
+        }
+
+        // status = 0 为abort后进入的，算做超时
         var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
         callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr}, function(errorInfo){
           options.errorCallBack && options.errorCallBack(errorCode, errorInfo);
@@ -1716,8 +1744,6 @@ Object.observe || (function(O, A, root, _undefined) {
             var isError = true;
             runQueue(isError, xhr);
           }
-
-          tryClearQueue();
         });
 
         beacon(scope).on(EVENTS.DATA_CHANGE);
@@ -1776,7 +1802,8 @@ Object.observe || (function(O, A, root, _undefined) {
       });
     };
 
-    this.abort = function(){
+    this.abort = function(noTriggerEvent){
+      self.noTriggerEvent = noTriggerEvent;
       http.abort();
     };
   }
@@ -1801,6 +1828,7 @@ Object.observe || (function(O, A, root, _undefined) {
   var serviceList = [];
   var Service = require('B.service.Service');
   var middleware = require('B.util.middleware');
+  var serviceInstanceList = [];
 
   function setConfig(configName, config) {
     if (configName) {
@@ -1826,9 +1854,27 @@ Object.observe || (function(O, A, root, _undefined) {
   function get(serviceName, scope) {
     var serviceConfig = serviceList[serviceName];
     if (serviceConfig) {
-      return new Service(serviceConfig, scope);
+      var service = new Service(serviceConfig, scope, {
+        onQuery: function() {
+          serviceInstanceList.push(service);
+        },
+        onComplete: function() {
+          var index = serviceInstanceList.indexOf(service);
+          if (index !== -1) {
+            serviceInstanceList.splice(index, 1);
+          }
+        }
+      });
+      return service;
     } else {
       throw new Error(serviceName + ' not found');
+    }
+  }
+
+  function abortAll() {
+    for (var i = 0, len = serviceInstanceList.length, service; i < len; i++) {
+      service = serviceInstanceList[i];
+      service && service.abort(true);
     }
   }
 
@@ -1837,7 +1883,8 @@ Object.observe || (function(O, A, root, _undefined) {
     set: set,
     get : get,
     addMiddleware : middleware.add,
-    removeMiddleware : middleware.remove
+    removeMiddleware : middleware.remove,
+    abortAll: abortAll
   }
 });
 ;Air.Module("B.router.router", function(){

@@ -13,7 +13,7 @@ Air.Module('B.service.Service', function(require) {
     business: 4 // 业务错误（由中间件控制）
   }
 
-  function Service(config, scope){
+  function Service(config, scope, controlEvents){
     config = config || {};
     var header = config.header || {};
     header['Content-Type'] = 'application/json;charset=utf-8';
@@ -21,10 +21,11 @@ Air.Module('B.service.Service', function(require) {
     var self = this;
     var requestParams = null;
     var http = new HTTP();
+    this.noTriggerEvent = false; // 不触发事件
 
     var SERVICEEVENTS = {
-        SUCCESS: beacon.createEvent("service response success"),
-        ERROR: beacon.createEvent("service response error")
+      SUCCESS: beacon.createEvent("service response success"),
+      ERROR: beacon.createEvent("service response error")
     }
 
     this.EVENTS = SERVICEEVENTS;
@@ -46,16 +47,31 @@ Air.Module('B.service.Service', function(require) {
       var timer = null;
       var curServiceQueue = serviceQueue[cacheKey];
 
-      if (!options.noCache && !curServiceQueue) {
-        var cachedData = memCache.get(cacheKey);
-        if (cachedData) {
+      var tryReturnCacheData = function() {
+        var cachedDataText = memCache.get(cacheKey);
+        var cachedData;
+        try {
+          cachedData = JSON.parse(cachedDataText);
+
           var fromCache = true;
           options.successCallBack && options.successCallBack(cachedData, fromCache);
           beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
           beacon(scope).on(EVENTS.DATA_CHANGE);
+
+          return true;
+        } catch(e) {
+          return false;
+        }
+      }
+
+      if (!options.noCache && !curServiceQueue) {
+        var getCacheSuccess = tryReturnCacheData();
+        if (getCacheSuccess) {
           return;
         }
       }
+
+      controlEvents.onQuery && controlEvents.onQuery();
 
       var startTimeoutCount = function() {
         timer = setTimeout(function(){
@@ -73,6 +89,8 @@ Air.Module('B.service.Service', function(require) {
         var responseText = '';
         var responseData = null;
         var parseError = false;
+
+        controlEvents.onComplete && controlEvents.onComplete();
 
         // 不是队列进入的，并且readState为4，则解析json
         if (!isQueue && xhrOrResponseData.readyState === 4) {
@@ -113,19 +131,12 @@ Air.Module('B.service.Service', function(require) {
             } else {
               var useCache = false;
               if (!options.noCache) {
-                var cachedData = memCache.get(cacheKey);
-                if (cachedData) {
-                  var fromCache = true;
-                  useCache = true;
-                  options.successCallBack && options.successCallBack(cachedData, fromCache);
-                  beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-                  beacon(scope).on(EVENTS.DATA_CHANGE);
-                }
+                useCache = tryReturnCacheData();
               }
 
               if (!useCache) {
                 // 记录缓存
-                config.expiredSecond && memCache.set(cacheKey, responseData, {
+                config.expiredSecond && memCache.set(cacheKey, responseText, {
                   expiredSecond: config.expiredSecond
                 });
 
@@ -149,6 +160,16 @@ Air.Module('B.service.Service', function(require) {
       var httpErrorCallback = function(xhr, isQueue) {
         clearTimeoutCount();
 
+        controlEvents.onComplete && controlEvents.onComplete();
+        tryClearQueue();
+
+        // abortAll时不触发事件
+        if (self.noTriggerEvent) {
+          self.noTriggerEvent = false;
+          return;
+        }
+
+        // status = 0 为abort后进入的，算做超时
         var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
         callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr}, function(errorInfo){
           options.errorCallBack && options.errorCallBack(errorCode, errorInfo);
@@ -161,8 +182,6 @@ Air.Module('B.service.Service', function(require) {
             var isError = true;
             runQueue(isError, xhr);
           }
-
-          tryClearQueue();
         });
 
         beacon(scope).on(EVENTS.DATA_CHANGE);
@@ -221,7 +240,8 @@ Air.Module('B.service.Service', function(require) {
       });
     };
 
-    this.abort = function(){
+    this.abort = function(noTriggerEvent){
+      self.noTriggerEvent = noTriggerEvent;
       http.abort();
     };
   }
