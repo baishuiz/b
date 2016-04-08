@@ -141,36 +141,44 @@ describe('repeat', function () {
         }
       ];
 
+      $scope.a = {
+        b: {
+          list :[
+            {name: 'D1'},
+            {name: 'D2'},
+            {name: 'D3'}
+          ]
+        }
+      }
+
 
       $scope.$event = {
         'clickHandle' : function(e, msg){
-          $scope.list[this.$index] = { name: msg };
-          $scope.list[3] = { name: 'Name 44'};
-          //
-          // a = [
-          //   {
-          //     name: 'Name 11'
-          //   },
-          //   {
-          //     name: 'Name 22'
-          //   },
-          //   {
-          //     name: 'Name 33'
-          //   }
-          // ];
-          //
-          // a[this.$index] = { name: msg };
-          // a[3] = { name: 'Name 44'};
-          // $scope.list = a;
+          // $scope.list[this.$index] = { name: msg };
+          // $scope.list[3] = { name: 'Name 44'};
 
-          $scope.a = {
-            b: {
+          a = [
+            {
+              name: 'Name 11'
+            },
+            {
+              name: 'Name 22'
+            },
+            {
+              name: 'Name 33'
+            }
+          ];
+
+          a[this.$index] = { name: msg };
+          a[3] = { name: 'Name 44'};
+          $scope.list = a;
+
+          $scope.a.b = {
               list :[
                 {name: 'T1'},
                 {name: 'T2'},
                 {name: 'T3'}
               ]
-            }
           }
 
         }
@@ -182,7 +190,7 @@ describe('repeat', function () {
         expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
         expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 33');
 
-        Object.observe($scope.list, function(x){
+        Object.observe($scope, function(x){
           expect(dom.list.querySelectorAll('li').length).toEqual(4);
           expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 11');
           expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
