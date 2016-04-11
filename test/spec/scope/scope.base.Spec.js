@@ -29,7 +29,7 @@ describe('数据绑定', function () {
         setTimeout(function(){
           expect(dom.flower.getAttribute('attr')).toEqual('hello');
           done();
-        }, 0);
+        }, 50);
       })
     });
 

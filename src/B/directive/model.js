@@ -28,8 +28,8 @@ Air.Module('B.directive.model', function(require){
       beacon($scope).on(EVENTS.DATA_CHANGE, modelChangeHandle);
       function modelChangeHandle(e, data){
         data = data || {};
-        if(data.fromBModel){return};
         var value = util.getData(dataPath, $scope);
+        if(data.fromBModel || target.value.trim() === value){return};
         var result = !util.isEmpty(value)
                      ? (value.trim ? value.trim() : value)
                      : "";
