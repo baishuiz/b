@@ -837,9 +837,14 @@ Object.observe || (function(O, A, root, _undefined) {
       var nsPath = pathString.split("."),
           ns = root || window || {},
           root = ns;
+      // 如果不是最后一个为undefined，则赋值为空数组，避免Observe绑定失败
       for (var i = 0, len = nsPath.length; i < len; i++) {
           if(ns[nsPath[i]] === undefined){
-            return
+            if (i !== len - 1) {
+              ns = ns[nsPath[i]] = [];
+            } else {
+              return;
+            }
           } else {
               ns = ns[nsPath[i]];
           }
