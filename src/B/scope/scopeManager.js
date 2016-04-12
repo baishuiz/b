@@ -141,6 +141,11 @@ Air.Module('B.scope.scopeManager', function(require){
              init && $scope.listenDataChange(token, function(){
                txtNodeDataChange();
              })
+
+             var ancestorScope = getAncestorScope($scope);
+             ancestorScope !== $scope && init && ancestorScope.listenDataChange(token, function(){
+               txtNodeDataChange();
+             })
              return 'util.getData("' + token + '", $scope)'
            }
         });
