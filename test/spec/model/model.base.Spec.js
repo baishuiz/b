@@ -4,7 +4,7 @@ describe('model', function () {
 
     b.views.goTo('page_model_bind');
     b.run('page_model_bind', function(require, $scope) {
-      $scope.username = ' 123';
+      $scope.username = '123';
       var dom = {
         username : document.querySelector('view[name=page_model_bind] .username')
       }
@@ -35,7 +35,7 @@ describe('model', function () {
       // 等待 view 更新
       setTimeout(function(){
         // 直接修改 dom 值，并触发 input 事件
-        dom.username.value = ' 4 56 ';
+        dom.username.value = '4 56';
         beacon(dom.username).on('input');
 
         // 等待 view 更新

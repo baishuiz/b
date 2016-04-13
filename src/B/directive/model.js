@@ -13,7 +13,7 @@ Air.Module('B.directive.model', function(require){
 
       function onInput(e){
         var target = this;
-        new Function('$scope','target','$scope.' + dataPath + '= target.value.trim()')($scope, target)
+        new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
         activeModel = true;
         beacon($scope).on(EVENTS.DATA_CHANGE, {fromBModel:true});
         activeModel = false;
@@ -29,10 +29,8 @@ Air.Module('B.directive.model', function(require){
       function modelChangeHandle(e, data){
         data = data || {};
         var value = util.getData(dataPath, $scope);
-        if(data.fromBModel || target.value.trim() === value){return};
-        var result = !util.isEmpty(value)
-                     ? (value.trim ? value.trim() : value)
-                     : "";
+        if(data.fromBModel || target.value === value){return};
+        var result = !util.isEmpty(value) ? value : "";
 
         if(target.value !== value) {
          target.defaultValue = result;
