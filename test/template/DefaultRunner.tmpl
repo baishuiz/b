@@ -47,7 +47,7 @@ viewport view[active="true"]{display:block}
   <view name="page_service_timeout"></view>
   <view name="page_service_queue"></view>
   <view name="page_event">
-    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello')">Hello Event</a>
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello'); test testHandle()">{{helloEvent.event.msg}}</a>
   </view>
   <view name="page_event_param">
     <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello', '{{scopeParam}}')">Hello Event</a>
