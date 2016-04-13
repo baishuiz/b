@@ -27,7 +27,8 @@ Air.Module('B.scope.Scope', function(require) {
           targetT && Object.observe(targetT, function(dataChanges){
             // var obj = getRepeatData(target, $scope)
             for(var i = 0; i < dataChanges.length; i++){
-              (dataChanges[i].name === dataPath|| dataChanges[i].object === targetT)  && callback()
+              // (dataChanges[i].name === dataPath|| dataChanges[i].object === targetT)  && callback()
+              beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
             }
           });
         }
