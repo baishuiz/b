@@ -3,7 +3,6 @@ describe('事件绑定', function () {
   function dispatchEvent(dom, type) {
     var evt = document.createEvent('Event');
     evt.initEvent(type, true, true);
-
     dom.dispatchEvent(evt);
   }
 
@@ -15,12 +14,34 @@ describe('事件绑定', function () {
       $scope.$event = {
         clickHandle: function(e, info) {
           expect(info).toEqual('Hello');
+          Air.NS('helloEvent.event', $scope);
+          $scope.helloEvent.event.msg = 'hi,event';
+        },
+
+        testHandle : function() {
+          // Object.observe($scope.helloEvent.event, function(){
+          //   expect(dom.btn.innerHTML).toEqual('hi,event2');
+          //   done();
+          // })
+
+          $scope.helloEvent.event.msg = 'hi,event2';
           done();
         }
       };
       setTimeout(function(){
         dispatchEvent(dom.btn, 'click');
-      }, 0);
+
+        setTimeout(function(){
+          // dispatchEvent(dom.btn, 'click');
+          // dispatchEvent(dom.btn, 'test');
+          beacon(dom.btn).on('test');
+        }, 1000);
+                
+        // dispatchEvent(dom.btn, 'test');
+        // beacon(dom.btn).on('test');
+      }, 1000);
+
+
     })
   });
 

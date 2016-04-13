@@ -7,6 +7,20 @@ Air.Module('B.scope.Scope', function(require) {
 
   var proto = {};
 
+  function listenDataChange (targetT, dataPath, callback) {
+    targetT && Object.observe(targetT, function(dataChanges){
+      // TODO 重构
+      for(var i = 0; i < dataChanges.length; i++){
+        if(dataChanges[i].type == 'add'){
+          var target = dataChanges[0];
+          var attr = target.object[target.name];
+          listenDataChange (attr, dataPath, callback);
+        }
+        beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+      }
+    });
+  }
+
   // TODO: 重构
   proto.listenDataChange =  function (dataPath, callback){
       var self = this;
@@ -24,13 +38,22 @@ Air.Module('B.scope.Scope', function(require) {
           }
 
           var targetT = util.getData(activeT, self);
-          targetT && Object.observe(targetT, function(dataChanges){
-            // var obj = getRepeatData(target, $scope)
-            for(var i = 0; i < dataChanges.length; i++){
-              // (dataChanges[i].name === dataPath|| dataChanges[i].object === targetT)  && callback()
-              beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
-            }
-          });
+          listenDataChange(targetT, dataPath, callback);
+          // targetT && Object.observe(targetT, function(dataChanges){
+          //   // TODO 重构
+          //   for(var i = 0; i < dataChanges.length; i++){
+          //     if(dataChanges[i].type == 'add'){
+          //       var target = dataChanges[0];
+          //       var attr = target.object[target.name]
+          //       Object.observe(attr, function(dataChanges){
+          //         for(var i = 0; i < dataChanges.length; i++){
+          //           beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+          //         }
+          //       })
+          //     }
+          //     beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+          //   }
+          // });
         }
       });
 

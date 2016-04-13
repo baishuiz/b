@@ -1151,6 +1151,20 @@ Object.observe || (function(O, A, root, _undefined) {
 
   var proto = {};
 
+  function listenDataChange (targetT, dataPath) {
+    targetT && Object.observe(targetT, function(dataChanges){
+      // TODO 重构
+      for(var i = 0; i < dataChanges.length; i++){
+        if(dataChanges[i].type == 'add'){
+          var target = dataChanges[0];
+          var attr = target.object[target.name];
+          listenDataChange (attr, dataPath);
+        }
+        beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+      }
+    });
+  }
+
   // TODO: 重构
   proto.listenDataChange =  function (dataPath, callback){
       var self = this;
@@ -1168,6 +1182,7 @@ Object.observe || (function(O, A, root, _undefined) {
           }
 
           var targetT = util.getData(activeT, self);
+<<<<<<< HEAD
           targetT && Object.observe(targetT, function(dataChanges){
             // var obj = getRepeatData(target, $scope)
             for(var i = 0; i < dataChanges.length; i++){
@@ -1175,6 +1190,24 @@ Object.observe || (function(O, A, root, _undefined) {
               beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
             }
           });
+=======
+          listenDataChange(targetT, dataPath);
+          // targetT && Object.observe(targetT, function(dataChanges){
+          //   // TODO 重构
+          //   for(var i = 0; i < dataChanges.length; i++){
+          //     if(dataChanges[i].type == 'add'){
+          //       var target = dataChanges[0];
+          //       var attr = target.object[target.name]
+          //       Object.observe(attr, function(dataChanges){
+          //         for(var i = 0; i < dataChanges.length; i++){
+          //           beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+          //         }
+          //       })
+          //     }
+          //     beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+          //   }
+          // });
+>>>>>>> Feature_DEV_2.0.1
         }
       });
 
