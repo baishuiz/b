@@ -840,11 +840,7 @@ Object.observe || (function(O, A, root, _undefined) {
       // 如果不是最后一个为undefined，则赋值为空数组，避免Observe绑定失败
       for (var i = 0, len = nsPath.length; i < len; i++) {
           if(ns[nsPath[i]] === undefined){
-            if (i !== len - 1) {
-              ns = ns[nsPath[i]] = [];
-            } else {
               return;
-            }
           } else {
               ns = ns[nsPath[i]];
           }
@@ -1175,7 +1171,8 @@ Object.observe || (function(O, A, root, _undefined) {
           targetT && Object.observe(targetT, function(dataChanges){
             // var obj = getRepeatData(target, $scope)
             for(var i = 0; i < dataChanges.length; i++){
-              (dataChanges[i].name === dataPath|| dataChanges[i].object === targetT)  && callback()
+              // (dataChanges[i].name === dataPath|| dataChanges[i].object === targetT)  && callback()
+              beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
             }
           });
         }
@@ -1727,6 +1724,9 @@ Object.observe || (function(O, A, root, _undefined) {
             var isError = true;
             runQueue(isError, xhrOrResponseData);
           }
+
+          tryClearQueue();
+
           return;
         } else {
           callAfterQueryMiddleware({xhr: http.xhr, data: responseData}, function(isError) {

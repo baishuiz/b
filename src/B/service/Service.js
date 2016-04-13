@@ -115,6 +115,9 @@ Air.Module('B.service.Service', function(require) {
             var isError = true;
             runQueue(isError, xhrOrResponseData);
           }
+
+          tryClearQueue();
+
           return;
         } else {
           callAfterQueryMiddleware({xhr: http.xhr, data: responseData}, function(isError) {
