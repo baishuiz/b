@@ -10,8 +10,9 @@ Air.Module('B.directive.show', function(require) {
   }
 
   function processShowElement(target, $scope) {
-    beacon($scope).on(EVENTS.DATA_CHANGE, watchElement);
-
+    // beacon($scope).on(EVENTS.DATA_CHANGE, watchElement);
+    var dataPath = target.getAttribute(attribute);
+    $scope.listenDataChange(dataPath, watchElement)
     function watchElement() {
       var dataPath = target.getAttribute(attribute);
       var displayStatus = util.getData(dataPath, $scope);

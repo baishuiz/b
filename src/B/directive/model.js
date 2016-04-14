@@ -14,9 +14,9 @@ Air.Module('B.directive.model', function(require){
       function onInput(e){
         var target = this;
         new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
-        activeModel = true;
-        beacon($scope).on(EVENTS.DATA_CHANGE, {fromBModel:true});
-        activeModel = false;
+        // activeModel = true;
+        // beacon($scope).on(EVENTS.DATA_CHANGE, {fromBModel:true});
+        // activeModel = false;
 
         var removedEvent = e.type === 'input' ? 'change' : 'input';
         beacon(target).off(removedEvent, onInput);
@@ -25,11 +25,11 @@ Air.Module('B.directive.model', function(require){
       beacon(target).on('input', onInput);
       beacon(target).on('change', onInput);
 
-      beacon($scope).on(EVENTS.DATA_CHANGE, modelChangeHandle);
-      function modelChangeHandle(e, data){
-        data = data || {};
+      // beacon($scope).on(EVENTS.DATA_CHANGE, modelChangeHandle);
+      $scope.listenDataChange(dataPath, modelChangeHandle)
+      function modelChangeHandle(){
         var value = util.getData(dataPath, $scope);
-        if(data.fromBModel || target.value === value){return};
+        if(target.value === value){return};
         var result = !util.isEmpty(value) ? value : "";
 
         if(target.value !== value) {
