@@ -1150,7 +1150,7 @@ Object.observe || (function(O, A, root, _undefined) {
   var proto = {};
 
   function listenDataChange (targetT, dataPath, callback) {
-    targetT && !beacon.utility.isType(targetT, 'String') && Object.observe(targetT, function(dataChanges){
+    targetT && beacon.utility.isType(targetT, 'Object') && Object.observe(targetT, function(dataChanges){
       // TODO 重构
       for(var i = 0; i < dataChanges.length; i++){
         if(dataChanges[i].type == 'add'){

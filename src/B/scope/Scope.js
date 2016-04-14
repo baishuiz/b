@@ -8,7 +8,7 @@ Air.Module('B.scope.Scope', function(require) {
   var proto = {};
 
   function listenDataChange (targetT, dataPath, callback) {
-    targetT && !beacon.utility.isType(targetT, 'String') && Object.observe(targetT, function(dataChanges){
+    targetT && beacon.utility.isType(targetT, 'Object') && Object.observe(targetT, function(dataChanges){
       // TODO 重构
       for(var i = 0; i < dataChanges.length; i++){
         if(dataChanges[i].type == 'add'){
