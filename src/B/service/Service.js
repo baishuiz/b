@@ -38,6 +38,11 @@ Air.Module('B.service.Service', function(require) {
       beacon(self).off(event, handle);
     }
 
+    this.getConfig = function() {
+      var header = beacon.utility.merge({}, config.header);
+      return beacon.utility.merge({}, config, {header: header});
+    }
+
     this.query = function(requestParams, options){
       options = options || {};
       var timeoutSeconds = beacon.isType(config.timeout, 'Number') ? config.timeout : 30;
