@@ -938,8 +938,9 @@ Object.observe || (function(O, A, root, _undefined) {
         this.$index = $scope.$index;
 
         var scope = getParentScope($scope);
-        var eventHandle = $scope.$event[eventHandleName]  || scope.$event[eventHandleName]
-        eventHandle.apply(this, params);
+        var eventHandle = ($scope.$event && $scope.$event[eventHandleName]) ||
+                          (scope.$event && scope.$event[eventHandleName]);
+        eventHandle && eventHandle.apply(this, params);
         beacon(scope).on(EVENTS.DATA_CHANGE, scope);
       });
     }
