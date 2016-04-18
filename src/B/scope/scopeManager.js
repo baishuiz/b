@@ -113,6 +113,7 @@ Air.Module('B.scope.scopeManager', function(require){
         return function(){
           var text = template;
           var markups = text.match(regMarkup) || [];
+          var isStyle = node.nodeName.toLowerCase() === 'b-style';
           for (var i = markups.length - 1; i >= 0; i--) {
             var markup   = markups[i];
             var dataPath = markup.replace(/{{|}}/ig,"");
@@ -127,6 +128,9 @@ Air.Module('B.scope.scopeManager', function(require){
           };
           if(node.nodeValue != text){
             node.nodeValue = text;
+            if (isStyle) {
+                node.ownerElement.style.cssText = text;
+            }
           }
         }
       })(node, node.nodeValue);
