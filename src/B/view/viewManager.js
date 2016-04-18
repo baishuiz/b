@@ -146,6 +146,7 @@ Air.Module("B.view.viewManager", function(require){
       if (state.viewName) {
         var hasView = getViewByViewName(state.viewName);
         if (hasView) {
+          changeURLParams(state.viewName, state);
           show(state.viewName);
         } else {
           var URLPath = location.pathname;

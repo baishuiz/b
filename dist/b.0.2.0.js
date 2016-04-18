@@ -2349,6 +2349,7 @@ Object.observe || (function(O, A, root, _undefined) {
       if (state.viewName) {
         var hasView = getViewByViewName(state.viewName);
         if (hasView) {
+          changeURLParams(state.viewName, state);
           show(state.viewName);
         } else {
           var URLPath = location.pathname;
