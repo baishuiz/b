@@ -2246,6 +2246,7 @@ Object.observe || (function(O, A, root, _undefined) {
     if (activeRouter) {
       goTo(activeRouter.viewName, {
         replace: true,
+        init: true,
         params: activeRouter.params,
         query: location.search
       });
@@ -2337,13 +2338,21 @@ Object.observe || (function(O, A, root, _undefined) {
     });
 
 
-    // TODO: 兼容IE8、IE9 url 变化，计划采用锚点方案
-    var isReplace  = options.replace;
-    var changeURLState = isReplace ? history.replaceState : history.pushState;
-    changeURLState && changeURLState.call(history, {
-      viewName: viewName,
-      params: options.params
-    }, viewName, url);
+    // 不支持pushState则跳转。后续是否考虑锚点方案？
+    var isReplace = options.replace;
+    if (history.pushState && history.replaceState){
+      var changeURLState = isReplace ? history.replaceState : history.pushState;
+      changeURLState && changeURLState.call(history, {
+        viewName: viewName,
+        params: options.params
+      }, viewName, url);
+    } else {
+      if (isReplace) { // 初始化不进行跳转，否则会循环跳转
+        !options.init && location.replace(url);
+      } else {
+        location.href = url;
+      }
+    }
 
 
     var fnName = 'afterURLChange';
