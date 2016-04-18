@@ -1402,6 +1402,10 @@ Object.observe || (function(O, A, root, _undefined) {
   var showDirective = require('B.directive.show');
   var propertyDirective = require('B.directive.property');
   var memCache = require('B.data.memCache');
+  var trim = function(str) {
+    str = str || ''
+    return str.trim ? str.trim() : str.replace(/^\s+|\s+^/,'');
+  }
 
   var $rootScope = new Scope();
 
@@ -1510,7 +1514,7 @@ Object.observe || (function(O, A, root, _undefined) {
             var markup   = markups[i];
             var dataPath = markup.replace(/{{|}}/ig,"");
             // TODO :  新增String.prototype.trim
-            dataPath = dataPath.trim ? dataPath.trim() : dataPath.replace(/^\s+|\s+^/,'');
+            dataPath = trim(dataPath);
             // var data = util.getData(dataPath, $scope);
             var expression = getExpression(dataPath, init);
             init = false;
@@ -1529,7 +1533,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
       function getExpression(dataPath, init){
         return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
-           token = token.trim();
+           token = trim(token);
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token
            } else {
@@ -1583,8 +1587,7 @@ Object.observe || (function(O, A, root, _undefined) {
     setRoot: setRoot,
     getAncestorScope : getAncestorScope
   }
-});
-;Air.Module('B.network.HTTP', function() {
+});;Air.Module('B.network.HTTP', function() {
 
   var state = {
     unInit: 0,
