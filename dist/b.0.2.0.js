@@ -1501,6 +1501,7 @@ Object.observe || (function(O, A, root, _undefined) {
         return function(){
           var text = template;
           var markups = text.match(regMarkup) || [];
+          var isStyle = node.nodeName.toLowerCase() === 'b-style';
           for (var i = markups.length - 1; i >= 0; i--) {
             var markup   = markups[i];
             var dataPath = markup.replace(/{{|}}/ig,"");
@@ -1515,6 +1516,9 @@ Object.observe || (function(O, A, root, _undefined) {
           };
           if(node.nodeValue != text){
             node.nodeValue = text;
+            if (isStyle) {
+                node.ownerElement.style.cssText = text;
+            }
           }
         }
       })(node, node.nodeValue);
