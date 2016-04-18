@@ -78,6 +78,33 @@ Object.observe || (function(O, A, root, _undefined) {
 
         defaultAcceptList = [ "add", "update", "delete", "reconfigure", "setPrototype", "preventExtensions" ];
 
+    var getOwnPropertyNamesFN = function() {
+        var func = O.getOwnPropertyNames;
+        try {
+            // arguments.callee; strict mode dosen't allow callee
+            getOwnPropertyNamesFN();
+        } catch (e) {
+            // Strict mode is supported
+
+            // In strict mode, we can't access to "arguments", "caller" and
+            // "callee" properties of functions. Object.getOwnPropertyNames
+            // returns [ "prototype", "length", "name" ] in Firefox; it returns
+            // "caller" and "arguments" too in Chrome and in Internet
+            // Explorer, so those values must be filtered.
+            var avoid = (func(inArray).join(" ") + " ").replace(/prototype |length |name /g, "").slice(0, -1).split(" ");
+            if (avoid.length) func = function(object) {
+                var props = O.getOwnPropertyNames(object);
+                if (typeof object === "function")
+                    for (var i = 0, j; i < avoid.length;)
+                        if ((j = inArray(props, avoid[i++])) > -1)
+                            props.splice(j, 1);
+
+                return props;
+            };
+        }
+        return func;
+    };
+
     // Functions for internal usage
 
         /**
@@ -158,31 +185,7 @@ Object.observe || (function(O, A, root, _undefined) {
          * @param {Object} object
          * @returns {String[]}
          */
-        getProps = O.getOwnPropertyNames ? (function() {
-            var func = O.getOwnPropertyNames;
-            try {
-                arguments.callee;
-            } catch (e) {
-                // Strict mode is supported
-
-                // In strict mode, we can't access to "arguments", "caller" and
-                // "callee" properties of functions. Object.getOwnPropertyNames
-                // returns [ "prototype", "length", "name" ] in Firefox; it returns
-                // "caller" and "arguments" too in Chrome and in Internet
-                // Explorer, so those values must be filtered.
-                var avoid = (func(inArray).join(" ") + " ").replace(/prototype |length |name /g, "").slice(0, -1).split(" ");
-                if (avoid.length) func = function(object) {
-                    var props = O.getOwnPropertyNames(object);
-                    if (typeof object === "function")
-                        for (var i = 0, j; i < avoid.length;)
-                            if ((j = inArray(props, avoid[i++])) > -1)
-                                props.splice(j, 1);
-
-                    return props;
-                };
-            }
-            return func;
-        })() : function(object) {
+        getProps = O.getOwnPropertyNames ? getOwnPropertyNamesFN() : function(object) {
             // Poor-mouth version with for...in (IE8-)
             var props = [], prop, hop;
             if ("hasOwnProperty" in object) {
