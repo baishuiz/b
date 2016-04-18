@@ -59,9 +59,11 @@ Air.Module('B.service.Service', function(require) {
           cachedData = JSON.parse(cachedDataText);
 
           var fromCache = true;
-          options.successCallBack && options.successCallBack(cachedData, fromCache);
-          beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-          beacon(scope).on(EVENTS.DATA_CHANGE);
+          setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
+            options.successCallBack && options.successCallBack(cachedData, fromCache);
+            beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
+            beacon(scope).on(EVENTS.DATA_CHANGE);
+          }, 0);
 
           return true;
         } catch(e) {

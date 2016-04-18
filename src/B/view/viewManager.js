@@ -67,9 +67,7 @@ Air.Module("B.view.viewManager", function(require){
     for(; viewIndex < viewCount; viewIndex++){
       var activeView = views[viewIndex];
 
-      // 兼容 IE8 自定义tab
-      // TODO: 验证|| activeView.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
-      if (activeView.tagName.toLowerCase() === 'view' || activeView.tagName.toLowerCase() === 'cjia:view') {
+      if (activeView.tagName.toLowerCase() === 'view') {
         var activeViewName = activeView.getAttribute('name');
         var view = new View(activeViewName, activeView)
         viewContainer['views'][activeViewName] = view;
@@ -191,9 +189,9 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function getScopeKeyByViewName(viewName) {
-    var viewDom = activeView.getDom().querySelector('view[name="' + viewName + '"]');
-
-    return viewDom && viewDom.getAttribute('b-scope-key') || '';
+    var dom = activeView.getDom();
+    var subViewDom = dom.querySelector('view[name="' + viewName + '"]');
+    return subViewDom && subViewDom.getAttribute('b-scope-key') || '';
   }
 
   function loadView(viewName, options){

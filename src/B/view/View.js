@@ -2,12 +2,12 @@ Air.Module("B.view.View", function(require){
   var scopeManager = require('B.scope.scopeManager');
   var EVENTS =  require('B.event.events');
 
-  function createDomByString(templeteString){
+  function createDomByString(templateString){
     var div = document.createElement('div');
     if(typeof DOMParser === 'undefined'){
-      div.innerHTML = 'X<div></div>' + templeteString; // 兼容 IE8
+      div.innerHTML = 'X<div></div>' + templateString; // 兼容 IE8
     } else {
-      div.innerHTML = templeteString;
+      div.innerHTML = templateString;
     }
     return div;
   }
@@ -47,7 +47,7 @@ Air.Module("B.view.View", function(require){
 
   function splitDom(domWrapper, selector){
     //var scripts = domWrapper.querySelectorAll(selector);
-    var scripts = domWrapper.getElementsByTagName(selector); // 兼容IE8 自定义tag
+    var scripts = domWrapper.getElementsByTagName(selector);
     scripts = [].concat.apply([], scripts)//[].slice.call(scripts); //兼容 IE8
     return scripts
   }
@@ -69,16 +69,9 @@ Air.Module("B.view.View", function(require){
     options = options || {};
     // TODO 本地模板需要解析script上的{{}}
     if (beacon.isType(dom, 'String')) {
-      if(typeof DOMParser === 'undefined'){
-        dom = dom.replace(/<(\/?)\s*(view)[^>]*>/g,"<$1cjia:$2>") // 兼容IE8 自定义tag
-      }
-
       var domWrapper = createDomByString(dom);
-      //dom = domWrapper.querySelector('view[name="' + viewName + '"]');
 
-      // 兼容 ie 8 自定义 tag
-      // TODO : 精简代码
-      dom = domWrapper.querySelector('view[name="' + viewName + '"]') || domWrapper.getElementsByTagName('cjia:view')[0] || domWrapper.getElementsByTagName('view')[0];
+      dom = domWrapper.querySelector('view[name="' + viewName + '"]');
 
       parseTag('style', viewName, dom, domWrapper, function(tagList){
         loadStyle(tagList, dom);
@@ -87,8 +80,8 @@ Air.Module("B.view.View", function(require){
         loadScript(tagList, dom, options.initCallback);
       });
     }
-    // var dom = null,
-    var templete = null,
+
+    var template = null,
         router = null,
         initQueue = [],
         showBeforeQueue = [],
@@ -101,25 +94,19 @@ Air.Module("B.view.View", function(require){
 
     this.show = function (){
       dom.setAttribute('active','true');
+
+      // IE8 不渲染
+      if(typeof DOMParser === 'undefined'){
+        dom.style.borderBottom = '1px solid transparent';
+        setTimeout(function(){
+          dom.style.borderBottom = 'none';
+        }, 0);
+      }
     },
 
     this.hide = function(){
       dom.removeAttribute('active');
     },
-
-    this.init = function (){},
-
-    this.onInit = function (){},
-
-    this.onShowBefore = function (){},
-
-    this.onShowAfter = function (){},
-
-    this.onHide = function (){},
-
-    this.getTemplete = function (){},
-
-    this.runcontroller = function (){}
 
     this.getDom = function (){
       return dom;

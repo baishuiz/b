@@ -44,8 +44,7 @@ Air.Module('B.scope.scopeManager', function(require){
   }
 
   function tryGenerateViewScope(target, $scope) {
-    // TODO: 验证 target.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
-    if (target.tagName.toLowerCase() === 'view' || target.tagName.toLowerCase() === 'cjia:view') {
+    if (target.tagName.toLowerCase() === 'view') {
       var scopeKey = target.getAttribute('b-scope-key');
       var viewName = target.getAttribute('name');
       var subScopeName = scopeKey || viewName;

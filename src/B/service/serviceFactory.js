@@ -34,7 +34,7 @@ Air.Module('B.service.serviceFactory', function(require) {
           serviceInstanceList.push(service);
         },
         onComplete: function() {
-          var index = serviceInstanceList.indexOf(service);
+          var index = beacon.utility.arrayIndexOf(serviceInstanceList, service);
           if (index !== -1) {
             serviceInstanceList.splice(index, 1);
           }

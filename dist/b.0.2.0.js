@@ -1171,38 +1171,27 @@ Object.observe || (function(O, A, root, _undefined) {
   // TODO: 重构
   proto.listenDataChange =  function (dataPath, callback){
       var self = this;
-      beacon(self).once(EVENTS.RUN_COMPLETE, function(){
+      var fn = function(){
         callback();
 
-        //===
         var r = dataPath.split('.');
         var activeT = ""
         for(var i = 0; i < r.length-1; i++){
           if(activeT){
              activeT = activeT + '.' + r[i];
           } else {
-            activeT =  r[i]
+            activeT = r[i]
           }
 
           var targetT = util.getData(activeT, self);
           listenDataChange(targetT, dataPath, callback);
-          // targetT && Object.observe(targetT, function(dataChanges){
-          //   // TODO 重构
-          //   for(var i = 0; i < dataChanges.length; i++){
-          //     if(dataChanges[i].type == 'add'){
-          //       var target = dataChanges[0];
-          //       var attr = target.object[target.name]
-          //       Object.observe(attr, function(dataChanges){
-          //         for(var i = 0; i < dataChanges.length; i++){
-          //           beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
-          //         }
-          //       })
-          //     }
-          //     beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
-          //   }
-          // });
         }
-      });
+      }
+      if (typeof self.$index === 'number') {
+        setTimeout(fn, 0); // 否则会死循环
+      } else {
+        beacon(self).once(EVENTS.RUN_COMPLETE, fn);
+      }
 
       Object.observe(self, function(dataChanges){
         for(var i=0;i<dataChanges.length;i++){
@@ -1436,8 +1425,7 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function tryGenerateViewScope(target, $scope) {
-    // TODO: 验证 target.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
-    if (target.tagName.toLowerCase() === 'view' || target.tagName.toLowerCase() === 'cjia:view') {
+    if (target.tagName.toLowerCase() === 'view') {
       var scopeKey = target.getAttribute('b-scope-key');
       var viewName = target.getAttribute('name');
       var subScopeName = scopeKey || viewName;
@@ -1701,9 +1689,11 @@ Object.observe || (function(O, A, root, _undefined) {
           cachedData = JSON.parse(cachedDataText);
 
           var fromCache = true;
-          options.successCallBack && options.successCallBack(cachedData, fromCache);
-          beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-          beacon(scope).on(EVENTS.DATA_CHANGE);
+          setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
+            options.successCallBack && options.successCallBack(cachedData, fromCache);
+            beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
+            beacon(scope).on(EVENTS.DATA_CHANGE);
+          }, 0);
 
           return true;
         } catch(e) {
@@ -1947,7 +1937,7 @@ Object.observe || (function(O, A, root, _undefined) {
           serviceInstanceList.push(service);
         },
         onComplete: function() {
-          var index = serviceInstanceList.indexOf(service);
+          var index = beacon.utility.arrayIndexOf(serviceInstanceList, service);
           if (index !== -1) {
             serviceInstanceList.splice(index, 1);
           }
@@ -2079,12 +2069,12 @@ Object.observe || (function(O, A, root, _undefined) {
   var scopeManager = require('B.scope.scopeManager');
   var EVENTS =  require('B.event.events');
 
-  function createDomByString(templeteString){
+  function createDomByString(templateString){
     var div = document.createElement('div');
     if(typeof DOMParser === 'undefined'){
-      div.innerHTML = 'X<div></div>' + templeteString; // 兼容 IE8
+      div.innerHTML = 'X<div></div>' + templateString; // 兼容 IE8
     } else {
-      div.innerHTML = templeteString;
+      div.innerHTML = templateString;
     }
     return div;
   }
@@ -2124,7 +2114,7 @@ Object.observe || (function(O, A, root, _undefined) {
 
   function splitDom(domWrapper, selector){
     //var scripts = domWrapper.querySelectorAll(selector);
-    var scripts = domWrapper.getElementsByTagName(selector); // 兼容IE8 自定义tag
+    var scripts = domWrapper.getElementsByTagName(selector);
     scripts = [].concat.apply([], scripts)//[].slice.call(scripts); //兼容 IE8
     return scripts
   }
@@ -2146,16 +2136,9 @@ Object.observe || (function(O, A, root, _undefined) {
     options = options || {};
     // TODO 本地模板需要解析script上的{{}}
     if (beacon.isType(dom, 'String')) {
-      if(typeof DOMParser === 'undefined'){
-        dom = dom.replace(/<(\/?)\s*(view)[^>]*>/g,"<$1cjia:$2>") // 兼容IE8 自定义tag
-      }
-
       var domWrapper = createDomByString(dom);
-      //dom = domWrapper.querySelector('view[name="' + viewName + '"]');
 
-      // 兼容 ie 8 自定义 tag
-      // TODO : 精简代码
-      dom = domWrapper.querySelector('view[name="' + viewName + '"]') || domWrapper.getElementsByTagName('cjia:view')[0] || domWrapper.getElementsByTagName('view')[0];
+      dom = domWrapper.querySelector('view[name="' + viewName + '"]');
 
       parseTag('style', viewName, dom, domWrapper, function(tagList){
         loadStyle(tagList, dom);
@@ -2164,8 +2147,8 @@ Object.observe || (function(O, A, root, _undefined) {
         loadScript(tagList, dom, options.initCallback);
       });
     }
-    // var dom = null,
-    var templete = null,
+
+    var template = null,
         router = null,
         initQueue = [],
         showBeforeQueue = [],
@@ -2178,25 +2161,19 @@ Object.observe || (function(O, A, root, _undefined) {
 
     this.show = function (){
       dom.setAttribute('active','true');
+
+      // IE8 不渲染
+      if(typeof DOMParser === 'undefined'){
+        dom.style.borderBottom = '1px solid transparent';
+        setTimeout(function(){
+          dom.style.borderBottom = 'none';
+        }, 0);
+      }
     },
 
     this.hide = function(){
       dom.removeAttribute('active');
     },
-
-    this.init = function (){},
-
-    this.onInit = function (){},
-
-    this.onShowBefore = function (){},
-
-    this.onShowAfter = function (){},
-
-    this.onHide = function (){},
-
-    this.getTemplete = function (){},
-
-    this.runcontroller = function (){}
 
     this.getDom = function (){
       return dom;
@@ -2293,9 +2270,7 @@ Object.observe || (function(O, A, root, _undefined) {
     for(; viewIndex < viewCount; viewIndex++){
       var activeView = views[viewIndex];
 
-      // 兼容 IE8 自定义tab
-      // TODO: 验证|| activeView.tagName.toLowerCase() === 'cjia:view' 是否冗余判断
-      if (activeView.tagName.toLowerCase() === 'view' || activeView.tagName.toLowerCase() === 'cjia:view') {
+      if (activeView.tagName.toLowerCase() === 'view') {
         var activeViewName = activeView.getAttribute('name');
         var view = new View(activeViewName, activeView)
         viewContainer['views'][activeViewName] = view;
@@ -2417,9 +2392,9 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function getScopeKeyByViewName(viewName) {
-    var viewDom = activeView.getDom().querySelector('view[name="' + viewName + '"]');
-
-    return viewDom && viewDom.getAttribute('b-scope-key') || '';
+    var dom = activeView.getDom();
+    var subViewDom = dom.querySelector('view[name="' + viewName + '"]');
+    return subViewDom && subViewDom.getAttribute('b-scope-key') || '';
   }
 
   function loadView(viewName, options){
@@ -2553,41 +2528,42 @@ Object.observe || (function(O, A, root, _undefined) {
 
   return run;
 });
-;Air.Module("B.TDK.TDK", function(){
- function setTitle(title){
-   document.title = title  || document.title;
-   return document.title;
- }
+;Air.Module("B.TDK.TDK", function() {
+  var docHead = document.head || document.getElementsByTagName('head')[0];
+  function setTitle(title) {
+    document.title = title || document.title;
+    return document.title;
+  }
 
- function setDescription(description){
-   var descElement = getMetaElement('description')
-   descElement.content = description || descElement.content;
-   return descElement.content;
- }
+  function setDescription(description) {
+    var descElement = getMetaElement('description')
+    descElement.content = description || descElement.content;
+    return descElement.content;
+  }
 
- function setKeywords(keywords){
-   var keywordElement = getMetaElement('keywords')
-   keywordElement.content = keywords || keywordElement.content;
-   return keywordElement.content;
- }
+  function setKeywords(keywords) {
+    var keywordElement = getMetaElement('keywords')
+    keywordElement.content = keywords || keywordElement.content;
+    return keywordElement.content;
+  }
 
- function getMetaElement(metaName){
-   var element = document.head.querySelector('meta[name=' + metaName + ']');
-   element = element || createMetaElement(metaName);
-   return element;
- }
+  function getMetaElement(metaName) {
+    var element = docHead.querySelector('meta[name=' + metaName + ']');
+    element = element || createMetaElement(metaName);
+    return element;
+  }
 
- function createMetaElement(metaName){
-   var element = document.createElement('meta');
-   element.setAttribute('name', metaName);
-   document.head.appendChild(element);
-   return element;
- }
+  function createMetaElement(metaName) {
+    var element = document.createElement('meta');
+    element.setAttribute('name', metaName);
+    docHead.appendChild(element);
+    return element;
+  }
 
   var api = {
-    setTitle : setTitle,
-    setDescription : setDescription,
-    setKeywords : setKeywords
+    setTitle: setTitle,
+    setDescription: setDescription,
+    setKeywords: setKeywords
   }
   return api;
 });

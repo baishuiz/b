@@ -24,38 +24,27 @@ Air.Module('B.scope.Scope', function(require) {
   // TODO: 重构
   proto.listenDataChange =  function (dataPath, callback){
       var self = this;
-      beacon(self).once(EVENTS.RUN_COMPLETE, function(){
+      var fn = function(){
         callback();
 
-        //===
         var r = dataPath.split('.');
         var activeT = ""
         for(var i = 0; i < r.length-1; i++){
           if(activeT){
              activeT = activeT + '.' + r[i];
           } else {
-            activeT =  r[i]
+            activeT = r[i]
           }
 
           var targetT = util.getData(activeT, self);
           listenDataChange(targetT, dataPath, callback);
-          // targetT && Object.observe(targetT, function(dataChanges){
-          //   // TODO 重构
-          //   for(var i = 0; i < dataChanges.length; i++){
-          //     if(dataChanges[i].type == 'add'){
-          //       var target = dataChanges[0];
-          //       var attr = target.object[target.name]
-          //       Object.observe(attr, function(dataChanges){
-          //         for(var i = 0; i < dataChanges.length; i++){
-          //           beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
-          //         }
-          //       })
-          //     }
-          //     beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
-          //   }
-          // });
         }
-      });
+      }
+      if (typeof self.$index === 'number') {
+        setTimeout(fn, 0); // 否则会死循环
+      } else {
+        beacon(self).once(EVENTS.RUN_COMPLETE, fn);
+      }
 
       Object.observe(self, function(dataChanges){
         for(var i=0;i<dataChanges.length;i++){

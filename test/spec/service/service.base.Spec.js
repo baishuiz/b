@@ -63,7 +63,7 @@ describe('服务请求', function () {
           setTimeout(function(){
             expect(cityDom.innerText).toEqual('City = 上海');
             done();
-          }, 0);
+          }, 50);
         },
         errorCallBack: function(errorCode) {
           console.log(errorCode)
