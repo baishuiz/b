@@ -34,7 +34,9 @@ Air.Module('B.directive.model', function(require){
 
         if(target.value !== value) {
          target.defaultValue = result;
-         target.value = result;
+         if (target.type !== 'file') {
+           target.value = result;
+         }
         }
       }
   }

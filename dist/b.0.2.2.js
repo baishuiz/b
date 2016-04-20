@@ -1139,7 +1139,9 @@ Object.observe || (function(O, A, root, _undefined) {
 
         if(target.value !== value) {
          target.defaultValue = result;
-         target.value = result;
+         if (target.type !== 'file') {
+           target.value = result;
+         }
         }
       }
   }
