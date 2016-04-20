@@ -114,6 +114,15 @@ Air.Module('B.scope.scopeManager', function(require){
         // 保持 template 的值，供后续替换使用
         var init = true;
         return function(){
+          var ownerElement = node.ownerElement;
+          if (ownerElement) {
+            if (!ownerElement.parentNode) {
+              return;
+            }
+          } else if (!node.parentNode) {
+            return;
+          }
+
           var text = template;
           var markups = text.match(regMarkup) || [];
           var isStyle = node.nodeName.toLowerCase() === 'b-style';
@@ -130,10 +139,11 @@ Air.Module('B.scope.scopeManager', function(require){
             text = text.replace(markup, data);
           };
           if(node.nodeValue != text){
-            var ownerElement = node.ownerElement;
-            if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option'){
+            if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
               setTimeout(function(){
-                ownerElement.parentNode.value = ownerElement.parentNode.defaultValue;
+                if (ownerElement.parentNode) {
+                  ownerElement.parentNode.value = ownerElement.parentNode.defaultValue;
+                }
               },0);
             }
             node.nodeValue = text;
