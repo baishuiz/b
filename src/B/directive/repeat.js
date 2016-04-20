@@ -130,7 +130,7 @@ Air.Module('B.directive.repeat', function(require){
       // var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
         if(dataChanges[i].type == 'add'){
-          var target = dataChanges[0];
+          var target = dataChanges[i];
           var attr = target.object[target.name];
           listenDataChange(attr, dataPath, callback);
         }

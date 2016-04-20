@@ -1159,7 +1159,7 @@ Object.observe || (function(O, A, root, _undefined) {
       // TODO 重构
       for(var i = 0; i < dataChanges.length; i++){
         if(dataChanges[i].type == 'add'){
-          var target = dataChanges[0];
+          var target = dataChanges[i];
           var attr = target.object[target.name];
           listenDataChange (attr, dataPath, callback);
         }
@@ -1195,6 +1195,11 @@ Object.observe || (function(O, A, root, _undefined) {
 
       Object.observe(self, function(dataChanges){
         for(var i=0;i<dataChanges.length;i++){
+          if(dataChanges[i].type == 'add'){
+            var target = dataChanges[i];
+            var attr = target.object[target.name];
+            listenDataChange (attr, dataPath, callback);
+          }
           dataChanges[i].name === dataPath.split('.')[0] && callback()
         }
       });
@@ -1338,7 +1343,7 @@ Object.observe || (function(O, A, root, _undefined) {
       // var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
         if(dataChanges[i].type == 'add'){
-          var target = dataChanges[0];
+          var target = dataChanges[i];
           var attr = target.object[target.name];
           listenDataChange(attr, dataPath, callback);
         }
@@ -1500,15 +1505,6 @@ Object.observe || (function(O, A, root, _undefined) {
         // 保持 template 的值，供后续替换使用
         var init = true;
         return function(){
-          var ownerElement = node.ownerElement;
-          if (ownerElement) {
-            if (!ownerElement.parentNode) {
-              return;
-            }
-          } else if (!node.parentNode) {
-            return;
-          }
-
           var text = template;
           var markups = text.match(regMarkup) || [];
           var isStyle = node.nodeName.toLowerCase() === 'b-style';
@@ -1525,6 +1521,7 @@ Object.observe || (function(O, A, root, _undefined) {
             text = text.replace(markup, data);
           };
           if(node.nodeValue != text){
+            var ownerElement = node.ownerElement;
             if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
               setTimeout(function(){
                 if (ownerElement.parentNode) {
