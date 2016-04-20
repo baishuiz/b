@@ -1331,6 +1331,23 @@ Object.observe || (function(O, A, root, _undefined) {
 
 
   // TODO: 重构
+  function temp(targetT, dataPath, callback){
+    var isArray = targetT && beacon.utility.isType(targetT, 'Array');
+    var isObject = targetT && beacon.utility.isType(targetT, 'Object');
+     (isObject || isArray) && Object.observe(targetT, function(dataChanges){
+      // var obj = getRepeatData(target, $scope)
+      for(var i=0;i<dataChanges.length;i++){
+        if(dataChanges[i].type == 'add'){
+          var target = dataChanges[0];
+          var attr = target.object[target.name];
+          temp(attr, dataPath, callback);
+        }
+        // (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === targetT)  && callback()
+        dataChanges[i].name === 'length' && callback()
+      }
+    });
+  }
+
   function listenDataChange(target, $scope, callback){
 
     beacon($scope).once(EVENTS.RUN_COMPLETE, function(){
@@ -1348,26 +1365,21 @@ Object.observe || (function(O, A, root, _undefined) {
         }
 
         var targetT = util.getData(activeT, $scope);
-        targetT && Object.observe(targetT, function(dataChanges){
-          // var obj = getRepeatData(target, $scope)
-          for(var i=0;i<dataChanges.length;i++){
-            (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === targetT)  && callback()
-          }
-        });
+        temp(targetT, obj.dataPath, callback);
       }
       //===
 
-      // Object.observe($scope[obj.dataPath], function(dataChanges){
-      //   // var obj = getRepeatData(target, $scope)
-      //   for(var i=0;i<dataChanges.length;i++){
-      //     (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === $scope[obj.dataPath])  && callback()
-      //   }
-      // });
+
     });
 
     Object.observe($scope, function(dataChanges){
       var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
+        if(dataChanges[i].type == 'add'){
+          var target_ = dataChanges[0];
+          var attr = target_.object[target_.name];
+          temp(attr, obj.dataPath, callback);
+        }
         dataChanges[i].name === obj.dataPath.split('.')[0] && callback()
       }
     });

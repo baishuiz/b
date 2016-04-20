@@ -123,13 +123,26 @@ Air.Module('B.directive.repeat', function(require){
 
 
   // TODO: 重构
-  function listenDataChange(target, $scope, callback){
+  function listenDataChange(targetT, dataPath, callback){
+    var isArray = targetT && beacon.utility.isType(targetT, 'Array');
+    var isObject = targetT && beacon.utility.isType(targetT, 'Object');
+     (isObject || isArray) && Object.observe(targetT, function(dataChanges){
+      // var obj = getRepeatData(target, $scope)
+      for(var i=0;i<dataChanges.length;i++){
+        if(dataChanges[i].type == 'add'){
+          var target = dataChanges[0];
+          var attr = target.object[target.name];
+          listenDataChange(attr, dataPath, callback);
+        }
+        dataChanges[i].name === 'length' && callback()
+      }
+    });
+  }
 
+  function tryListenDataChange(target, $scope, callback){
     beacon($scope).once(EVENTS.RUN_COMPLETE, function(){
       var obj = getRepeatData(target, $scope);
       callback();
-
-      //===
       var r = obj.dataPath.split('.');
       var activeT = ""
       for(var i=0;i<r.length; i++){
@@ -140,26 +153,18 @@ Air.Module('B.directive.repeat', function(require){
         }
 
         var targetT = util.getData(activeT, $scope);
-        targetT && Object.observe(targetT, function(dataChanges){
-          // var obj = getRepeatData(target, $scope)
-          for(var i=0;i<dataChanges.length;i++){
-            (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === targetT)  && callback()
-          }
-        });
+        listenDataChange(targetT, obj.dataPath, callback);
       }
-      //===
-
-      // Object.observe($scope[obj.dataPath], function(dataChanges){
-      //   // var obj = getRepeatData(target, $scope)
-      //   for(var i=0;i<dataChanges.length;i++){
-      //     (dataChanges[i].name === obj.dataPath|| dataChanges[i].object === $scope[obj.dataPath])  && callback()
-      //   }
-      // });
     });
 
     Object.observe($scope, function(dataChanges){
       var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
+        if(dataChanges[i].type == 'add'){
+          var target_ = dataChanges[0];
+          var attr = target_.object[target_.name];
+          listenDataChange(attr, obj.dataPath, callback);
+        }
         dataChanges[i].name === obj.dataPath.split('.')[0] && callback()
       }
     });
@@ -168,6 +173,6 @@ Air.Module('B.directive.repeat', function(require){
   return {
     init: init,
     needRepeat: needRepeat,
-    listenDataChange : listenDataChange
+    listenDataChange : tryListenDataChange
   };
 });
