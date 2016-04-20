@@ -1511,9 +1511,15 @@ Object.observe || (function(O, A, root, _undefined) {
             text = text.replace(markup, data);
           };
           if(node.nodeValue != text){
+            var ownerElement = node.ownerElement;
+            if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option'){
+              setTimeout(function(){
+                ownerElement.parentNode.value = ownerElement.parentNode.defaultValue;
+              },0);
+            }
             node.nodeValue = text;
-            if (isStyle) {
-                node.ownerElement.style.cssText = text;
+            if (isStyle && ownerElement) {
+                ownerElement.style.cssText = text;
             }
           }
         }
