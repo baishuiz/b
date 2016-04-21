@@ -52,6 +52,14 @@ Air.Module('B.service.Service', function(require) {
       var timer = null;
       var curServiceQueue = serviceQueue[cacheKey];
 
+      var requestOptions = {
+        url: url,
+        method: config.method,
+        header: header,
+        data: JSON.stringify(requestParams),
+        serviceName: config.serviceName
+      };
+
       var tryReturnCacheData = function() {
         var cachedDataText = memCache.get(cacheKey);
         var cachedData;
@@ -127,7 +135,7 @@ Air.Module('B.service.Service', function(require) {
 
           return;
         } else {
-          callAfterQueryMiddleware({xhr: http.xhr, data: responseData}, function(isError) {
+          callAfterQueryMiddleware({xhr: http.xhr, data: responseData, requestParam: requestOptions}, function(isError) {
             if (isError) {
               options.errorCallBack && options.errorCallBack(ERROR_CODE.business, responseData);
               beacon(self).on(SERVICEEVENTS.ERROR, {
@@ -181,7 +189,7 @@ Air.Module('B.service.Service', function(require) {
 
         // status = 0 为abort后进入的，算做超时
         var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
-        callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr}, function(errorInfo){
+        callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr, requestParam: requestOptions}, function(errorInfo){
           options.errorCallBack && options.errorCallBack(errorCode, errorInfo);
           beacon(self).on(SERVICEEVENTS.ERROR, {
             error : errorCode,
@@ -221,13 +229,6 @@ Air.Module('B.service.Service', function(require) {
           delete serviceQueue[cacheKey];
         }
       }
-
-      var requestOptions = {
-        url: url,
-        method: config.method,
-        header: header,
-        data: JSON.stringify(requestParams)
-      };
 
       callBeforeQueryMiddleware(requestOptions, function(){
 

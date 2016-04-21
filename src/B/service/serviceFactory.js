@@ -29,6 +29,7 @@ Air.Module('B.service.serviceFactory', function(require) {
   function get(serviceName, scope) {
     var serviceConfig = serviceList[serviceName];
     if (serviceConfig) {
+      serviceConfig.serviceName = serviceName;
       var service = new Service(serviceConfig, scope, {
         onQuery: function() {
           serviceInstanceList.push(service);
