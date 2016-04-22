@@ -159,13 +159,15 @@ Air.Module('B.directive.repeat', function(require){
 
     Object.observe($scope, function(dataChanges){
       var obj = getRepeatData(target, $scope)
-      for(var i=0;i<dataChanges.length;i++){
-        if(dataChanges[i].type == 'add'){
-          var target_ = dataChanges[0];
+      for(var i=0,dataChange;i<dataChanges.length;i++){
+        dataChange = dataChanges[i];
+        var type = dataChange.type;
+        if(type === 'add' || (type === 'update' && dataChange.oldValue !== dataChange.object[dataChange.name])){
+          var target_ = dataChanges[i];
           var attr = target_.object[target_.name];
           listenDataChange(attr, obj.dataPath, callback);
         }
-        dataChanges[i].name === obj.dataPath.split('.')[0] && callback()
+        dataChange.name === obj.dataPath.split('.')[0] && callback()
       }
     });
   }
