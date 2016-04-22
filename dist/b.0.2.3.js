@@ -2006,11 +2006,11 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function parseRule(ruleString){
-    var paramRule = /:\w+/ig;
+    var paramRule = /:[\w-]+/ig;
     var params = [];
     var matchRuleStr  = ruleString.replace(paramRule, function(param){
                           params.push(param.replace(":",""));
-                          return "(\\w+)";
+                          return "([\\w-]+)";
                         });
     var reg = new RegExp("^" + matchRuleStr + "\/*$","i");
     return {
