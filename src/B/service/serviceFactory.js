@@ -48,8 +48,9 @@ Air.Module('B.service.serviceFactory', function(require) {
   }
 
   function abortAll() {
-    for (var i = 0, len = serviceInstanceList.length, service; i < len; i++) {
-      service = serviceInstanceList[i];
+    var tmpList = serviceInstanceList.concat([]);
+    for (var i = 0, len = tmpList.length, service; i < len; i++) {
+      service = tmpList[i];
       service && service.abort(true);
     }
   }
