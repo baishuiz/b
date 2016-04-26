@@ -2127,13 +2127,19 @@ Object.observe || (function(O, A, root, _undefined) {
     for (var scriptIndex = 0; scriptIndex < scripts.length; scriptIndex++) {
       var activeScript = scripts[scriptIndex];
       var tmpScript = document.createElement('script');
-      if (activeScript.src) {
-        Air.loadJS(activeScript.src);
+      var src = activeScript.src;
+
+      // TODO loadJS 会检查相同url的则不重新加载
+      // 不知为什么 loadJS 的时候该 view 的 dom 已经被插入了页面
+      // 所以先给移除掉，后续再排查
+      activeScript.parentNode && activeScript.parentNode.removeChild(activeScript);
+
+      if (src) {
+        Air.loadJS(src);
       } else {
         tmpScript.text = activeScript.text;
         dom.appendChild(tmpScript);
       }
-      activeScript.parentNode && activeScript.parentNode.removeChild(activeScript);
     };
   }
 
