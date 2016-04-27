@@ -50,7 +50,6 @@ Air.Module('B.service.Service', function(require) {
       var cacheKey = url + JSON.stringify(requestParams);
       var finished = false;
       var timer = null;
-      var curServiceQueue = serviceQueue[cacheKey];
 
       var requestOptions = {
         url: url,
@@ -79,6 +78,7 @@ Air.Module('B.service.Service', function(require) {
         }
       }
 
+      var curServiceQueue = serviceQueue[cacheKey];
       if (!options.noCache && !curServiceQueue) {
         var getCacheSuccess = tryReturnCacheData();
         if (getCacheSuccess) {
@@ -231,6 +231,7 @@ Air.Module('B.service.Service', function(require) {
       }
 
       callBeforeQueryMiddleware(requestOptions, function(){
+        curServiceQueue = serviceQueue[cacheKey];
 
         // 首次进入，队列不存在
         if (!curServiceQueue) {

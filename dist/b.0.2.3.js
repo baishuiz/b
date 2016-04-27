@@ -1702,7 +1702,6 @@ Object.observe || (function(O, A, root, _undefined) {
       var cacheKey = url + JSON.stringify(requestParams);
       var finished = false;
       var timer = null;
-      var curServiceQueue = serviceQueue[cacheKey];
 
       var requestOptions = {
         url: url,
@@ -1731,6 +1730,7 @@ Object.observe || (function(O, A, root, _undefined) {
         }
       }
 
+      var curServiceQueue = serviceQueue[cacheKey];
       if (!options.noCache && !curServiceQueue) {
         var getCacheSuccess = tryReturnCacheData();
         if (getCacheSuccess) {
@@ -1883,6 +1883,7 @@ Object.observe || (function(O, A, root, _undefined) {
       }
 
       callBeforeQueryMiddleware(requestOptions, function(){
+        curServiceQueue = serviceQueue[cacheKey];
 
         // 首次进入，队列不存在
         if (!curServiceQueue) {
