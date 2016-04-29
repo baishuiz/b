@@ -1,6 +1,6 @@
 {
   "name": "b",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "FED framework",
   "main": "index.js",
   "scripts": {

@@ -8,6 +8,7 @@ Air.Module("B.view.viewManager", function(require){
   var middleware = require('B.util.middleware');
   var viewList = [],
       viewportList = [],
+      loadingViewList = [], // 记载中的view
       activeView = null,
       mainViewport = null;
   var lastView = null;
@@ -88,13 +89,32 @@ Air.Module("B.view.viewManager", function(require){
         switchURL(viewName, options);
         changeURLParams(viewName, options);
         show(viewName);
-      } else {
+      } else if (!viewIsLoading(viewName)) {
+        addLoadingView(viewName);
         loadView(viewName, options);
       }
     }
 
     // goTo 方法对外支持中间件，中间件参数为 paramObj
     middleware.run(fnName, paramObj, next);
+  }
+
+  function viewIsLoading(viewName) {
+    return loadingViewList.indexOf(viewName) === -1 ? false : true;
+  }
+
+  function addLoadingView(viewName) {
+    var idx = loadingViewList.indexOf(viewName);
+    if (idx === -1) {
+      loadingViewList.push(viewName);
+    }
+  }
+
+  function removeLoadingView(viewName) {
+    var idx = loadingViewList.indexOf(viewName);
+    if (idx !== -1) {
+      loadingViewList.splice(idx, 1);
+    }
   }
 
   function changeURLParams(viewName, options) {
@@ -220,6 +240,8 @@ Air.Module("B.view.viewManager", function(require){
       var scope = scopeManager.parseScope(viewName, view.getDom());
       changeURLParams(viewName, options);
       appendView(viewName, view);
+
+      removeLoadingView(viewName);
 
       saveLastView();
       setActive(view);
