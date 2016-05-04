@@ -1,41 +1,44 @@
+/**
+ * @author baishuiz@gmail.com, xuemengfei@gmail.com
+ * @version v0.2.0
+ */
 Air.run(function(require){
-    var Scope             = require("core.scope"),
-        node              = require("utility.node"),
-        generateScopeTree = require("core.scopeTree"),
-        view              = require('core.views')
-        directive         = require("core.directive"),
-        shim              = require("utility.shim");
+  var viewManager   = require("B.view.viewManager"),
+      router = require("B.router.router"),
+      memCache = require('B.data.memCache'),
+      run = require('B.controller.run'),
+      serviceFactory = require('B.service.serviceFactory');
+      TDK = require('B.TDK.TDK');
+  void function main(){
+    var FRAMEWORK_NAME = "b";
+    var api = {
+      views    : viewManager, // ViewManager
+      router   : router, // Router
+      service  : serviceFactory,
+      utility  : null,
 
-    var EVENTS            = require("core.event"),
-        FRAMEWORK_NAME    = 'b';
-
-    shim.run();
-
-
-    Air.domReady(function(){
-
-            var scopeList = require('core.scopeList');
-            scopeList.init(document, generateScopeTree);
-            beacon(window).on('popstate', function(e){
-                if (e.state && e.state.viewName){
-                    b.views.goto(e.state.viewName, {popstate:true});
-                }
-            })
-
-
-    });
-
-    void function main(){
-        var api = {
-            run : require('core.run'),
-            views: view,
-            config : require('core.config'),
-            EVENTS  : require('core.event'),
-            Module  : Air.Module,
-            service : require('core.service'),
-            loadJS : Air.loadJS
-        };
-        window[FRAMEWORK_NAME] = api;
-    }();
-
+      /**
+       * [环境初始化]
+       * @param  {Environment} env [环境配置对象]
+       * @return void
+       */
+      init     : function(env){
+        memCache.set('env', env);
+        Air.moduleURL(env.$moduleURL);
+        viewManager.init(env);
+      },
+      run      : run,
+      Module   : Air.Module,
+      TDK      : TDK,
+      domReady : function(){}
+    };
+    window[FRAMEWORK_NAME] = api;
+  }()
 });
+
+
+// 考虑到模板内嵌 view 存在的可能性，
+// 为避免冗余模板请求，故此 view 初始化在 domReady 之后进行。
+// Air.domReady(function(){
+//   b.views.init();
+// });

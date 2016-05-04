@@ -14,54 +14,207 @@
 viewport view {display:none}
 viewport view[active="true"]{display:block}
 </style>
-<viewport main="true" >
-  <view id="view1" name="name1" active="true">
-    <div id="app1" ng-app="f1">
-        <div class="age">{{user.feeling}}{{user.age}}</div>
-        <div class="name"> {{user.name}}</div>
-        <ul id="booklist" type="{{books.type}}" ng-controller="booklist">
-        	book : <li ng-event="click changeName()" ng-repeat="book in books">{{book.name}}<span ng-repeat="author in book.author">{{author}}</span></li>
-          <li  ng-repeat="book in books">{{book.name}}<span ng-event="click changeName()" ng-repeat="author in book.author">{{author}}</span></li>
-        </ul>
 
-        <ul ng-controller="userInfo">
-        	<li id="userName">name: {{user.name}} </li>
-        	<li id="userAge">age: {{userInfo.age}} </li>
-        </ul>
+
+<viewport main="true">
+  <view name="page_default" >
+    <p>Hello</p>
+    <span class="flower" attr="{{attr}}">{{flower}}</span>
+    <span class="flower_A" attr="{{attr}}">{{1+1==2 ? citySH : cityTL}}</span>
+    <span class="flower_B" attr="{{attr}}">{{true ? 'tie ling' : citySH}}</span>
+  </view>
+  <view name="page_list">
+    <p>Hello</p>
+    <span class="flower" attr="{{attr}}">{{flower}}</span>
+  </view>
+  <view name="page_url_change_before"></view>
+  <view name="page_url_change_after"></view>
+  <view name="page_detail">
+    <p>{{parentValue}}</p>
+    <view name="page_detail_subview">
+      <p class="text">{{parentValue}} - {{subValue}}</p>
+    </view>
+  </view>
+  <view name="page_booking"></view>
+  <view name="page_order"></view>
+  <view name="page_service"></view>
+  <view name="page_service_change">
+    <p class="city">City = {{city}}</p>
+  </view>
+  <view name="page_service_cache"></view>
+  <view name="page_service_middleware_before"></view>
+  <view name="page_service_middleware_after"></view>
+  <view name="page_service_timeout"></view>
+  <view name="page_service_queue"></view>
+  <view name="page_event">
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello'); test testHandle()">{{helloEvent.event.msg}}</a>
+  </view>
+  <view name="page_event_param">
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello', '{{scopeParam}}')">Hello Event</a>
+  </view>
+  <view name="page_event_multiple">
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('click'); focus focusHandle('focus')">Hello Event</a>
+  </view>
+  <view name="page_repeat">
+    <p>{{notice}}</p>
+    <ul>
+      <li b-repeat="item in list" name="{{item.name}}{{notice}}">
+        {{ item.name }}
+      </li>
+    </ul>
+    <div class='listB' >
+      <span b-repeat="item in a.b.list">{{item.name}}</span>
     </div>
   </view>
-  <view id="view2" name="name2">
-    <div id="app2" ng-app="f2">
-        <h1>Hello, {{name}} {{result}}</h1>
+  <view name="page_repeat_in_repeat">
+    <div class="list1" b-repeat="item1 in list1">
+      <div class="list2" b-repeat="item2 in list2">
+        {{item1.name}}{{item2.name}}
+      </div>
     </div>
   </view>
-
-  <view id="view3" name="name3">
-    <div id="app3" ng-app="f3">
-        <input id="ipt" ng-model="{{name}}" />
-        <h1 id="hh">Hello, {{name}} {{result}}</h1>
+  <view name="page_repeat_nearby_repeat">
+    <ul class="list1">
+      <li b-repeat="item1 in list1">{{item1.name}}</li>
+    </ul>
+    <ul class="list2">
+      <li b-repeat="item2 in list2">{{item2.name}}</li>
+    </ul>
+  </view>
+  <view name="page_repeat_with_event_outer">
+    <ul>
+      <li b-repeat="item in list" b-event="click clickHandle('good')">{{item.name}}</li>
+    </ul>
+    <div class="listB">
+      <span b-repeat="item in a.b.list">{{item.name}}</span>
     </div>
   </view>
-
-  <view id="view4" name="name4">
-    <div id="app4" ng-app="f4">
-        <h1 id="eventResult" ng-event="click addResult({{step}},'ok'); click add()" >{{result}}{{msg}}</h1>
-        <h1 id="eventResult2"  >{{msg2}}</h1>
+  <view name="page_repeat_with_event_inner">
+    <ul>
+      <li b-repeat="item in lista">
+        <a href="javascript:void(0)" b-event="click clickHandle()">{{item.name}}</a>
+      </li>
+    </ul>
+  </view>
+  <view name="page_repeat_with_data">
+    <p class="title" b-event="click titleClickHandle()">{{notice}}</p>
+    <ul>
+      <li b-repeat="item in list">
+        <a href="javascript:void(0)" b-event="click itemClickHandle()">{{item.name}}</a>
+      </li>
+    </ul>
+  </view>
+  <view name="page_repeat_in_repeat_event">
+    <p class="title">{{notice}}</p>
+    <div>
+      <div class="list1" b-repeat="item1 in list1">
+        <div class="list2" b-repeat="item2 in list2">
+          <a href="javascript:void(0)" b-event="click clickHandle()">{{item1.name}}{{item2.name}}</a>
+        </div>
+      </div>
     </div>
   </view>
+  <view name="page_model_bind">
+    <input b-model="username" type="text" class="username"></input>
+  </view>
+  <view name="page_model_input">
+    <input b-event="input inputHandle()" b-model="username" type="text" class="username"></input>
+  </view>
+  <view name="page_b-show">
+    <style>#page_b-show_table { display: none; }</style>
+    <p b-show="logined" b-event="click switchi()"></p>
+    <table b-show="logined" id="page_b-show_table"></table>
+    <ul>
+      <li b-show="logined" id="page_b-show_list_item"></li>
+    </ul>
+  </view>
 
+  <view name="page_b-property">
+    <input b-event="click switchi()" b-property="{readOnly: readonly, disabled: disable}" id="page_b-property-input" />
+  </view>
+
+  <view name="page_service_event">
+      <p b-repeat="city in hot.cities">{{city}}</p>
+      <span>{{error}}</span>
+  </view>
 </viewport>
-    <div id="app6" ng-app="f6">
-        {{hi}}{{$service.list.data.msg}}
-    </div>
 
-    <script>
-// history.pushState = function(){}
-// history.replaceState = function(){}
-    </script>
+<viewport class=".footer">
+    <view name="side_footer">
+        {{hi}}{{$service.list.data.msg}}
+    </view>
+</viewport>
 
 <% with (scripts) { %>
-  <% [].concat(polyfills, jasmine, boot, vendor, helpers, src, specs,reporters).forEach(function(script){ %>
+  <% [].concat(polyfills, jasmine, boot, vendor, helpers, src).forEach(function(script){ %>
+  <script src="<%= script %>"></script>
+  <% }) %>
+<% }; %>
+
+<script>
+    window.host = '127.0.0.1:8000';
+
+    ;(function(){
+      b.router.set({
+        rule : '/index/:info',
+        viewName : 'page_default'
+      })
+
+      b.router.set({
+        rule : '/list/:city',
+        viewName : 'page_list'
+      })
+
+      b.router.set({
+        rule : '/detail/:roomid',
+        viewName : 'page_detail'
+      })
+
+      b.router.set({
+        rule : '/booking',
+        viewName : 'page_booking'
+      })
+
+      b.router.set({
+        rule : '/order',
+        viewName : 'page_order'
+      })
+
+      b.router.set({
+        rule : '/remote_page_map',
+        viewName : 'remote_page_map'
+      })
+
+      b.router.set({
+        rule : '/remote_page_list',
+        viewName : 'page_order'
+      })
+
+      b.router.set({
+        rule : '/remote_page_detail',
+        viewName : 'page_order'
+      })
+
+      b.router.set({
+        rule : '/remote_page_scope',
+        viewName : 'remote_page_scope'
+      })
+
+      b.router.set({
+        rule : '/page_url_change_before',
+        viewName : 'page_url_change_before'
+      });
+
+      b.router.set({
+        rule : '/page_url_change_after',
+        viewName : 'page_url_change_after'
+      })
+
+    }());
+</script>
+
+<% with (scripts) { %>
+  <% [].concat(specs,reporters).forEach(function(script){ %>
   <script src="<%= script %>"></script>
   <% }) %>
 <% }; %>

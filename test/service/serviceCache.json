@@ -1,0 +1,74 @@
+{
+  "result": [
+    {
+      "sortBy": "0.0",
+      "cityId": 104,
+      "cityName": "上海"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 228,
+      "cityName": "广州"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 331,
+      "cityName": "兰州"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 118,
+      "cityName": "杭州市"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 200,
+      "cityName": "武汉市"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 32,
+      "cityName": "北京市"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 230,
+      "cityName": "深圳"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 321,
+      "cityName": "西安"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 105,
+      "cityName": "南京市"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 119,
+      "cityName": "宁波市"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 55,
+      "cityName": "吕梁市"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 57,
+      "cityName": "包头市"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 35,
+      "cityName": "唐山市"
+    },
+    {
+      "sortBy": "0.0",
+      "cityId": 34,
+      "cityName": "石家庄市"
+    }
+  ]
+}
