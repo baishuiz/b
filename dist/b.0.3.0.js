@@ -2377,14 +2377,19 @@ Object.observe || (function(O, A, root, _undefined) {
     $scope.$request.params = options.params;
   }
 
-  function switchURL (viewName, options) {
-    options = options || {};
-    var fromUrl = location.href;
+  function getURL (viewName, options) {
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
       query: options.query
     });
 
+    return url;
+  }
+
+  function switchURL (viewName, options) {
+    options = options || {};
+    var fromUrl = location.href;
+    var url = getURL(viewName, options);
 
     // 不支持pushState则跳转。后续是否考虑锚点方案？
     var isReplace = options.replace;
@@ -2546,8 +2551,6 @@ Object.observe || (function(O, A, root, _undefined) {
     var view = getViewByViewName(viewName);
     view && view.hide();
   }
-
-  function createView(){}
 
   function showLoading(){}
 

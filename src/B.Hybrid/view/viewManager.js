@@ -6,6 +6,7 @@ Air.Module("B.view.viewManager", function(require){
   var scopeManager = require('B.scope.scopeManager');
   var EVENTS =  require('B.event.events');
   var middleware = require('B.util.middleware');
+  var bridge = require('B.bridge');
   var viewList = [],
       viewportList = [],
       loadingViewList = [], // 记载中的view
@@ -190,10 +191,6 @@ Air.Module("B.view.viewManager", function(require){
     });
   }
 
-  function back () {
-    window.history.back();
-  }
-
   function show (viewName){
     var view = getViewByViewName(viewName);
     if (view) {
@@ -307,9 +304,28 @@ Air.Module("B.view.viewManager", function(require){
     return activeView;
   }
 
+  function goToHybrid(viewName, options) {
+    // TODO onHide
+    var activeViewName = activeView && activeView.getViewName();
+
+    if (activeViewName === viewName) {
+      goTo(viewName, options);
+    } else {
+      var url = getURL(viewName, options);
+      bridge.run('gotopage', {
+        url: url
+      });
+    }
+  }
+
+  function back () {
+    // TODO onHide
+    bridge.run('goback');
+  }
+
   api = {
     init : init,
-    goTo : goTo,
+    goTo : goToHybrid,
     back : back,
     addMiddleware : middleware.add,
     removeMiddleware : middleware.remove,
