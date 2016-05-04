@@ -1,7 +1,7 @@
 Air.Module('B.service.Service', function(require) {
   var HTTP = require('B.network.HTTP');
   var EVENTS =  require('B.event.events');
-  var memCache = require('B.data.MemCache');
+  var storage = require('B.data.storage');
   var middleware = require('B.util.middleware');
 
   var serviceQueue = {};
@@ -59,46 +59,68 @@ Air.Module('B.service.Service', function(require) {
         serviceName: config.serviceName
       };
 
-      var tryReturnCacheData = function() {
-        var cachedDataText = memCache.get(cacheKey);
-        var cachedData;
-        try {
-          cachedData = JSON.parse(cachedDataText);
+      var tryReturnCacheData = function(noCacheCallback) {
+        storage.get(cacheKey, function(cachedDataText) {
+          try {
+            cachedData = JSON.parse(cachedDataText);
 
-          var fromCache = true;
-          setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
-            options.successCallBack && options.successCallBack(cachedData, fromCache);
-            beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-            beacon(scope).on(EVENTS.DATA_CHANGE);
-          }, 0);
+            var fromCache = true;
+            setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
+              options.successCallBack && options.successCallBack(cachedData, fromCache);
+              beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
+              beacon(scope).on(EVENTS.DATA_CHANGE);
+            }, 0);
 
-          return true;
-        } catch(e) {
-          return false;
-        }
+            return;
+          } catch(e) {}
+
+          noCacheCallback && noCacheCallback();
+        });
       }
 
       var curServiceQueue = serviceQueue[cacheKey];
       if (!options.noCache && !curServiceQueue) {
-        var getCacheSuccess = tryReturnCacheData();
-        if (getCacheSuccess) {
-          return;
-        }
+        tryReturnCacheData(startQuery);
+      } else {
+        startQuery();
       }
 
-      controlEvents.onQuery && controlEvents.onQuery();
+      function startQuery() {
+        controlEvents.onQuery && controlEvents.onQuery();
 
-      var startTimeoutCount = function() {
+        callBeforeQueryMiddleware(requestOptions, function(){
+          curServiceQueue = serviceQueue[cacheKey];
+
+          // 首次进入，队列不存在
+          if (!curServiceQueue) {
+            curServiceQueue = serviceQueue[cacheKey] = [];
+
+            // 避免外部修改回调函数，所以在外部处理完成后再赋值
+            requestOptions.successCallBack = httpSuccessCallback;
+            requestOptions.errorCallBack = httpErrorCallback;
+
+            http.request(requestOptions);
+            startTimeoutCount();
+          } else {
+            curServiceQueue.push({
+              httpSuccessCallback: httpSuccessCallback,
+              httpErrorCallback: httpErrorCallback
+            })
+          }
+        });
+      }
+
+      function startTimeoutCount() {
         timer = setTimeout(function(){
           http.abort();
         }, timeoutSeconds * 1000);
       }
 
-      var clearTimeoutCount = function() {
+      function clearTimeoutCount() {
         clearTimeout(timer);
       }
 
-      var httpSuccessCallback = function(xhrOrResponseData, isQueue) {
+      function httpSuccessCallback(xhrOrResponseData, isQueue) {
         clearTimeoutCount();
         xhrOrResponseData = xhrOrResponseData || {};
         var responseText = '';
@@ -148,13 +170,9 @@ Air.Module('B.service.Service', function(require) {
               }
             } else {
               var useCache = false;
-              if (!options.noCache) {
-                useCache = tryReturnCacheData();
-              }
-
-              if (!useCache) {
+              var noCacheRun = function() {
                 // 记录缓存
-                config.expiredSecond && memCache.set(cacheKey, responseText, {
+                config.expiredSecond && storage.set(cacheKey, responseText, {
                   expiredSecond: config.expiredSecond
                 });
 
@@ -164,6 +182,12 @@ Air.Module('B.service.Service', function(require) {
                   var isError = false;
                   runQueue(isError, responseData);
                 }
+              }
+
+              if (!options.noCache) {
+                useCache = tryReturnCacheData(noCacheRun);
+              } else {
+                noCacheRun();
               }
             }
 
@@ -175,7 +199,7 @@ Air.Module('B.service.Service', function(require) {
         }
       }
 
-      var httpErrorCallback = function(xhr, isQueue) {
+      function httpErrorCallback(xhr, isQueue) {
         clearTimeoutCount();
 
         controlEvents.onComplete && controlEvents.onComplete();
@@ -229,27 +253,6 @@ Air.Module('B.service.Service', function(require) {
           delete serviceQueue[cacheKey];
         }
       }
-
-      callBeforeQueryMiddleware(requestOptions, function(){
-        curServiceQueue = serviceQueue[cacheKey];
-
-        // 首次进入，队列不存在
-        if (!curServiceQueue) {
-          curServiceQueue = serviceQueue[cacheKey] = [];
-
-          // 避免外部修改回调函数，所以在外部处理完成后再赋值
-          requestOptions.successCallBack = httpSuccessCallback;
-          requestOptions.errorCallBack = httpErrorCallback;
-
-          http.request(requestOptions);
-          startTimeoutCount();
-        } else {
-          curServiceQueue.push({
-            httpSuccessCallback: httpSuccessCallback,
-            httpErrorCallback: httpErrorCallback
-          })
-        }
-      });
     };
 
     this.abort = function(noTriggerEvent){

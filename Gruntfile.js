@@ -43,6 +43,7 @@ module.exports = function(grunt){
                         './libs/*.js',
                         './src/B/util/*.js',
                         './src/B/data/memCache.js',
+                        './src/B/data/storage.js',
                         './src/B/event/events.js',
                         './src/B/directive/event.js',
                         './src/B/directive/show.js',

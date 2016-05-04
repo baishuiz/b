@@ -36,16 +36,15 @@ Air.Module("B.bridge", function() {
   /**
    * 注册全局回调
    * @param {Function} fn 回调方法
-   * @return {String} callbackName
+   * @return {String} callbackName 方法名（PROTOCOL_KEY + GUID + 毫秒数）
    */
   function registerCallback(fn) {
-    if (typeof fn !== 'function') {
-      return '';
-    }
     var callbackName = PROTOCOL_KEY + getGUID() + new Date().getTime();
 
     window[callbackName] = function() {
-      fn();
+      if (typeof fn === 'function') {
+        fn.apply(window, arguments);
+      }
       destroyCallback(callbackName);
     }
 
