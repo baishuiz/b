@@ -273,30 +273,36 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function switchView(view){
-    // if(activeView === view){return};
+    var lastViewName = '';
     // 7
     if (lastView) {
-      var lastViewName = lastView.getViewName();
-      lastView && lastView.hide();
-      beacon(lastView).on(lastView.events.onHide, {
-        to: view
-      });
-      var $lastScope = scopeManager.getScope(lastViewName);
-      beacon($lastScope).on(EVENTS.DATA_CHANGE);
+      lastViewName = lastView.getViewName();
+      triggerOnHide(lastView, view);
     }
 
-    activeView = view;
+    setActive(view);
+
     activeView.show();
-    beacon(activeView).on(activeView.events.onShow, {
-      from: lastViewName
+    triggerOnShow(activeView, lastViewName);
+  }
+
+  function triggerOnHide(curView, toView) {
+    var viewName = curView.getViewName();
+    curView && curView.hide();
+    beacon(curView).on(curView.events.onHide, {
+      to: toView
     });
-    var $scope = scopeManager.getScope(view.getViewName());
+    var $scope = scopeManager.getScope(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
-  function hide(viewName){
-    var view = getViewByViewName(viewName);
-    view && view.hide();
+  function triggerOnShow(curView, lastViewName) {
+    var viewName = curView.getViewName();
+    beacon(curView).on(curView.events.onShow, {
+      from: lastViewName
+    });
+    var $scope = scopeManager.getScope(viewName);
+    beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
   function showLoading(){}
