@@ -2429,6 +2429,7 @@ Air.run(function(require){
       run      : run,
       Module   : Air.Module,
       TDK      : TDK,
+      bridge   : bridge,
       ready    : function(callback){
         callback = typeof callback === 'function' ? callback : function(){};
         var handle = function(res) {
