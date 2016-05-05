@@ -9,6 +9,7 @@ Air.run(function(require){
       run = require('B.controller.run'),
       serviceFactory = require('B.service.serviceFactory');
       TDK = require('B.TDK.TDK');
+      bridge = require('B.bridge');
   void function main(){
     var FRAMEWORK_NAME = "b";
     var api = {
@@ -23,6 +24,7 @@ Air.run(function(require){
        * @return void
        */
       init     : function(env){
+        env = env || {};
         memCache.set('env', env);
         Air.moduleURL(env.$moduleURL);
         viewManager.init(env);
@@ -30,15 +32,19 @@ Air.run(function(require){
       run      : run,
       Module   : Air.Module,
       TDK      : TDK,
-      domReady : function(){}
+      ready    : function(callback){
+        callback = typeof callback === 'function' ? callback : function(){};
+        var handle = function(res) {
+          res = res || { resultCode: 1 };
+          callback(res);
+        };
+
+        bridge.run('getdeviceinfo', {
+          success: handle,
+          failed: handle
+        });
+      }
     };
     window[FRAMEWORK_NAME] = api;
   }()
 });
-
-
-// 考虑到模板内嵌 view 存在的可能性，
-// 为避免冗余模板请求，故此 view 初始化在 domReady 之后进行。
-// Air.domReady(function(){
-//   b.views.init();
-// });

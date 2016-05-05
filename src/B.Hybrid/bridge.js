@@ -48,6 +48,9 @@ Air.Module("B.bridge", function() {
       destroyCallback(callbackName);
     }
 
+    // TODO 调试用console，后续删除
+    console.log(callbackName);
+
     return callbackName;
   }
 

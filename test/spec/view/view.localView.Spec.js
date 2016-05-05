@@ -5,23 +5,25 @@ describe('模板内嵌 view ', function () {
     // 修改url为主页
     history.replaceState(null, 'index', '/index/hello');
 
-    // 模板 HTML 元素选择器
-    var selector = {
-      activeView : 'viewport[main=true] view[active=true]'
-    }
-    var env = {
-      $templatePath : 'http://' + window.host + '/test/page_template/',
-      $resourceURL  : '/test/page_controller/',
-      $imageURL     : 'http://image.cjia.com/',
-      $moduleURL    : '/libs/module'
-    }
+    b.ready(function(){
+      // 模板 HTML 元素选择器
+      var selector = {
+        activeView : 'viewport[main=true] view[active=true]'
+      }
+      var env = {
+        $templatePath : 'http://' + window.host + '/test/page_template/',
+        $resourceURL  : '/test/page_controller/',
+        $imageURL     : 'http://image.cjia.com/',
+        $moduleURL    : '/libs/module'
+      }
 
-    b.init(env);
+      b.init(env);
 
-    // 模板 HTML元素引用
-    var activeView  = document.querySelector(selector.activeView)
-    var activeViewContent = activeView.querySelector('p')
-    expect(activeViewContent.innerText).toEqual('Hello');
+      // 模板 HTML元素引用
+      var activeView  = document.querySelector(selector.activeView)
+      var activeViewContent = activeView.querySelector('p')
+      expect(activeViewContent.innerText).toEqual('Hello');
+    });
 
   }); // view 初始化完成
 
