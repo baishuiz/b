@@ -1,7 +1,7 @@
 // location.pathname = '/index/hello';
 describe('模板内嵌 view ', function () {
 
-  it('初始化', function () {
+  it('初始化', function (done) {
     // 修改url为主页
     history.replaceState(null, 'index', '/index/hello');
 
@@ -23,6 +23,7 @@ describe('模板内嵌 view ', function () {
       var activeView  = document.querySelector(selector.activeView)
       var activeViewContent = activeView.querySelector('p')
       expect(activeViewContent.innerText).toEqual('Hello');
+      done();
     });
 
   }); // view 初始化完成

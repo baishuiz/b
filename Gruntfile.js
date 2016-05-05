@@ -72,7 +72,7 @@ module.exports = function(grunt){
                         './src/B/util/*.js',
                         './src/B.Hybrid/bridge.js',
                         './src/B/data/memCache.js',
-                        './src/B/B.Hybrid/storage.js',
+                        './src/B.Hybrid/data/storage.js',
                         './src/B/event/events.js',
                         './src/B/directive/event.js',
                         './src/B/directive/show.js',
@@ -86,7 +86,7 @@ module.exports = function(grunt){
                         './src/B/service/serviceFactory.js',
                         './src/B/router/router.js',
                         './src/B/view/View.js',
-                        './src/B/B.Hybrid/viewManager.js',
+                        './src/B.Hybrid/view/viewManager.js',
                         './src/B/controller/run.js',
                         './src/B/TDK/TDK.js',
 
