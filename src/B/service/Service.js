@@ -64,14 +64,16 @@ Air.Module('B.service.Service', function(require) {
           try {
             cachedData = JSON.parse(cachedDataText);
 
-            var fromCache = true;
-            setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
-              options.successCallBack && options.successCallBack(cachedData, fromCache);
-              beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-              beacon(scope).on(EVENTS.DATA_CHANGE);
-            }, 0);
+            if (cachedData) {
+              var fromCache = true;
+              setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
+                options.successCallBack && options.successCallBack(cachedData, fromCache);
+                beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
+                beacon(scope).on(EVENTS.DATA_CHANGE);
+              }, 0);
 
-            return;
+              return;
+            }
           } catch(e) {}
 
           noCacheCallback && noCacheCallback();
