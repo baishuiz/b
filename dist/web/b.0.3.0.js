@@ -2339,14 +2339,16 @@ Object.observe || (function(O, A, root, _undefined) {
     var paramObj = { viewName: viewName };
     var next = function(){
       var hasView = getViewByViewName(viewName);
-      if (hasView) {
-        saveLastView();
-        switchURL(viewName, options);
-        changeURLParams(viewName, options);
-        show(viewName);
-      } else if (!viewIsLoading(viewName)) {
-        addLoadingView(viewName);
-        loadView(viewName, options);
+      if (!viewIsLoading(viewName)) {
+        if (hasView) {
+          saveLastView();
+          switchURL(viewName, options);
+          changeURLParams(viewName, options);
+          show(viewName);
+        } else {
+          addLoadingView(viewName);
+          loadView(viewName, options);
+        }
       }
     }
 
@@ -2501,8 +2503,6 @@ Object.observe || (function(O, A, root, _undefined) {
       changeURLParams(viewName, options);
       appendView(viewName, view);
 
-      removeLoadingView(viewName);
-
       saveLastView();
       setActive(view);
 
@@ -2511,6 +2511,8 @@ Object.observe || (function(O, A, root, _undefined) {
         // 6
         switchURL(viewName, options);
         show(viewName);
+
+        removeLoadingView(viewName);
       });
     }
 
