@@ -2078,14 +2078,14 @@ Object.observe || (function(O, A, root, _undefined) {
     return matchedRouter;
   }
 
-  function getURLByRule(rule, params, query) {
+  function getURLByRule(rule, params, query, noOrigin) {
     var url = rule.replace(/:(\w+)/ig, function(param, key){
       return params[key] || "";
     });
     if (!location.origin) {
       location.origin = location.protocol + "//" + location.hostname + (location.port ? ':' + location.port: '');
     }
-    url = location.origin + url + query;
+    url = (noOrigin ? '' : location.origin) + url + query;
     return url;
   }
 
@@ -2095,7 +2095,7 @@ Object.observe || (function(O, A, root, _undefined) {
     var query  = options.query || "";
     var router = routers[viewName];
     var rule = router && router.rule || "";
-    var url = getURLByRule(rule, params, query);
+    var url = getURLByRule(rule, params, query, options.noOrigin);
     return url;
   }
 

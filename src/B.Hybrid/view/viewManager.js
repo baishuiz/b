@@ -20,7 +20,7 @@ Air.Module("B.view.viewManager", function(require){
   function init(env){
     scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = location.pathname;
+    var URLPath = location.hash.replace(/^#/, '') || '/';
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
@@ -82,7 +82,8 @@ Air.Module("B.view.viewManager", function(require){
 
   function goTo (viewName, options){
     var fnName = 'beforeGoTo';
-    var paramObj = { viewName: viewName };
+    var url = getURL(viewName, options);
+    var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
     var next = function(){
       var hasView = getViewByViewName(viewName);
       if (hasView) {
@@ -126,9 +127,11 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function getURL (viewName, options) {
+    options = options || {}
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
-      query: options.query
+      query: options.query,
+      noOrigin: true
     });
 
     return url;
@@ -311,23 +314,28 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function goToHybrid(viewName, options) {
-    var activeViewName = activeView.getViewName();
-
-    if (activeViewName === viewName) {
+    if (options.replace) {
       goTo(viewName, options);
     } else {
-      triggerOnHide(activeView);
-
+      var fnName = 'beforeGoTo';
       var url = getURL(viewName, options);
-      bridge.run('gotopage', {
-        vc: '',// TODO 传入固定vc，vc名待定
-        url: url
-      });
+      var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
+      var next = function(paramObj){
+        activeView && triggerOnHide(activeView);
+
+        bridge.run('gotopage', {
+          vc: '',// TODO 传入固定vc，vc名待定
+          url: paramObj.url
+        });
+      }
+
+      // goTo 方法对外支持中间件，中间件参数为 paramObj
+      middleware.run(fnName, paramObj, next);
     }
   }
 
   function back () {
-    triggerOnHide(activeView);
+    activeView && triggerOnHide(activeView);
     bridge.run('goback');
   }
 

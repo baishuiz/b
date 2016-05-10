@@ -883,6 +883,10 @@ Object.observe || (function(O, A, root, _undefined) {
     param.success = registerCallback(param.success);
     param.failed = registerCallback(param.failed);
 
+    // TODO 调试用console，后续删除
+    console.log(fnName, param.success);
+    console.log(fnName, param.failed);
+
     url += encodeURIComponent(JSON.stringify(param));
 
     return url;
@@ -902,9 +906,6 @@ Object.observe || (function(O, A, root, _undefined) {
       }
       destroyCallback(callbackName);
     }
-
-    // TODO 调试用console，后续删除
-    console.log(callbackName);
 
     return callbackName;
   }
@@ -2219,14 +2220,14 @@ Object.observe || (function(O, A, root, _undefined) {
     return matchedRouter;
   }
 
-  function getURLByRule(rule, params, query) {
+  function getURLByRule(rule, params, query, noOrigin) {
     var url = rule.replace(/:(\w+)/ig, function(param, key){
       return params[key] || "";
     });
     if (!location.origin) {
       location.origin = location.protocol + "//" + location.hostname + (location.port ? ':' + location.port: '');
     }
-    url = location.origin + url + query;
+    url = (noOrigin ? '' : location.origin) + url + query;
     return url;
   }
 
@@ -2236,7 +2237,7 @@ Object.observe || (function(O, A, root, _undefined) {
     var query  = options.query || "";
     var router = routers[viewName];
     var rule = router && router.rule || "";
-    var url = getURLByRule(rule, params, query);
+    var url = getURLByRule(rule, params, query, options.noOrigin);
     return url;
   }
 
@@ -2416,7 +2417,7 @@ Object.observe || (function(O, A, root, _undefined) {
   function init(env){
     scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = location.pathname;
+    var URLPath = location.hash.replace(/^#/, '') || '/';
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
@@ -2478,7 +2479,8 @@ Object.observe || (function(O, A, root, _undefined) {
 
   function goTo (viewName, options){
     var fnName = 'beforeGoTo';
-    var paramObj = { viewName: viewName };
+    var url = getURL(viewName, options);
+    var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
     var next = function(){
       var hasView = getViewByViewName(viewName);
       if (hasView) {
@@ -2522,9 +2524,11 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function getURL (viewName, options) {
+    options = options || {}
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
-      query: options.query
+      query: options.query,
+      noOrigin: true
     });
 
     return url;
@@ -2707,23 +2711,28 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function goToHybrid(viewName, options) {
-    var activeViewName = activeView.getViewName();
-
-    if (activeViewName === viewName) {
+    if (options.replace) {
       goTo(viewName, options);
     } else {
-      triggerOnHide(activeView);
-
+      var fnName = 'beforeGoTo';
       var url = getURL(viewName, options);
-      bridge.run('gotopage', {
-        vc: '',// TODO 传入固定vc，vc名待定
-        url: url
-      });
+      var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
+      var next = function(paramObj){
+        activeView && triggerOnHide(activeView);
+
+        bridge.run('gotopage', {
+          vc: '',// TODO 传入固定vc，vc名待定
+          url: paramObj.url
+        });
+      }
+
+      // goTo 方法对外支持中间件，中间件参数为 paramObj
+      middleware.run(fnName, paramObj, next);
     }
   }
 
   function back () {
-    triggerOnHide(activeView);
+    activeView && triggerOnHide(activeView);
     bridge.run('goback');
   }
 

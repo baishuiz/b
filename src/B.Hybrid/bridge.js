@@ -28,6 +28,10 @@ Air.Module("B.bridge", function() {
     param.success = registerCallback(param.success);
     param.failed = registerCallback(param.failed);
 
+    // TODO 调试用console，后续删除
+    console.log(fnName, param.success);
+    console.log(fnName, param.failed);
+
     url += encodeURIComponent(JSON.stringify(param));
 
     return url;
@@ -47,9 +51,6 @@ Air.Module("B.bridge", function() {
       }
       destroyCallback(callbackName);
     }
-
-    // TODO 调试用console，后续删除
-    console.log(callbackName);
 
     return callbackName;
   }
