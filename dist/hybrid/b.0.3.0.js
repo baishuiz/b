@@ -2723,7 +2723,7 @@ Object.observe || (function(O, A, root, _undefined) {
         activeView && triggerOnHide(activeView);
 
         bridge.run('gotopage', {
-          vc: '',// TODO 传入固定vc，vc名待定
+          vc: paramObj.vc,
           url: paramObj.url
         });
       }
