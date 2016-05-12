@@ -288,9 +288,9 @@ Air.Module("B.view.viewManager", function(require){
     triggerOnShow(activeView, lastViewName);
   }
 
-  function triggerOnHide(curView, toView) {
+  function triggerOnHide(curView, toView, noHide) {
     var viewName = curView.getViewName();
-    curView && curView.hide();
+    !noHide && curView && curView.hide();
     beacon(curView).on(curView.events.onHide, {
       to: toView
     });
@@ -324,7 +324,7 @@ Air.Module("B.view.viewManager", function(require){
       var url = getURL(viewName, options);
       var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
       var next = function(paramObj){
-        activeView && triggerOnHide(activeView);
+        activeView && triggerOnHide(activeView, null ,true);
 
         bridge.run('gotopage', {
           vc: paramObj.vc,
@@ -338,7 +338,7 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function back () {
-    activeView && triggerOnHide(activeView);
+    activeView && triggerOnHide(activeView, null ,true);
     bridge.run('goback');
   }
 
