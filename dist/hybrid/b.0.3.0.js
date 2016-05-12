@@ -2713,6 +2713,7 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function goToHybrid(viewName, options) {
+    options = options || {};
     if (options.replace) {
       goTo(viewName, options);
     } else {

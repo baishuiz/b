@@ -316,6 +316,7 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function goToHybrid(viewName, options) {
+    options = options || {};
     if (options.replace) {
       goTo(viewName, options);
     } else {
