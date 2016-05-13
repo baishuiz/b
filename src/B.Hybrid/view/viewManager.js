@@ -20,7 +20,7 @@ Air.Module("B.view.viewManager", function(require){
   function init(env){
     scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = location.hash.replace(/^#/, '') || '/';
+    var URLPath = bridge.isHybrid ? (location.hash.replace(/^#/, '') || '/') : location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {

@@ -940,8 +940,12 @@ Object.observe || (function(O, A, root, _undefined) {
     return generater();
   }
 
+  var isHybrid = /^file:/.test(location.protocol);
+
   return {
-    run: run
+    run: run,
+    isHybrid: isHybrid,
+    isInApp: true
   };
 });
 ;Air.Module('B.data.memCache', function(){
@@ -2417,7 +2421,7 @@ Object.observe || (function(O, A, root, _undefined) {
   function init(env){
     scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = location.hash.replace(/^#/, '') || '/';
+    var URLPath = bridge.isHybrid ? (location.hash.replace(/^#/, '') || '/') : location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {

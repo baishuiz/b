@@ -2686,6 +2686,11 @@ Air.run(function(require){
       run      : run,
       Module   : Air.Module,
       TDK      : TDK,
+      bridge   : {
+        run: function(){},
+        isHybrid: false,
+        isInApp: false
+      },
       ready    : function(callback){
         callback = typeof callback === 'function' ? callback : function(){};
         Air.domReady(function(){

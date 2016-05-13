@@ -85,7 +85,11 @@ Air.Module("B.bridge", function() {
     return generater();
   }
 
+  var isHybrid = /^file:/.test(location.protocol);
+
   return {
-    run: run
+    run: run,
+    isHybrid: isHybrid,
+    isInApp: true
   };
 });
