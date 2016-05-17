@@ -867,7 +867,18 @@ Object.observe || (function(O, A, root, _undefined) {
     }
 
     var url = generateUrl(fnName, param);
-    location.href = url;
+
+    var iframe = document.createElement('iframe');
+    var cont = document.body || document.documentElement;
+
+    iframe.style.display = 'none';
+    iframe.setAttribute('src', url);
+    cont.appendChild(iframe);
+
+    setTimeout(function(){
+      iframe.parentNode.removeChild(iframe);
+      iframe = null;
+    }, 200);
   }
 
   /**
