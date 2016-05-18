@@ -2495,7 +2495,7 @@ Object.observe || (function(O, A, root, _undefined) {
   function goTo (viewName, options){
     var fnName = 'beforeGoTo';
     var url = getURL(viewName, options);
-    var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
+    var paramObj = { viewName: viewName, options: options, url: url };
     var next = function(){
       var hasView = getViewByViewName(viewName);
       if (!viewIsLoading(viewName)) {
@@ -2734,7 +2734,7 @@ Object.observe || (function(O, A, root, _undefined) {
     } else {
       var fnName = 'beforeGoTo';
       var url = getURL(viewName, options);
-      var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
+      var paramObj = { viewName: viewName, options: options, url: url };
       var next = function(paramObj){
         activeView && triggerOnHide(activeView, null ,true);
 

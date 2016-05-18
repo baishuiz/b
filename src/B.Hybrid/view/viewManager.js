@@ -83,7 +83,7 @@ Air.Module("B.view.viewManager", function(require){
   function goTo (viewName, options){
     var fnName = 'beforeGoTo';
     var url = getURL(viewName, options);
-    var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
+    var paramObj = { viewName: viewName, options: options, url: url };
     var next = function(){
       var hasView = getViewByViewName(viewName);
       if (!viewIsLoading(viewName)) {
@@ -322,7 +322,7 @@ Air.Module("B.view.viewManager", function(require){
     } else {
       var fnName = 'beforeGoTo';
       var url = getURL(viewName, options);
-      var paramObj = { viewName: viewName, options: options, url: url, isInApp: true };
+      var paramObj = { viewName: viewName, options: options, url: url };
       var next = function(paramObj){
         activeView && triggerOnHide(activeView, null ,true);
 
