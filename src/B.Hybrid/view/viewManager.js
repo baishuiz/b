@@ -206,10 +206,15 @@ Air.Module("B.view.viewManager", function(require){
     }
   }
 
+  function hideNativeLoading() {
+    bridge.run('hideloading');
+  }
+
 
   function throw404(){
     var fnName = 'viewNotFound';
     middleware.run(fnName);
+    hideNativeLoading();
   };
 
   function getViewByViewName(viewName){
@@ -258,6 +263,7 @@ Air.Module("B.view.viewManager", function(require){
         show(viewName);
 
         removeLoadingView(viewName);
+        hideNativeLoading();
       });
     }
 

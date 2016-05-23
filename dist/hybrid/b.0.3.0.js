@@ -2618,10 +2618,15 @@ Object.observe || (function(O, A, root, _undefined) {
     }
   }
 
+  function hideNativeLoading() {
+    bridge.run('hideloading');
+  }
+
 
   function throw404(){
     var fnName = 'viewNotFound';
     middleware.run(fnName);
+    hideNativeLoading();
   };
 
   function getViewByViewName(viewName){
@@ -2670,6 +2675,7 @@ Object.observe || (function(O, A, root, _undefined) {
         show(viewName);
 
         removeLoadingView(viewName);
+        hideNativeLoading();
       });
     }
 
