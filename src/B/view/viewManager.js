@@ -84,14 +84,16 @@ Air.Module("B.view.viewManager", function(require){
     var paramObj = { viewName: viewName };
     var next = function(){
       var hasView = getViewByViewName(viewName);
-      if (hasView) {
-        saveLastView();
-        switchURL(viewName, options);
-        changeURLParams(viewName, options);
-        show(viewName);
-      } else if (!viewIsLoading(viewName)) {
-        addLoadingView(viewName);
-        loadView(viewName, options);
+      if (!viewIsLoading(viewName)) {
+        if (hasView) {
+          saveLastView();
+          switchURL(viewName, options);
+          changeURLParams(viewName, options);
+          show(viewName);
+        } else {
+          addLoadingView(viewName);
+          loadView(viewName, options);
+        }
       }
     }
 
@@ -100,18 +102,18 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function viewIsLoading(viewName) {
-    return loadingViewList.indexOf(viewName) === -1 ? false : true;
+    return beacon.utility.arrayIndexOf(loadingViewList, viewName) === -1 ? false : true;
   }
 
   function addLoadingView(viewName) {
-    var idx = loadingViewList.indexOf(viewName);
+    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
     if (idx === -1) {
       loadingViewList.push(viewName);
     }
   }
 
   function removeLoadingView(viewName) {
-    var idx = loadingViewList.indexOf(viewName);
+    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
     if (idx !== -1) {
       loadingViewList.splice(idx, 1);
     }
@@ -241,8 +243,6 @@ Air.Module("B.view.viewManager", function(require){
       changeURLParams(viewName, options);
       appendView(viewName, view);
 
-      removeLoadingView(viewName);
-
       saveLastView();
       setActive(view);
 
@@ -251,6 +251,8 @@ Air.Module("B.view.viewManager", function(require){
         // 6
         switchURL(viewName, options);
         show(viewName);
+
+        removeLoadingView(viewName);
       });
     }
 
