@@ -62,7 +62,7 @@ Air.Module('B.service.Service', function(require) {
       var tryReturnCacheData = function(noCacheCallback) {
         storage.get(cacheKey, function(cachedDataText) {
           try {
-            cachedData = JSON.parse(cachedDataText);
+            var cachedData = JSON.parse(cachedDataText);
 
             if (cachedData) {
               var fromCache = true;

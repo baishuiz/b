@@ -1729,7 +1729,7 @@ Object.observe || (function(O, A, root, _undefined) {
       var tryReturnCacheData = function(noCacheCallback) {
         storage.get(cacheKey, function(cachedDataText) {
           try {
-            cachedData = JSON.parse(cachedDataText);
+            var cachedData = JSON.parse(cachedDataText);
 
             if (cachedData) {
               var fromCache = true;
@@ -2357,18 +2357,18 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function viewIsLoading(viewName) {
-    return loadingViewList.indexOf(viewName) === -1 ? false : true;
+    return beacon.utility.arrayIndexOf(loadingViewList, viewName) === -1 ? false : true;
   }
 
   function addLoadingView(viewName) {
-    var idx = loadingViewList.indexOf(viewName);
+    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
     if (idx === -1) {
       loadingViewList.push(viewName);
     }
   }
 
   function removeLoadingView(viewName) {
-    var idx = loadingViewList.indexOf(viewName);
+    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
     if (idx !== -1) {
       loadingViewList.splice(idx, 1);
     }
