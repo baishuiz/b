@@ -1691,11 +1691,13 @@ Object.observe || (function(O, A, root, _undefined) {
             dataPath = trim(dataPath);
             // var data = util.getData(dataPath, $scope);
             var expression = getExpression(dataPath, init);
-            init = false;
             var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
             data = util.isEmpty(data) ? '' : data;
             text = text.replace(markup, data);
           };
+
+          init = false;
+
           if(node.nodeValue != text){
             var ownerElement = node.ownerElement;
             if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
