@@ -1175,12 +1175,14 @@ Object.observe || (function(O, A, root, _undefined) {
     targetT && beacon.utility.isType(targetT, 'Object') && Object.observe(targetT, function(dataChanges){
       // TODO 重构
       for(var i = 0; i < dataChanges.length; i++){
-        if(dataChanges[i].type == 'add'){
+        var type = dataChanges[i].type;
+        var canCallback = beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0
+        if(type == 'add' || (type == 'update' && canCallback)){
           var target = dataChanges[i];
           var attr = target.object[target.name];
           listenDataChange (attr, dataPath, callback);
         }
-        beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+        canCallback && callback()
       }
     });
   }
@@ -1359,12 +1361,14 @@ Object.observe || (function(O, A, root, _undefined) {
      (isObject || isArray) && Object.observe(targetT, function(dataChanges){
       // var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
-        if(dataChanges[i].type == 'add'){
+        var type = dataChanges[i].type;
+        var isReplaced = type === 'update' && dataPath.match(new RegExp('\.' + dataChanges[i].name + '$'));
+        if(type == 'add' || isReplaced){
           var target = dataChanges[i];
           var attr = target.object[target.name];
           listenDataChange(attr, dataPath, callback);
         }
-        dataChanges[i].name === 'length' && callback()
+        (dataChanges[i].name === 'length' || isReplaced) && callback()
       }
     });
   }
@@ -1559,7 +1563,7 @@ Object.observe || (function(O, A, root, _undefined) {
       })(node, node.nodeValue);
 
       function getExpression(dataPath, init){
-        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
+        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
            token = trim(token);
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token
