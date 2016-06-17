@@ -144,20 +144,19 @@ Air.Module('B.service.Service', function(require) {
         }
 
         if (parseError) {
-          options.errorCallBack && options.errorCallBack(ERROR_CODE.parse, responseText);
-          beacon(self).on(SERVICEEVENTS.ERROR, {
-            error : ERROR_CODE.parse,
-            response : responseText
+          callAfterQueryMiddleware({xhr: http.xhr, data: responseData, requestParam: requestOptions, errorCode: ERROR_CODE.parse}, function(isError) {
+            options.errorCallBack && options.errorCallBack(ERROR_CODE.parse, responseText);
+            beacon(self).on(SERVICEEVENTS.ERROR, {
+              error : ERROR_CODE.parse,
+              response : responseText
+            });
+            beacon(scope).on(EVENTS.DATA_CHANGE);
+            if (!isQueue) {
+              var isError = true;
+              runQueue(isError, xhrOrResponseData);
+            }
+            tryClearQueue();
           });
-          beacon(scope).on(EVENTS.DATA_CHANGE);
-          if (!isQueue) {
-            var isError = true;
-            runQueue(isError, xhrOrResponseData);
-          }
-
-          tryClearQueue();
-
-          return;
         } else {
           callAfterQueryMiddleware({xhr: http.xhr, data: responseData, requestParam: requestOptions}, function(isError) {
             if (isError) {
