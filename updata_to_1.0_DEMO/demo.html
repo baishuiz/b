@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>test</title>
+</head>
+<body>
+  <viewport>
+    <view name="view1" id="view1">
+      <div>txt</div>
+      <div>{{txt}}</div>
+      <ul>
+        <li b-repeat="book in books">
+          {{book.name}}
+          <span b-repeat="type in book.types">
+        </li>
+      </ul>
+      <view name="view2" id="view2">
+        <div b-repeat="book in books">{{book.name}}</div>
+      </view>
+    </view>
+
+  </viewport>
+  <script type="text/javascript">
+
+  ;(function(){
+
+  /** DEMO 调用开始 **/
+      // 定义 rootScope
+      var rootScope = {};
+
+      // 初始化 scope 管理器
+      var scopeManager = New scopeManager(rootScope);
+
+      // 获取模板
+      var template = document.getElementById('view1');
+
+      // 解析模板
+      parseTemplate(template);
+  /** DEMO 调用结束 **/
+
+
+      var nodeType = {
+        HTMLNode : 1,
+        TEXTNode : 3,
+        AttributeNode : 2
+      }
+
+      /**
+       *作用：节点管理器类
+       *参数：根 scope数据对象
+       *返回：节点管理器 API
+       *TODO: 考虑改为单例模式
+      **/
+      function ScopeManager(rootScope) {
+        var scopeTree = []; // scope 栈
+        var structure = function(){
+          return {
+            scope : null,
+            mScope : null,
+            pn :null
+          }
+        }
+
+        var getScope = function(index){
+          return index ? scopeTree[index] : null;
+        }
+
+        var crateMScope = function(scope){
+          var mscope = {};
+          beacon.utility.merge(mscope, scope);
+          return new Scope(mscope);
+        }
+
+
+        /**
+         *作用：更新根scope
+         *参数：scope 新数据对象
+         *返回：undefind
+        **/
+        var setRootScope = function(scope){
+          var rootScope = scopeTree[0] || structure();
+          beacon.utility.merge(rootScope.scope, scope);
+          scopeTree[0] = rootScope;
+        }
+
+        /**
+         *作用：生成新的scope结构，该结构内含 scope 及 对应的中间scope（mscope）
+         *参数：父级scope结构的索引值
+         *返回：生成的scope结构的索引值
+        **/
+        var addScope = function(parentIndex){
+           var parentScope = getScope(parentIndex);
+           var newScope = structure();
+           var scopeIndex = scopeTree.push(newScope) - 1;
+           newScope.scope = new Scope(parentScope);
+           newScope.mScope = crateMScope(parentScope);
+           newScope.pn    = parentIndex;
+           return scopeIndex;
+        }
+
+        // 初始化根 scope
+        setRootScope(rootScope);
+
+        var api = {
+          addScope : addScope
+        };
+
+        return api;
+      }
+
+      function Scope(parentScope){
+        function _Scope(){}
+        _Scope.prototype = parentScope || {};
+        return new _Scope();
+      }
+
+      function isHTML(node){
+        return (node== Type);
+      }
+
+      function isView(node){
+        var isHTMLElement = isHTML(node);
+        return isHTMLElement && (node.nodeName.toUpperCase() == 'VIEW');
+      }
+
+      function isRepeat(node){
+        var isHTMLElement = isHTML(node);
+        return isHTMLElement && (node.hasAttribute('b-repeat'));
+      }
+
+      // DOM 树遍历回溯栈
+      var backtrackingPoints = [];
+
+      /**
+       *作用：获取模板标签
+       *参数: <content> 文本节点值/属性节点值
+       *返回：array  模板标签列表
+      **/
+      function getDataPath(content){
+        return content.nodeValue.match(/{{.+?}}/g) || [];
+      }
+
+      function bindArrayData(activeObj, repeater, currentScopeIndex){
+        for (var i=0; i< activeObj.length; i++){
+          Object.defineProperty(activeObj, i, createRepeatDataDescriptor(repeater, currentScopeIndex))
+        }
+      }
+
+      /**
+       *作用：监听 repeat 元素数据源变动
+       *参数: <repeater> repeat ui 控制器
+       *参数: <dataPath> 数据源路径
+       *参数: <currentScopeIndex> 当前作用域索引值
+       *返回：undefind
+      **/
+      function bindRepeatData(repeater, dataPath, currentScopeIndex){
+          var scope = scopeManager.getScope(currentScopeIndex);
+          var activePath = '';
+          var pathNodes = dataPath.split('.') || [];
+          for(var i=0; i<pathNodes.length; i++){
+            var nextPathNode = pathNodes.shift();
+
+            var activeObj = activePath
+                              ? beacon.utility.NS(activePath, scope)
+                              : scope;
+            Object.defineProperty(activeObj, nextPathNode, createRepeatDataDescriptor(repeater, currentScopeIndex));
+            activePath = nextPathNode
+                           ? (activePath + '.' + nextPathNode)
+                           : nextPathNode;
+          }
+      }
+
+      /**
+       *作用：监听文本节点或属性节点的数据源变动
+       *参数: <node> 文本节点|属性节点
+       *参数: <dataPath> 数据源路径
+       *参数: <currentScopeIndex> 当前作用域索引值
+       *返回：undefind
+      **/
+      function bindObjectData(node, dataPath, currentScopeIndex){
+          var scope = scopeManager.getScope(currentScopeIndex);
+          var activePath = '';
+          var pathNodes = dataPath.split('.') || [];
+          for(var i=0; i<pathNodes.length; i++){
+            var nextPathNode = pathNodes.shift();
+
+            var activeObj = activePath
+                              ? beacon.utility.NS(activePath, scope)
+                              : scope;
+            nextPathNode &&
+            Object.defineProperty(activeObj, nextPathNode, createDescriptor(node));
+
+            activePath = nextPathNode
+                           ? (activePath + '.' + nextPathNode)
+                           : nextPathNode;
+          }
+      }
+
+      function parseTEXT(node, currentScopeIndex){
+        var dataPaths = getDataPath(node.nodeValue);
+        var scope = scopeManager.getScope(currentScopeIndex);
+        for(var i=0; i<dataPaths.length; i++){
+            var activePath = dataPaths[i];
+            bindObjectData(node, activePath, currentScopeIndex);
+        }
+      }
+
+
+      /**
+       *作用：遍历属性节点
+       *参数: <node> HTML引用.
+       *参数: <currentScopeIndex> 当前作用域索引值.
+       *返回：undefind
+      **/
+      function parseHTML(node, currentScopeIndex){
+        var attributes = node.attributes; // TODO: 准换为普通数组
+        for(var i=0; i<attributes.length; i++) {
+          　var activeAttribute = attributes[i];
+            parseTEXT(node, currentScopeIndex);
+        }
+      }
+
+
+      /**
+       *作用：模板解析
+       *参数: <node> 模板引用.
+       *参数: [currentScopeIndex] 模板当前所处作用域索引值.
+       *返回：undefind
+      **/
+      function parseTemplate(node, currentScopeIndex){
+
+        if(!node){return}
+        currentScopeIndex = currentScopeIndex || 0;
+
+        if(isView(node) {
+          // view scope 压栈
+          currentScopeIndex = scopeManager.addScope(currentScopeIndex);
+        } else if(isRepeat(node)){ // view 不允许进行 repeat
+          node = createRepeatNodes(template, currentScopeIndex);
+        }
+
+        // 回溯点压栈
+        if(node.nextSibling){backtrackingPoints.push(node)};
+
+        switch (node.noteType) {
+          case nodeType.HTMLNode:
+            node = parseHTML(node, currentScopeIndex);
+            break;
+          case nodeType.TEXTNode:
+          case nodeType.AttributeNode:
+            parseTEXT(node, currentScopeIndex);
+            break;
+          default:
+        }
+
+        var nextNode = node.firstChild || node.nextSibling || backtrackingPoints.pop().nextSibling;
+
+        // 退出当前 scope
+        var targetScopeIndex = isView(nextNode) ? scopeManager.getScope(currentScopeIndex).pn  : currentScopeIndex
+        return parseTemplate(nextNode, currentScopeIndex);
+      }
+
+
+      /**
+       *作用：基于 repeat 模板生成对应 UI元素
+       *参数: <template> repeat模板引用.
+       *参数: <scope> 当前 repeat 元素所处的作用域.
+       *返回：使用 repeat 模板生成的第一个元素
+      **/
+      function createRepeatNodes(template, currentScopeIndex){
+        var repeater = new Repeater(template, currentScopeIndex);
+        var newFirstNode = repeater.updateUI();
+        return newFirstNode;
+      }
+
+      /**
+       *作用：创建 repeat 数据源的描述符
+       *参数: <repeater> 模板 UI 控制器.
+       *参数: <scope> 模板当前所处作用域.
+       *返回：repeat 数据源的描述符
+      **/
+      function createRepeatDataDescriptor(repeater, currentScopeIndex){
+        var oldLength = 0;
+        var value;
+        var descriptor = {
+          get : function(){
+            setTimeout(function(){
+              if(oldLength !== value.length){
+                var node = repeater.updateUI();
+                node &&　parseTemplate(node, scope);
+              }
+              oldLength = value.length;
+            },0);
+            return this.value;
+          },
+
+          set : function(value){
+            var hasChanged = this.value !== value;
+            var isArray = isArray(value); //伪代码
+            var isObject = isObject(value); //伪代码
+            // var isPathNode = isArray(value) || isObject(value); //伪代码
+            if(hasChanged && isObject){
+              beacon.utility.merge(this.value, value);
+            } else if(hasChanged && isArray) {
+                beacon.utility.merge(this.value, value);
+                var node = repeater.updateUI();
+                node &&　parseTemplate(node, scope);
+            }
+          }
+        }
+        return descriptor;
+      }
+
+      /**
+       *作用：创建文本节点或属性节点数据源的描述符
+       *参数: <textNode> 文本节点或属性节点.
+       *返回：文本节点或属性节点数据源的描述符
+      **/
+      function createDescriptor(textNode){
+        var descriptor = {
+          get : function(){
+            return this.value;
+          },
+
+          set : function(value){
+            var hasChanged = this.value !== value;
+            var isPathNode = isArray(value) || isObject(value); //伪代码
+            if(hasChanged && isPathNode){
+                beacon.utility.merge(this.value, value);
+            } else {
+                this.value = value;
+                textNode.nodeValue = value; // 更新HTML
+            }
+          }
+        }
+        return descriptor;
+      }
+
+      /**
+       *作用：repeat模板控制器类
+       *参数: <template> repeat模板引用.
+       *参数: <scope> 当前 repeat 元素所处的作用域.
+       *返回：Repeater 实例
+      **/
+      function Repeater(template, currentScopeIndex){
+        var scope = scopeManager.getScope(currentScopeIndex);
+        var tag = template // 伪代码 ，插入注释节点代替
+        var uiElementCount = 0;
+        var expressionREG = /b-repeat\s*=\s*(['"])(\S+)\s+in\s+(\S+)\1/;
+        var expression = template.match(expressionREG) || [];
+        var dataPath = expression[3];
+        var dataPrefix = expression[2];
+        var datePrefixREG = new RegExp('([\\s{])(' + dataPath + '.' + dataPrefix +')(\\.?)', g);
+        var dataNestedPrefixREG = new RegExp('(b-repeat\\s*=\\s*)([\'\"])(\\S+\\s+in\\s+)(('+ dataPrefix +')(\\.))(\\S+?)\\2', g);
+        var repeatIndexREG = new RegExp('\\{\\{book\\.\\$index\\}\\}');
+
+
+
+        var getCount = function(){
+          var data = beacon.utility.NS(dataPath, scope);
+          var count = data.length || 0;
+          return count;
+        }
+
+        var getDataPrefix = function(){
+          return dataPrefix;
+        }
+
+        var addUI = function(num){
+          var templateStr = template.outterHTML;
+          var elementContent = '';
+          var elementContainer = document.createDocumentFragment();
+          var newFirstNode = null;
+          for(var i = 0; i < num; i++){
+            var uiIndex = uiElementCount + i;
+            elementContent = templateStr.replace(datePrefixREG, '$1$2[' + uiIndex + ']$3')
+                                         .replace(dataNestedPrefixREG, '$1$2$3$5[' + uiIndex + ']$6$7$2')
+                                         .replace(repeatIndexREG, uiIndex);
+            var docContainer = document.createElement('div');
+            docContainer.innerHMTL = elementContent;
+            var targetNode = docContainer.firstChild;
+            targetNode.$index = uiIndex;
+            elementContainer.appendChild(targetNode);
+            newFirstNode = (i===0) && targetNode;
+          }
+
+          template.parentNode.insertBefor(elementContainer, template);
+          elementContainer = null;
+          docContainer = null;
+          uiElementCount += num;
+          return newFirstNode;
+        }
+
+        var removeUI = function(num){
+          for(var i=0; i<num; i++){
+            tag.parent.removeChild(tag.parent.lastChild);
+          }
+          uiElementCount -= num;
+        }
+
+        var updateUI = function(){
+          var repeatCount = getCount();
+          var num = repeatCount - uiElementCount;
+          var isRemove = num < 0;
+          var isAdd = num > 0;
+          isRemove && removeUI(num);
+          var newFirstNode = isAdd && addUI(num);
+          return newFirstNode;
+        }
+
+        var api = {
+          updateUI : updateUI,
+          getDataPrefix : getDataPrefix
+        }
+
+        bindRepeatData(api, dataPath, currentScopeIndex);
+        return api;
+
+      }
+
+}());
+
+  </script>
+</body>
+</html>
