@@ -76,7 +76,7 @@ Air.Module('B.directive.repeat', function(require){
         var data = dataAry[i];
         var node = template.cloneNode(true);
         var scope = new Scope(parentScope);
-        scope.$index = node.$index = i;
+        scope.$index = i;
         scope[itemName] = data;
 
         node.removeAttribute(attrName);
