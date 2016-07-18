@@ -6,6 +6,7 @@ Air.Module("B.view.viewManager", function(require){
   var scopeManager = require('B.scope.scopeManager');
   var EVENTS =  require('B.event.events');
   var middleware = require('B.util.middleware');
+  var bridge = require('B.bridge');
   var viewList = [],
       viewportList = [],
       loadingViewList = [], // 记载中的view
@@ -19,7 +20,7 @@ Air.Module("B.view.viewManager", function(require){
   function init(env){
     scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = location.pathname;
+    var URLPath = bridge.isHybrid ? (location.hash.replace(/^#/, '') || '/') : location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
@@ -81,7 +82,8 @@ Air.Module("B.view.viewManager", function(require){
 
   function goTo (viewName, options){
     var fnName = 'beforeGoTo';
-    var paramObj = { viewName: viewName };
+    var url = getURL(viewName, options);
+    var paramObj = { viewName: viewName, options: options, url: url };
     var next = function(){
       var hasView = getViewByViewName(viewName);
       if (!viewIsLoading(viewName)) {
@@ -102,18 +104,18 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function viewIsLoading(viewName) {
-    return beacon.utility.arrayIndexOf(loadingViewList, viewName) === -1 ? false : true;
+    return loadingViewList.indexOf(viewName) === -1 ? false : true;
   }
 
   function addLoadingView(viewName) {
-    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
+    var idx = loadingViewList.indexOf(viewName);
     if (idx === -1) {
       loadingViewList.push(viewName);
     }
   }
 
   function removeLoadingView(viewName) {
-    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
+    var idx = loadingViewList.indexOf(viewName);
     if (idx !== -1) {
       loadingViewList.splice(idx, 1);
     }
@@ -127,9 +129,11 @@ Air.Module("B.view.viewManager", function(require){
   }
 
   function getURL (viewName, options) {
+    options = options || {}
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
-      query: options.query
+      query: options.query,
+      noOrigin: true
     });
 
     return url;
@@ -192,10 +196,6 @@ Air.Module("B.view.viewManager", function(require){
     });
   }
 
-  function back () {
-    window.history.back();
-  }
-
   function show (viewName){
     var view = getViewByViewName(viewName);
     if (view) {
@@ -206,10 +206,15 @@ Air.Module("B.view.viewManager", function(require){
     }
   }
 
+  function hideNativeLoading() {
+    bridge.run('hideloading');
+  }
+
 
   function throw404(){
     var fnName = 'viewNotFound';
     middleware.run(fnName);
+    hideNativeLoading();
   };
 
   function getViewByViewName(viewName){
@@ -258,6 +263,7 @@ Air.Module("B.view.viewManager", function(require){
         show(viewName);
 
         removeLoadingView(viewName);
+        hideNativeLoading();
       });
     }
 
@@ -288,9 +294,9 @@ Air.Module("B.view.viewManager", function(require){
     triggerOnShow(activeView, lastViewName);
   }
 
-  function triggerOnHide(curView, toView) {
+  function triggerOnHide(curView, toView, noHide) {
     var viewName = curView.getViewName();
-    curView && curView.hide();
+    !noHide && curView && curView.hide();
     beacon(curView).on(curView.events.onHide, {
       to: toView
     });
@@ -315,9 +321,36 @@ Air.Module("B.view.viewManager", function(require){
     return activeView;
   }
 
+  function goToHybrid(viewName, options) {
+    options = options || {};
+    if (options.replace) {
+      goTo(viewName, options);
+    } else {
+      var fnName = 'beforeGoTo';
+      var url = getURL(viewName, options);
+      var paramObj = { viewName: viewName, options: options, url: url };
+      var next = function(paramObj){
+        activeView && triggerOnHide(activeView, null ,true);
+
+        bridge.run('gotopage', {
+          vc: paramObj.vc,
+          url: paramObj.url
+        });
+      }
+
+      // goTo 方法对外支持中间件，中间件参数为 paramObj
+      middleware.run(fnName, paramObj, next);
+    }
+  }
+
+  function back () {
+    activeView && triggerOnHide(activeView, null ,true);
+    bridge.run('goback');
+  }
+
   api = {
     init : init,
-    goTo : goTo,
+    goTo : goToHybrid,
     back : back,
     addMiddleware : middleware.add,
     removeMiddleware : middleware.remove,

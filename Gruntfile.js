@@ -38,11 +38,12 @@ module.exports = function(grunt){
                 separator: ';'
             }
 
-           ,dist: {
+           ,web: {
                 src : [
                         './libs/*.js',
                         './src/B/util/*.js',
                         './src/B/data/memCache.js',
+                        './src/B/data/storage.js',
                         './src/B/event/events.js',
                         './src/B/directive/event.js',
                         './src/B/directive/show.js',
@@ -60,18 +61,45 @@ module.exports = function(grunt){
                         './src/B/controller/run.js',
                         './src/B/TDK/TDK.js',
 
-
-
-                        './src/*.js'
+                        './src/B/*.js'
                       ],
-                dest: './dist/<%= output.fileName %>'
+                dest: './dist/web/<%= output.fileName %>'
+            },
+
+            hybrid: {
+                src : [
+                        './libs/*.js',
+                        './src/B/util/*.js',
+                        './src/B.Hybrid/bridge.js',
+                        './src/B/data/memCache.js',
+                        './src/B.Hybrid/data/storage.js',
+                        './src/B/event/events.js',
+                        './src/B/directive/event.js',
+                        './src/B/directive/show.js',
+                        './src/B/directive/property.js',
+                        './src/B/directive/model.js',
+                        './src/B/scope/Scope.js',
+                        './src/B/directive/repeat.js',
+                        './src/B/scope/scopeManager.js',
+                        './src/B/network/http.js',
+                        './src/B/service/Service.js',
+                        './src/B/service/serviceFactory.js',
+                        './src/B/router/router.js',
+                        './src/B/view/View.js',
+                        './src/B.Hybrid/view/viewManager.js',
+                        './src/B/controller/run.js',
+                        './src/B/TDK/TDK.js',
+
+                        './src/B.Hybrid/b.js'
+                      ],
+                dest: './dist/hybrid/<%= output.fileName %>'
             }
         }
 
        ,jasmine: {
             pivotal: {
-              src: './dist/<%=output.fileName %>',
-              coverage: './dist/<%=output.fileName %>',
+              src: './dist/web/<%=output.fileName %>',
+              coverage: './dist/web/<%=output.fileName %>',
               options: {
                 // '--web-security' : false,
                  '--local-to-remote-url-access' : true,
@@ -95,13 +123,13 @@ module.exports = function(grunt){
                     template : 'test/template/DefaultRunner.tmpl',
                     coverage: 'bin/coverage/coverage.json',
                     report: 'bin/coverage',
-                    files:'./dist/<%=output.fileName %>'
+                    files:'./dist/web/<%=output.fileName %>'
                 }
               }
             }
 
            ,mini: {
-              src: './dist/<%= output.minFileName %>',
+              src: './dist/web/<%= output.minFileName %>',
               options: {
                 template: 'test/template/DefaultRunner.tmpl',
                 specs: [
@@ -124,7 +152,8 @@ module.exports = function(grunt){
        ,uglify: {
           mini: {
             files: {
-              './dist/<%= output.minFileName %>': ['./dist/<%= output.fileName %>']
+              './dist/web/<%= output.minFileName %>': ['./dist/web/<%= output.fileName %>'],
+              './dist/hybrid/<%= output.minFileName %>': ['./dist/hybrid/<%= output.fileName %>']
             }
           }
         }
@@ -138,7 +167,7 @@ module.exports = function(grunt){
             jQuery: true
           },
         },
-        uses_defaults: ['./dist/<%= output.fileName %>']//,
+        uses_defaults: ['./dist/web/<%= output.fileName %>', './dist/hybrid/<%= output.fileName %>']//,
         // with_overrides: {
         //   options: {
         //     curly: false,

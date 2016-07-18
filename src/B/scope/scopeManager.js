@@ -124,11 +124,13 @@ Air.Module('B.scope.scopeManager', function(require){
             dataPath = trim(dataPath);
             // var data = util.getData(dataPath, $scope);
             var expression = getExpression(dataPath, init);
-            init = false;
             var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
             data = util.isEmpty(data) ? '' : data;
             text = text.replace(markup, data);
           };
+
+          init = false;
+
           if(node.nodeValue != text){
             var ownerElement = node.ownerElement;
             if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
@@ -147,7 +149,7 @@ Air.Module('B.scope.scopeManager', function(require){
       })(node, node.nodeValue);
 
       function getExpression(dataPath, init){
-        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
+        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
            token = trim(token);
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token

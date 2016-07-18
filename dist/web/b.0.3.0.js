@@ -842,7 +842,7 @@ Object.observe || (function(O, A, root, _undefined) {
           root = ns;
       // 如果不是最后一个为undefined，则赋值为空数组，避免Observe绑定失败
       for (var i = 0, len = nsPath.length; i < len; i++) {
-          if(ns[nsPath[i]] === undefined){
+          if(!ns || (ns[nsPath[i]] === undefined)){
               return;
           } else {
               ns = ns[nsPath[i]];
@@ -883,6 +883,21 @@ Object.observe || (function(O, A, root, _undefined) {
       }
     }
     return value;
+  }
+
+  return {
+    get: get,
+    set: set
+  }
+});
+;Air.Module('B.data.storage', function(require){
+  var memCache = require('B.data.memCache');
+
+  var set = memCache.set;
+
+  var get = function(key, callback){
+    var value = memCache.get(key);
+    callback && callback(value);
   }
 
   return {
@@ -1160,12 +1175,14 @@ Object.observe || (function(O, A, root, _undefined) {
     targetT && beacon.utility.isType(targetT, 'Object') && Object.observe(targetT, function(dataChanges){
       // TODO 重构
       for(var i = 0; i < dataChanges.length; i++){
-        if(dataChanges[i].type == 'add'){
+        var type = dataChanges[i].type;
+        var canCallback = beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0
+        if(type == 'add' || (type == 'update' && canCallback)){
           var target = dataChanges[i];
           var attr = target.object[target.name];
           listenDataChange (attr, dataPath, callback);
         }
-        beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+        canCallback && callback()
       }
     });
   }
@@ -1344,12 +1361,14 @@ Object.observe || (function(O, A, root, _undefined) {
      (isObject || isArray) && Object.observe(targetT, function(dataChanges){
       // var obj = getRepeatData(target, $scope)
       for(var i=0;i<dataChanges.length;i++){
-        if(dataChanges[i].type == 'add'){
+        var type = dataChanges[i].type;
+        var isReplaced = type === 'update' && dataPath.match(new RegExp('\.' + dataChanges[i].name + '$'));
+        if(type == 'add' || isReplaced){
           var target = dataChanges[i];
           var attr = target.object[target.name];
           listenDataChange(attr, dataPath, callback);
         }
-        dataChanges[i].name === 'length' && callback()
+        (dataChanges[i].name === 'length' || isReplaced) && callback()
       }
     });
   }
@@ -1519,11 +1538,13 @@ Object.observe || (function(O, A, root, _undefined) {
             dataPath = trim(dataPath);
             // var data = util.getData(dataPath, $scope);
             var expression = getExpression(dataPath, init);
-            init = false;
             var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
             data = util.isEmpty(data) ? '' : data;
             text = text.replace(markup, data);
           };
+
+          init = false;
+
           if(node.nodeValue != text){
             var ownerElement = node.ownerElement;
             if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
@@ -1542,7 +1563,7 @@ Object.observe || (function(O, A, root, _undefined) {
       })(node, node.nodeValue);
 
       function getExpression(dataPath, init){
-        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
+        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
            token = trim(token);
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token
@@ -1653,7 +1674,7 @@ Object.observe || (function(O, A, root, _undefined) {
 ;Air.Module('B.service.Service', function(require) {
   var HTTP = require('B.network.HTTP');
   var EVENTS =  require('B.event.events');
-  var memCache = require('B.data.MemCache');
+  var storage = require('B.data.storage');
   var middleware = require('B.util.middleware');
 
   var serviceQueue = {};
@@ -1711,46 +1732,70 @@ Object.observe || (function(O, A, root, _undefined) {
         serviceName: config.serviceName
       };
 
-      var tryReturnCacheData = function() {
-        var cachedDataText = memCache.get(cacheKey);
-        var cachedData;
-        try {
-          cachedData = JSON.parse(cachedDataText);
+      var tryReturnCacheData = function(noCacheCallback) {
+        storage.get(cacheKey, function(cachedDataText) {
+          try {
+            var cachedData = JSON.parse(cachedDataText);
 
-          var fromCache = true;
-          setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
-            options.successCallBack && options.successCallBack(cachedData, fromCache);
-            beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-            beacon(scope).on(EVENTS.DATA_CHANGE);
-          }, 0);
+            if (cachedData) {
+              var fromCache = true;
+              setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
+                options.successCallBack && options.successCallBack(cachedData, fromCache);
+                beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
+                beacon(scope).on(EVENTS.DATA_CHANGE);
+              }, 0);
 
-          return true;
-        } catch(e) {
-          return false;
-        }
+              return;
+            }
+          } catch(e) {}
+
+          noCacheCallback && noCacheCallback();
+        });
       }
 
       var curServiceQueue = serviceQueue[cacheKey];
       if (!options.noCache && !curServiceQueue) {
-        var getCacheSuccess = tryReturnCacheData();
-        if (getCacheSuccess) {
-          return;
-        }
+        tryReturnCacheData(startQuery);
+      } else {
+        startQuery();
       }
 
-      controlEvents.onQuery && controlEvents.onQuery();
+      function startQuery() {
+        controlEvents.onQuery && controlEvents.onQuery();
 
-      var startTimeoutCount = function() {
+        callBeforeQueryMiddleware(requestOptions, function(){
+          curServiceQueue = serviceQueue[cacheKey];
+
+          // 首次进入，队列不存在
+          if (!curServiceQueue) {
+            curServiceQueue = serviceQueue[cacheKey] = [];
+
+            // 避免外部修改回调函数，所以在外部处理完成后再赋值
+            requestOptions.successCallBack = httpSuccessCallback;
+            requestOptions.errorCallBack = httpErrorCallback;
+
+            http.request(requestOptions);
+            startTimeoutCount();
+          } else {
+            curServiceQueue.push({
+              httpSuccessCallback: httpSuccessCallback,
+              httpErrorCallback: httpErrorCallback
+            })
+          }
+        });
+      }
+
+      function startTimeoutCount() {
         timer = setTimeout(function(){
           http.abort();
         }, timeoutSeconds * 1000);
       }
 
-      var clearTimeoutCount = function() {
+      function clearTimeoutCount() {
         clearTimeout(timer);
       }
 
-      var httpSuccessCallback = function(xhrOrResponseData, isQueue) {
+      function httpSuccessCallback(xhrOrResponseData, isQueue) {
         clearTimeoutCount();
         xhrOrResponseData = xhrOrResponseData || {};
         var responseText = '';
@@ -1772,20 +1817,19 @@ Object.observe || (function(O, A, root, _undefined) {
         }
 
         if (parseError) {
-          options.errorCallBack && options.errorCallBack(ERROR_CODE.parse, responseText);
-          beacon(self).on(SERVICEEVENTS.ERROR, {
-            error : ERROR_CODE.parse,
-            response : responseText
+          callAfterQueryMiddleware({xhr: http.xhr, data: responseData, requestParam: requestOptions, errorCode: ERROR_CODE.parse}, function(isError) {
+            options.errorCallBack && options.errorCallBack(ERROR_CODE.parse, responseText);
+            beacon(self).on(SERVICEEVENTS.ERROR, {
+              error : ERROR_CODE.parse,
+              response : responseText
+            });
+            beacon(scope).on(EVENTS.DATA_CHANGE);
+            if (!isQueue) {
+              var isError = true;
+              runQueue(isError, xhrOrResponseData);
+            }
+            tryClearQueue();
           });
-          beacon(scope).on(EVENTS.DATA_CHANGE);
-          if (!isQueue) {
-            var isError = true;
-            runQueue(isError, xhrOrResponseData);
-          }
-
-          tryClearQueue();
-
-          return;
         } else {
           callAfterQueryMiddleware({xhr: http.xhr, data: responseData, requestParam: requestOptions}, function(isError) {
             if (isError) {
@@ -1800,13 +1844,9 @@ Object.observe || (function(O, A, root, _undefined) {
               }
             } else {
               var useCache = false;
-              if (!options.noCache) {
-                useCache = tryReturnCacheData();
-              }
-
-              if (!useCache) {
+              var noCacheRun = function() {
                 // 记录缓存
-                config.expiredSecond && memCache.set(cacheKey, responseText, {
+                config.expiredSecond && storage.set(cacheKey, responseText, {
                   expiredSecond: config.expiredSecond
                 });
 
@@ -1816,6 +1856,12 @@ Object.observe || (function(O, A, root, _undefined) {
                   var isError = false;
                   runQueue(isError, responseData);
                 }
+              }
+
+              if (!options.noCache) {
+                useCache = tryReturnCacheData(noCacheRun);
+              } else {
+                noCacheRun();
               }
             }
 
@@ -1827,7 +1873,7 @@ Object.observe || (function(O, A, root, _undefined) {
         }
       }
 
-      var httpErrorCallback = function(xhr, isQueue) {
+      function httpErrorCallback(xhr, isQueue) {
         clearTimeoutCount();
 
         controlEvents.onComplete && controlEvents.onComplete();
@@ -1881,27 +1927,6 @@ Object.observe || (function(O, A, root, _undefined) {
           delete serviceQueue[cacheKey];
         }
       }
-
-      callBeforeQueryMiddleware(requestOptions, function(){
-        curServiceQueue = serviceQueue[cacheKey];
-
-        // 首次进入，队列不存在
-        if (!curServiceQueue) {
-          curServiceQueue = serviceQueue[cacheKey] = [];
-
-          // 避免外部修改回调函数，所以在外部处理完成后再赋值
-          requestOptions.successCallBack = httpSuccessCallback;
-          requestOptions.errorCallBack = httpErrorCallback;
-
-          http.request(requestOptions);
-          startTimeoutCount();
-        } else {
-          curServiceQueue.push({
-            httpSuccessCallback: httpSuccessCallback,
-            httpErrorCallback: httpErrorCallback
-          })
-        }
-      });
     };
 
     this.abort = function(noTriggerEvent){
@@ -2058,14 +2083,14 @@ Object.observe || (function(O, A, root, _undefined) {
     return matchedRouter;
   }
 
-  function getURLByRule(rule, params, query) {
+  function getURLByRule(rule, params, query, noOrigin) {
     var url = rule.replace(/:(\w+)/ig, function(param, key){
       return params[key] || "";
     });
     if (!location.origin) {
       location.origin = location.protocol + "//" + location.hostname + (location.port ? ':' + location.port: '');
     }
-    url = location.origin + url + query;
+    url = (noOrigin ? '' : location.origin) + url + query;
     return url;
   }
 
@@ -2075,7 +2100,7 @@ Object.observe || (function(O, A, root, _undefined) {
     var query  = options.query || "";
     var router = routers[viewName];
     var rule = router && router.rule || "";
-    var url = getURLByRule(rule, params, query);
+    var url = getURLByRule(rule, params, query, options.noOrigin);
     return url;
   }
 
@@ -2361,14 +2386,19 @@ Object.observe || (function(O, A, root, _undefined) {
     $scope.$request.params = options.params;
   }
 
-  function switchURL (viewName, options) {
-    options = options || {};
-    var fromUrl = location.href;
+  function getURL (viewName, options) {
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
       query: options.query
     });
 
+    return url;
+  }
+
+  function switchURL (viewName, options) {
+    options = options || {};
+    var fromUrl = location.href;
+    var url = getURL(viewName, options);
 
     // 不支持pushState则跳转。后续是否考虑锚点方案？
     var isReplace = options.replace;
@@ -2505,33 +2535,37 @@ Object.observe || (function(O, A, root, _undefined) {
   }
 
   function switchView(view){
-    // if(activeView === view){return};
+    var lastViewName = '';
     // 7
     if (lastView) {
-      var lastViewName = lastView.getViewName();
-      lastView && lastView.hide();
-      beacon(lastView).on(lastView.events.onHide, {
-        to: view
-      });
-      var $lastScope = scopeManager.getScope(lastViewName);
-      beacon($lastScope).on(EVENTS.DATA_CHANGE);
+      lastViewName = lastView.getViewName();
+      triggerOnHide(lastView, view);
     }
 
-    activeView = view;
+    setActive(view);
+
     activeView.show();
-    beacon(activeView).on(activeView.events.onShow, {
-      from: lastViewName
+    triggerOnShow(activeView, lastViewName);
+  }
+
+  function triggerOnHide(curView, toView) {
+    var viewName = curView.getViewName();
+    curView && curView.hide();
+    beacon(curView).on(curView.events.onHide, {
+      to: toView
     });
-    var $scope = scopeManager.getScope(view.getViewName());
+    var $scope = scopeManager.getScope(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
-  function hide(viewName){
-    var view = getViewByViewName(viewName);
-    view && view.hide();
+  function triggerOnShow(curView, lastViewName) {
+    var viewName = curView.getViewName();
+    beacon(curView).on(curView.events.onShow, {
+      from: lastViewName
+    });
+    var $scope = scopeManager.getScope(viewName);
+    beacon($scope).on(EVENTS.DATA_CHANGE);
   }
-
-  function createView(){}
 
   function showLoading(){}
 
@@ -2649,6 +2683,7 @@ Air.run(function(require){
        * @return void
        */
       init     : function(env){
+        env = env || {};
         memCache.set('env', env);
         Air.moduleURL(env.$moduleURL);
         viewManager.init(env);
@@ -2656,15 +2691,18 @@ Air.run(function(require){
       run      : run,
       Module   : Air.Module,
       TDK      : TDK,
-      domReady : function(){}
+      bridge   : {
+        run: function(){},
+        isHybrid: false,
+        isInApp: false
+      },
+      ready    : function(callback){
+        callback = typeof callback === 'function' ? callback : function(){};
+        Air.domReady(function(){
+          callback();
+        });
+      }
     };
     window[FRAMEWORK_NAME] = api;
   }()
 });
-
-
-// 考虑到模板内嵌 view 存在的可能性，
-// 为避免冗余模板请求，故此 view 初始化在 domReady 之后进行。
-// Air.domReady(function(){
-//   b.views.init();
-// });

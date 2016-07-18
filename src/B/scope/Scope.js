@@ -11,12 +11,14 @@ Air.Module('B.scope.Scope', function(require) {
     targetT && beacon.utility.isType(targetT, 'Object') && Object.observe(targetT, function(dataChanges){
       // TODO 重构
       for(var i = 0; i < dataChanges.length; i++){
-        if(dataChanges[i].type == 'add'){
+        var type = dataChanges[i].type;
+        var canCallback = beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0
+        if(type == 'add' || (type == 'update' && canCallback)){
           var target = dataChanges[i];
           var attr = target.object[target.name];
           listenDataChange (attr, dataPath, callback);
         }
-        beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0 && callback()
+        canCallback && callback()
       }
     });
   }
