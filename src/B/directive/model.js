@@ -25,8 +25,8 @@ Air.Module('B.directive.model', function(require){
       beacon(target).on('input', onInput);
       beacon(target).on('change', onInput);
 
-      // beacon($scope).on(EVENTS.DATA_CHANGE, modelChangeHandle);
-      $scope.listenDataChange(dataPath, modelChangeHandle)
+      // TODO
+      // $scope.listenDataChange(dataPath, modelChangeHandle)
       function modelChangeHandle(){
         var value = util.getData(dataPath, $scope);
         if(target.value === value){return};

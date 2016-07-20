@@ -121,7 +121,7 @@ Air.Module("B.view.viewManager", function(require){
 
   function changeURLParams(viewName, options) {
     options = options || {};
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     $scope['$request'] = $scope.$request || {};
     $scope.$request.params = options.params;
   }
@@ -294,7 +294,7 @@ Air.Module("B.view.viewManager", function(require){
     beacon(curView).on(curView.events.onHide, {
       to: toView
     });
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
@@ -303,7 +303,7 @@ Air.Module("B.view.viewManager", function(require){
     beacon(curView).on(curView.events.onShow, {
       from: lastViewName
     });
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 

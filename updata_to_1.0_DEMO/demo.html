@@ -12,14 +12,30 @@
       <ul>
         <li b-repeat="book in books">
           {{book.name}}
-          <span b-repeat="type in book.types">
+          <span class="active{{book.$index}}" b-repeat="type in book.types">
         </li>
       </ul>
       <view name="view2" id="view2">
         <div b-repeat="book in books">{{book.name}}</div>
       </view>
     </view>
+  </viewport>
 
+
+  <viewport>
+    <view name="view1" id="view1">
+      <div>txt</div>
+      <div>{{txt}}</div>
+      <ul>
+        <li b-repeat="book in a.b.books">
+          {{a.b.books[0].name}}
+          <span class="active{{books[0].$index}}" b-repeat="type in a.b.books[0].types">
+        </li>
+      </ul>
+      <view name="view2" id="view2">
+        <div b-repeat="book in books">{{book.name}}</div>
+      </view>
+    </view>
   </viewport>
   <script type="text/javascript">
 
@@ -30,7 +46,7 @@
       var rootScope = {};
 
       // 初始化 scope 管理器
-      var scopeManager = New scopeManager(rootScope);
+      var scopeManager = new scopeManager(rootScope);
 
       // 获取模板
       var template = document.getElementById('view1');
@@ -57,7 +73,7 @@
         var structure = function(){
           return {
             scope : null,
-            mScope : null,
+            // mScope : null,
             pn :null
           }
         }
@@ -66,11 +82,11 @@
           return index ? scopeTree[index] : null;
         }
 
-        var crateMScope = function(scope){
-          var mscope = {};
-          beacon.utility.merge(mscope, scope);
-          return new Scope(mscope);
-        }
+        // var crateMScope = function(scope){
+        //   var mscope = {};
+        //   beacon.utility.merge(mscope, scope);
+        //   return new Scope(mscope);
+        // }
 
 
         /**
@@ -94,7 +110,7 @@
            var newScope = structure();
            var scopeIndex = scopeTree.push(newScope) - 1;
            newScope.scope = new Scope(parentScope);
-           newScope.mScope = crateMScope(parentScope);
+           // newScope.mScope = crateMScope(parentScope);
            newScope.pn    = parentIndex;
            return scopeIndex;
         }
@@ -189,7 +205,7 @@
                               ? beacon.utility.NS(activePath, scope)
                               : scope;
             nextPathNode &&
-            Object.defineProperty(activeObj, nextPathNode, createDescriptor(node));
+            Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, node));
 
             activePath = nextPathNode
                            ? (activePath + '.' + nextPathNode)
@@ -214,7 +230,7 @@
        *返回：undefind
       **/
       function parseHTML(node, currentScopeIndex){
-        var attributes = node.attributes; // TODO: 准换为普通数组
+        var attributes = [].concat.apply([], node.attributes);
         for(var i=0; i<attributes.length; i++) {
           　var activeAttribute = attributes[i];
             parseTEXT(node, currentScopeIndex);
@@ -233,11 +249,11 @@
         if(!node){return}
         currentScopeIndex = currentScopeIndex || 0;
 
-        if(isView(node) {
+        if(isView(node)) {
           // view scope 压栈
           currentScopeIndex = scopeManager.addScope(currentScopeIndex);
         } else if(isRepeat(node)){ // view 不允许进行 repeat
-          node = createRepeatNodes(template, currentScopeIndex);
+          node = createRepeatNodes(node, currentScopeIndex);
         }
 
         // 回溯点压栈
@@ -258,7 +274,7 @@
 
         // 退出当前 scope
         var targetScopeIndex = isView(nextNode) ? scopeManager.getScope(currentScopeIndex).pn  : currentScopeIndex
-        return parseTemplate(nextNode, currentScopeIndex);
+        return parseTemplate(nextNode, targetScopeIndex);
       }
 
 
@@ -285,6 +301,7 @@
         var value;
         var descriptor = {
           get : function(){
+            // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
             setTimeout(function(){
               if(oldLength !== value.length){
                 var node = repeater.updateUI();
@@ -297,9 +314,9 @@
 
           set : function(value){
             var hasChanged = this.value !== value;
-            var isArray = isArray(value); //伪代码
-            var isObject = isObject(value); //伪代码
-            // var isPathNode = isArray(value) || isObject(value); //伪代码
+            var isArray = beacon.utility.isType(value, 'Array');
+            var isObject = beacon.utility.isType(value, 'Object');
+
             if(hasChanged && isObject){
               beacon.utility.merge(this.value, value);
             } else if(hasChanged && isArray) {
@@ -325,7 +342,7 @@
 
           set : function(value){
             var hasChanged = this.value !== value;
-            var isPathNode = isArray(value) || isObject(value); //伪代码
+            var isPathNode = beacon.utility.isType(value, 'Array') || beacon.utility.isType(value, 'Object');
             if(hasChanged && isPathNode){
                 beacon.utility.merge(this.value, value);
             } else {
@@ -345,17 +362,27 @@
       **/
       function Repeater(template, currentScopeIndex){
         var scope = scopeManager.getScope(currentScopeIndex);
-        var tag = template // 伪代码 ，插入注释节点代替
+        var tag = generatePlaceholder(template);
         var uiElementCount = 0;
-        var expressionREG = /b-repeat\s*=\s*(['"])(\S+)\s+in\s+(\S+)\1/;
-        var expression = template.match(expressionREG) || [];
-        var dataPath = expression[3];
-        var dataPrefix = expression[2];
-        var datePrefixREG = new RegExp('([\\s{])(' + dataPath + '.' + dataPrefix +')(\\.?)', g);
+        var expressionStr = template.getAttribute('b-repeat');
+        var expressionREG = /(\S+)\s+in\s+(\S+)/;
+        var expression = expressionStr.match(expressionREG) || [];
+        var dataPath = expression[2];
+        var dataPrefix = expression[1];
+        var datePrefixREG = new RegExp('([\\s{])(' + dataPath + '.' + dataPrefix +')(\\.?)', g); // todo b-show, b-model, b-property, 表达式
         var dataNestedPrefixREG = new RegExp('(b-repeat\\s*=\\s*)([\'\"])(\\S+\\s+in\\s+)(('+ dataPrefix +')(\\.))(\\S+?)\\2', g);
-        var repeatIndexREG = new RegExp('\\{\\{book\\.\\$index\\}\\}');
+        var repeatIndexREG = new RegExp('\\{\\{' + dataPrefix + '\\.\\$index\\}\\}'); // todo
 
 
+        function generatePlaceholder(target) {
+          if (target.placeholder) {
+            return target.placeholder;
+          }
+          var placeholder = document.createComment('repeat placeholder ' + target.getAttribute(attrName));
+          target.parentNode.insertBefore(placeholder, target);
+          target.placeholder = placeholder;
+          return placeholder;
+        }
 
         var getCount = function(){
           var data = beacon.utility.NS(dataPath, scope);

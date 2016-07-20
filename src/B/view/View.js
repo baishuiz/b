@@ -59,16 +59,16 @@ Air.Module("B.view.View", function(require){
   }
 
   function parseTag(tagName, viewName, dom, domWrapper, fn) {
-    var domList = splitDom(domWrapper, tagName);
+    var domList = splitDom(domWrapper, tagName) || [];
+    domList = [].concat.apply([], domList);
 
-    // TODO : scope 命名 修改为 viewName::tagname 以 避免与view命名冲突
-    var tagScope = scopeManager.parseScope(viewName + tagName, { childNodes: domList });
+    for (var i = 0; i < domList.length; i++) {
+      // TODO : scope 命名 修改为 viewName::tagname 以 避免与view命名冲突
+      var needScope = true;
+      var tagScope = scopeManager.parseScope(viewName + tagName, domList[i], needScope);
 
-    beacon(tagScope).once(EVENTS.DATA_CHANGE, function(){
       fn && fn(domList);
-    })
-
-    beacon(tagScope).on(EVENTS.DATA_CHANGE);
+    }
   }
 
   function View(viewName, dom, options){
