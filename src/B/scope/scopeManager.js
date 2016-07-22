@@ -57,11 +57,12 @@ Air.Module('B.scope.scopeManager', function(require) {
   /**
    *作用：监听文本节点或属性节点的数据源变动
    *参数: <node> 文本节点|属性节点
-   *参数: <dataPath> 数据源路径
+   *参数: <tag> token 所在 tag
+   *参数: <dataPath> 数据源路径（有效 token）
    *参数: <currentScopeIndex> 当前作用域索引值
    *返回：undefind
    **/
-  function bindObjectData(node, dataPath, currentScopeIndex) {
+  function bindObjectData(node, tag, dataPath, currentScopeIndex) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
     var scope = scopeStructure.scope
     var activePath = '';
@@ -73,25 +74,62 @@ Air.Module('B.scope.scopeManager', function(require) {
       activeObj = activeObj || Air.NS(activePath, scope);
       var nextObj = nextPathNode && util.getData(nextPathNode, scope);
       nextPathNode &&
-        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, node, nextObj, nextPathNode, scope));
-
+        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, node, nextObj, tag, dataPath, scope));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }
   }
 
-  // TODO 表达式、option、b-style
-  function parseTEXT(node, currentScopeIndex) {
-    var dataPaths = getDataPath(node.nodeValue);
-    for (var i = 0; i < dataPaths.length; i++) {
-      var activePath = dataPaths[i].replace(/{{|}}/ig, '');
-      activePath = trim(activePath);
-      var expressionPaths = getExpressionPath(activePath);
 
-      for (var j = 0; j < expressionPaths.length; j++) {
-        var activeExpPath = expressionPaths[j];
-        bindObjectData(node, activeExpPath, currentScopeIndex);
+
+  /**
+   *作用：监听文本节点|属性节点的数据变化
+   *参数: <tag>  数据标签
+   *参数: <node> 文本节点|属性节点
+   *参数: <currentScopeIndex> 数据标签所在作用域索引值
+   *返回：undefind
+   **/
+  function watchData(tag, node, currentScopeIndex){
+     var tokens = getTokens(tag, node);
+     for(var i = 0; i < tokens.length; i++){
+       var activeToken = tokens[i];
+       bindObjectData(node, tag, activeToken, currentScopeIndex);
+     }
+  }
+
+  /**
+   *作用：获得有效 token 列表
+   *参数: <tag> 数据标签
+   *返回：有效 token 列表
+   **/
+  function getTokens(tag, node){
+    var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
+    var result = [];
+    for (var i = 0; i < tokens.length; i++) {
+      var token = trim(tokens[i]);
+      // /^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' || result.push(token);
+      if(!(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false')){
+        node.nodeValue = node.nodeValue.replace(token, 'util.getData("' + token + '", scope)')
+        result.push(token);
       }
     }
+    return result;
+  }
+
+  /**
+   *作用：解析文本|属性节点，监听数据变化
+   * TODO 表达式、option、b-style
+   *参数: <node> 文本节点|属性节点
+   *参数: <currentScopeIndex> 数据标签所在作用域索引值
+   *返回：undefind
+   **/
+  function parseTEXT(node, currentScopeIndex) {
+     var tags = node.nodeValue.match(/{{.*?}}/g) || [];
+
+     // 遍历节点内所有数据标签
+     for(var i = 0; i < tags.length; i++){
+       var activeTag = tags[i];
+       watchData(activeTag, node, currentScopeIndex);
+     }
   }
 
   function tryGenerateSubViewScope(node, scopeStructure, currentScopeIndex) {
@@ -208,12 +246,18 @@ Air.Module('B.scope.scopeManager', function(require) {
   /**
    *作用：创建文本节点或属性节点数据源的描述符
    *参数: <textNode> 文本节点或属性节点.
+   *参数: <value> 模板标签初始值.
+   *参数: <tag> 标签模板.
+   *参数: <dataPath> 数据路径（标签模板内的有效 token）
+   *参数: <scope> 当前标签所在的作用域.
    *返回：文本节点或属性节点数据源的描述符
    **/
-  function createDescriptor(textNode, value, dataPath, scope) {
+  function createDescriptor(textNode, value, tag, dataPath, scope) {
     var template = textNode.nodeValue;
-    textNode.nodeValue = getExpressionValue(template, dataPath, value, scope);
-
+    // value =  util.getData(dataPath, scope);
+    if(value){
+      textNode.nodeValue = template.replace(tag, value);
+    }
     var descriptor = {
       enumerable: true,
       configurable: true,
@@ -224,47 +268,54 @@ Air.Module('B.scope.scopeManager', function(require) {
       set: function(val) {
         var hasChanged = value !== val;
         var isPathNode = beacon.utility.isType(val, 'Array') || beacon.utility.isType(val, 'Object');
+        console.log(template, val, '999999999999999')
         if (hasChanged && isPathNode) {
           value = value || {};
           beacon.utility.merge(value, val);
         } else {
           value = val;
-          textNode.nodeValue = getExpressionValue(template, dataPath, value, scope);
+
+            var result = template.replace(/{{(.*?)}}/g,function($0, expression){
+             try{
+                var tt = eval(expression)
+
+              } catch(e){
+
+              }
+              return tt;
+            });
+
+
+
+          textNode.nodeValue = result
         }
       }
     }
     return descriptor;
   }
 
-  function getExpressionPath(expressionStr) {
-    var tokens = expressionStr.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
-    var result = [];
-    for (var i = 0; i < tokens.length; i++) {
-      var token = tokens[i];
-       token = trim(token);
-       if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
-       } else {
-         result.push(token);
-       }
+
+  /**
+   *作用：执行表达式
+   *参数: <tag> 标签模板.
+   *参数: <dataPath> 数据路径（标签模板内的有效 token）
+   *参数: <scope> 当前标签所在的作用域.
+   *返回：表达式执行结果
+   **/
+  function getExpressionValue(tag, dataPath, scope) {
+    var value = util.getData(dataPath, scope);
+    var dataPathReg = new RegExp('\\b' + dataPath + '\\b', 'g');
+    // tag.replace(/{{|}}/ig, '')
+    var expression = tag.replace(dataPathReg, value);
+    console.log(dataPathReg, value, expression, '666666666666666666666666666666666666666666666')
+    try{
+      var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
+    }catch(e){
+      var data = expression
     }
-    return result;
-  }
 
-  function getExpressionValue(expressionStr, dataPath, value, scope) {
-    dataPath = dataPath.replace(/{{|}}/ig, '');
-    var expression = dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
-       token = trim(token);
-       if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
-         return token
-       } else {
-         return 'util.getData("' + token + '", scope)'
-       }
-    });
-
-    var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
     data = util.isEmpty(data) ? '' : data;
-    var temlateReg = new RegExp('\\{\\{' + dataPath.replace(/(\$|\.)/, '\\$1') + '\\}\\}', 'g');
-    return expressionStr.replace(temlateReg, data);
+    return data;
   }
 
   return {
