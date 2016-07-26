@@ -30,10 +30,11 @@ viewport view[active="true"]{display:block}
   <view name="page_url_change_before"></view>
   <view name="page_url_change_after"></view>
   <view name="page_detail">
-    <p>{{parentValue}}</p>
+    <span>{{parentValue}}</span>
     <view name="page_detail_subview">
       <p class="text">{{parentValue}} - {{subValue}}</p>
     </view>
+    <h1>{{parentValue}}</h1>
   </view>
   <view name="page_booking"></view>
   <view name="page_order"></view>
@@ -65,6 +66,7 @@ viewport view[active="true"]{display:block}
     <div class='listB' >
       <span b-repeat="item in a.b.list">{{item.name}}</span>
     </div>
+    <div></div>
   </view>
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
@@ -92,7 +94,7 @@ viewport view[active="true"]{display:block}
   <view name="page_repeat_with_event_inner">
     <ul>
       <li b-repeat="item in lista">
-        <a href="javascript:void(0)" b-event="click clickHandle()">{{item.name}}</a>
+        <a href="javascript:void(0)" b-event="click clickHandle(item.$index)">{{item.name}}</a>
       </li>
     </ul>
   </view>

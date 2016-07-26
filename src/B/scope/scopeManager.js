@@ -6,6 +6,7 @@ Air.Module('B.scope.scopeManager', function(require) {
   var showDirective = require('B.directive.show');
   var propertyDirective = require('B.directive.property');
   var Repeater = require('B.directive.Repeater');
+  var tagManager = require('B.scope.tagManager');
 
   var util = require('B.util.util');
   var nodeUtil = require('B.util.node');
@@ -56,25 +57,23 @@ Air.Module('B.scope.scopeManager', function(require) {
 
   /**
    *作用：监听文本节点或属性节点的数据源变动
-   *参数: <node> 文本节点|属性节点
-   *参数: <tag> token 所在 tag
    *参数: <dataPath> 数据源路径（有效 token）
    *参数: <currentScopeIndex> 当前作用域索引值
    *返回：undefind
    **/
-  function bindObjectData(node, tag, dataPath, currentScopeIndex) {
+  function bindObjectData(dataPath, currentScopeIndex) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
     var scope = scopeStructure.scope
     var activePath = '';
+    // dataPath = dataPath.replace(/\.\d+$/,'')
     var pathNodes = dataPath.split('.') || [];
     for (var i = 0; i < pathNodes.length; i++) {
       var nextPathNode = pathNodes.shift();
-
       var activeObj = activePath ? util.getData(activePath, scope) : scope;
       activeObj = activeObj || Air.NS(activePath, scope);
-      var nextObj = nextPathNode && util.getData(nextPathNode, scope);
+      var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
       nextPathNode &&
-        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, node, nextObj, tag, dataPath, scope));
+        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }
   }
@@ -85,14 +84,17 @@ Air.Module('B.scope.scopeManager', function(require) {
    *作用：监听文本节点|属性节点的数据变化
    *参数: <tag>  数据标签
    *参数: <node> 文本节点|属性节点
-   *参数: <currentScopeIndex> 数据标签所在作用域索引值
+   *参数: <scopeIndex> 数据标签所在作用域索引值
    *返回：undefind
    **/
-  function watchData(tag, node, currentScopeIndex){
-     var tokens = getTokens(tag, node);
+  function watchData(tag, node, scopeIndex){
+     var scope = scopeTreeManager.getScope(scopeIndex);
+     var tokens = getTokens(tag, node, scopeIndex);
      for(var i = 0; i < tokens.length; i++){
        var activeToken = tokens[i];
-       bindObjectData(node, tag, activeToken, currentScopeIndex);
+       tagManager.addNode(scopeIndex, activeToken, node);
+      //  tagManager.updateNodeValue(scopeIndex, scope, activeToken)
+       bindObjectData(activeToken, scopeIndex);
      }
   }
 
@@ -101,14 +103,22 @@ Air.Module('B.scope.scopeManager', function(require) {
    *参数: <tag> 数据标签
    *返回：有效 token 列表
    **/
-  function getTokens(tag, node){
+  function getTokens(tag, node, scopeIndex){
+    node.$template = node.$template || node.nodeValue;
+    var scope = scopeTreeManager.getScope(scopeIndex);
     var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
     var result = [];
     for (var i = 0; i < tokens.length; i++) {
       var token = trim(tokens[i]);
-      // /^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' || result.push(token);
       if(!(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false')){
-        node.nodeValue = node.nodeValue.replace(token, 'util.getData("' + token + '", scope)')
+        // node.nodeValue = node.nodeValue.replace(token, 'util.getData("' + token + '", scope)')
+        // console.log(token, '*************')
+
+        node.$template = node.$template.replace(token, 'util.getData("' + token + '", scope)')
+        if(tokens.length === 1){
+          node.nodeValue = node.nodeValue.replace(tag, util.getData(token, scope.scope)||'');
+        }
+
         result.push(token);
       }
     }
@@ -195,17 +205,29 @@ Air.Module('B.scope.scopeManager', function(require) {
     if (!node) {
       return
     }
+
+    if(!isSub) {
+      backtrackingPoints = [];
+    }
     currentScopeIndex = currentScopeIndex || 0;
 
     if (isView(node) || needScope) {
       // view scope 压栈
+      scopeName = node.getAttribute('name')
       currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
+      // scopeName = currentScopeIndex;
     } else if (isRepeat(node)) { // view 不允许进行 repeat
-      node = createRepeatNodes(node, currentScopeIndex);
+      var repeatNode = createRepeatNodes(node, currentScopeIndex);
+      if(!repeatNode){
+        var nextNode = isSub && node.nextSibling;
+        return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
+      }
     }
 
+
+
     // 回溯点压栈
-    if (node.nextSibling && isSub) { backtrackingPoints.push(node) };
+    if (isSub && node.nextSibling && node.firstChild) { backtrackingPoints.push(node) };
 
     switch (node.nodeType) {
       case nodeUtil.type.HTML:
@@ -218,15 +240,18 @@ Air.Module('B.scope.scopeManager', function(require) {
       default:
     }
 
-    var nextNode = node.firstChild || (!isSub && node.nextSibling);
-    if (!nextNode) {
+    var nextNode = node.firstChild || (isSub && node.nextSibling);
+    if (!nextNode && isSub ) {
       var lastNode = backtrackingPoints.pop();
       nextNode = lastNode && lastNode.nextSibling;
+      var targetScopeIndex = isView(lastNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
+      scopeName = isView(lastNode) && targetScopeIndex;
     }
 
+
     // 退出当前 scope
-    var targetScopeIndex = isView(nextNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
-    return parseTemplate(nextNode, scopeName, targetScopeIndex, true);
+    // var targetScopeIndex = isView(nextNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
+    return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
   }
 
 
@@ -239,25 +264,20 @@ Air.Module('B.scope.scopeManager', function(require) {
   function createRepeatNodes(template, currentScopeIndex) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
     var repeater = new Repeater(template, currentScopeIndex, scopeStructure, parseTemplate);
-    var newFirstNode = repeater.updateUI();
+    var newFirstNode = repeater.updateUI()[0];
     return newFirstNode;
   }
 
   /**
    *作用：创建文本节点或属性节点数据源的描述符
-   *参数: <textNode> 文本节点或属性节点.
    *参数: <value> 模板标签初始值.
-   *参数: <tag> 标签模板.
    *参数: <dataPath> 数据路径（标签模板内的有效 token）
-   *参数: <scope> 当前标签所在的作用域.
+   *参数: <scope> 当前标签所在的作用域id.
    *返回：文本节点或属性节点数据源的描述符
    **/
-  function createDescriptor(textNode, value, tag, dataPath, scope) {
-    var template = textNode.nodeValue;
-    // value =  util.getData(dataPath, scope);
-    if(value){
-      textNode.nodeValue = template.replace(tag, value);
-    }
+  function createDescriptor(value, dataPath, scopeIndex) {
+    var scope = scopeTreeManager.getScope(scopeIndex);
+
     var descriptor = {
       enumerable: true,
       configurable: true,
@@ -268,26 +288,12 @@ Air.Module('B.scope.scopeManager', function(require) {
       set: function(val) {
         var hasChanged = value !== val;
         var isPathNode = beacon.utility.isType(val, 'Array') || beacon.utility.isType(val, 'Object');
-        console.log(template, val, '999999999999999')
         if (hasChanged && isPathNode) {
           value = value || {};
           beacon.utility.merge(value, val);
         } else {
           value = val;
-
-            var result = template.replace(/{{(.*?)}}/g,function($0, expression){
-             try{
-                var tt = eval(expression)
-
-              } catch(e){
-
-              }
-              return tt;
-            });
-
-
-
-          textNode.nodeValue = result
+          tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
         }
       }
     }
@@ -295,28 +301,7 @@ Air.Module('B.scope.scopeManager', function(require) {
   }
 
 
-  /**
-   *作用：执行表达式
-   *参数: <tag> 标签模板.
-   *参数: <dataPath> 数据路径（标签模板内的有效 token）
-   *参数: <scope> 当前标签所在的作用域.
-   *返回：表达式执行结果
-   **/
-  function getExpressionValue(tag, dataPath, scope) {
-    var value = util.getData(dataPath, scope);
-    var dataPathReg = new RegExp('\\b' + dataPath + '\\b', 'g');
-    // tag.replace(/{{|}}/ig, '')
-    var expression = tag.replace(dataPathReg, value);
-    console.log(dataPathReg, value, expression, '666666666666666666666666666666666666666666666')
-    try{
-      var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
-    }catch(e){
-      var data = expression
-    }
 
-    data = util.isEmpty(data) ? '' : data;
-    return data;
-  }
 
   return {
     parseScope: parseScope,

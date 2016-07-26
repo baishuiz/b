@@ -5,10 +5,12 @@ Air.Module('B.directive.Repeater', function(require) {
 
   function getTemplateStr(str, idx, dataPath, dataPrefix){
     var reg = new RegExp("\\b\("+ dataPrefix +"\)\\b", 'g');
-    var repeatIndexREG = new RegExp('\\b' + dataPath + '\\[\\d+\\]\\.\\$index\\b');
+    // var repeatIndexREG = new RegExp('\\b' + dataPath + '\\[\\d+\\]\\.\\$index\\b');
+    var repeatIndexREG = new RegExp('\\b' + dataPath + '\\.\\d+\\.\\$index\\b');
 
     var result = str.replace(/\{\{.*?\}\}|b-show\s*=\s*".*?"|b-model\s*=\s*".*?"|b-property\s*=\s*".*"|b-repeat\s*=\s*".*"/g, function(tag){
-        return tag.replace(reg, dataPath + '[' + idx + ']');
+        // return tag.replace(reg, dataPath + '[' + idx + ']');
+        return tag.replace(reg, dataPath + '.' + idx);
     });
     result = result.replace(repeatIndexREG, idx);
 
@@ -52,26 +54,30 @@ Air.Module('B.directive.Repeater', function(require) {
     }
 
     var addUI = function(num) {
+
       var templateStr = template.outerHTML;
       var elementContent = '';
       var elementContainer = document.createDocumentFragment();
       var newFirstNode = null;
+      var newNodeList = [];
       for (var i = 0; i < num; i++) {
         var uiIndex = uiElementCount + i;
         elementContent = getTemplateStr(templateStr, uiIndex, dataPath, dataPrefix);
         var docContainer = document.createElement('div');
         docContainer.innerHTML = elementContent;
         var targetNode = docContainer.firstChild;
+        targetNode.removeAttribute('b-repeat');
         targetNode.$index = uiIndex;
         elementContainer.appendChild(targetNode);
-        newFirstNode = (i === 0) && targetNode;
+        // newFirstNode = newFirstNode || ((i === 0) && targetNode);
+        newNodeList.push(targetNode)
       }
 
       template.parentNode.insertBefore(elementContainer, template);
       elementContainer = null;
       docContainer = null;
       uiElementCount += num;
-      return newFirstNode;
+      return newNodeList;
     }
 
     var removeUI = function(num) {
@@ -100,12 +106,14 @@ Air.Module('B.directive.Repeater', function(require) {
     function bindRepeatData(repeater, dataPath) {
       var activePath = '';
       var pathNodes = dataPath.split('.') || [];
+      (template, currentScopeIndex, scopeStructure, parseTemplate) 
       for (var i = 0; i < pathNodes.length; i++) {
-        var nextPathNode = pathNodes.shift();
+        // var nextPathNode = pathNodes.shift();
+        var nextPathNode = pathNodes[i];
 
         var activeObj = activePath ? util.getData(activePath, scope) : scope;
         activeObj = activeObj || Air.NS(activePath, scope);
-        var nextObj = nextPathNode && util.getData(nextPathNode, scope);
+        var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
         Object.defineProperty(activeObj, nextPathNode, createRepeatDataDescriptor.call(activeObj, repeater, nextObj));
         activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
       }
@@ -127,8 +135,12 @@ Air.Module('B.directive.Repeater', function(require) {
           // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
           setTimeout(function() {
             if (oldLength !== value.length) {
-              var node = repeater.updateUI();
-              node && parseTemplate(node, currentScopeIndex);
+              var nodes = repeater.updateUI();
+              // node && parseTemplate(node, currentScopeIndex);
+              for(var i=0; i<nodes.length; i++){
+                var activeNode = nodes[i];
+                activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
+              }
             }
             oldLength = value.length;
           }, 0);
@@ -146,8 +158,12 @@ Air.Module('B.directive.Repeater', function(require) {
           } else if (hasChanged && isArray) {
             value = value || [];
             beacon.utility.merge(value, val);
-            var node = repeater.updateUI();
-            node && parseTemplate(node, currentScopeIndex);
+            var nodes = repeater.updateUI();
+            // node && parseTemplate(node, currentScopeIndex, currentScopeIndex);
+            for(var i=0; i<nodes.length; i++){
+              var activeNode = nodes[i];
+              activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
+            }
           }
         }
       }

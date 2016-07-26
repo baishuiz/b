@@ -5,7 +5,6 @@ describe('数据绑定', function () {
         $scope.flower = 'sun';
         $scope.cityTL = 'tieling'
         $scope.citySH = 'shanghai'
-        console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         var dom = {
           flower : document.querySelector('view[name=page_default] .flower'),
           flower_A : document.querySelector('view[name=page_default] .flower_A'),
@@ -80,11 +79,13 @@ describe('数据绑定', function () {
       b.run('page_detail_subview', function(require, $scope){
         $scope.subValue = 's';
         var dom = {
-          text : document.querySelector('view[name=page_detail_subview] .text')
+          text : document.querySelector('view[name=page_detail_subview] .text'),
+          p    : document.querySelector('view[name=page_detail] h1')
         }
 
         setTimeout(function(){
           expect(dom.text.innerText).toEqual('p - s');
+          expect(dom.p.innerText).toEqual('p');
           expect($scope.$resourceURL).toEqual('/test/page_controller/');
           done();
         }, 0);

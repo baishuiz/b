@@ -52,6 +52,7 @@ module.exports = function(grunt){
                         './src/B/scope/Scope.js',
                         './src/B/scope/ScopeTreeManager.js',
                         './src/B/directive/Repeater.js',
+                        './src/B/scope/tagManager.js',
                         './src/B/scope/scopeManager.js',
                         './src/B/network/http.js',
                         './src/B/service/Service.js',

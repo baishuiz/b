@@ -43,12 +43,14 @@ Air.Module('B.scope.ScopeTreeManager', function(require) {
     var addScope = function(parentIndex, scopeName) {
       var parentScopeStructure = getScope(parentIndex);
       var newScope = structure();
+      // var scopeIndex = scopeTree.push(newScope) - 1;
+      scopeTree[scopeName] = newScope
       var scopeIndex = scopeTree.push(newScope) - 1;
       newScope.scope = new Scope(parentScopeStructure.scope);
       newScope.pn = parentIndex;
       newScope.name = scopeName;
       scopeMap[scopeName] = newScope;
-      return scopeIndex;
+      return scopeName;
     }
 
     var getScopeByName = function(scopeName) {
