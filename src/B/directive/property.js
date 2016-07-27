@@ -26,7 +26,7 @@ Air.Module('B.directive.property', function(require) {
   }
 
    function getPropertyList(ruleStr){
-     var reg = /(\w+)\s*:\s*(\S+?\b)/g
+     var reg = /(\w+)\s*:\s*([^,}\s]+)/g
      var result = [];
      ruleStr.replace(reg, function(matchRule, propertyName, dataPath){
        var item = {
