@@ -61,7 +61,7 @@ Air.Module('B.scope.scopeManager', function(require) {
    *参数: <currentScopeIndex> 当前作用域索引值
    *返回：undefind
    **/
-  function bindObjectData(dataPath, currentScopeIndex) {
+  function bindObjectData(dataPath, currentScopeIndex, callback) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
     var scope = scopeStructure.scope
     var activePath = '';
@@ -73,7 +73,7 @@ Air.Module('B.scope.scopeManager', function(require) {
       var activeObj = activePath ? util.getData(activePath, scope) : scope;
       activeObj = activeObj || Air.NS(activePath, scope);
       var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
-      
+
       nextPathNode && (!Object.getOwnPropertyDescriptor(activeObj, nextPathNode) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
         Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
@@ -89,12 +89,12 @@ Air.Module('B.scope.scopeManager', function(require) {
    *参数: <scopeIndex> 数据标签所在作用域索引值
    *返回：undefind
    **/
-  function watchData(tag, node, scopeIndex){
+  function watchData(tag, node, scopeIndex, callback){
      var scope = scopeTreeManager.getScope(scopeIndex);
      var tokens = getTokens(tag, node, scopeIndex);
      for(var i = 0; i < tokens.length; i++){
        var activeToken = tokens[i];
-       tagManager.addNode(scopeIndex, activeToken, node);
+       tagManager.addNode(scopeIndex, activeToken, node, callback);
       //  tagManager.updateNodeValue(scopeIndex, scope, activeToken)
        bindObjectData(activeToken, scopeIndex);
      }
@@ -183,9 +183,9 @@ Air.Module('B.scope.scopeManager', function(require) {
     scopeStructure = tryGenerateSubViewScope(node, scopeStructure, currentScopeIndex);
     var scope = scopeStructure.scope;
 
-    initModel(node, scope);
+    initModel(node, scopeStructure, watchData);
     eventDirective(node, scope);
-    showDirective(node, scope);
+    showDirective(node, scopeStructure, watchData);
     propertyDirective(node, scope);
 
     var attributes = [].concat.apply([], node.attributes);
@@ -310,6 +310,7 @@ Air.Module('B.scope.scopeManager', function(require) {
     parseScope: parseScope,
     getScope: scopeTreeManager.getScopeByName,
     setRoot: scopeTreeManager.setRootScope,
-    getScopeInstance: scopeTreeManager.getScopeInstanceByName
+    getScopeInstance: scopeTreeManager.getScopeInstanceByName,
+    watchData: watchData
   }
 });

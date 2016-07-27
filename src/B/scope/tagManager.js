@@ -9,12 +9,13 @@ Air.Module('B.scope.tagManager', function(require) {
    *参数: <node> 文本节点|属性节点
    *返回：array  文本节点|属性节点列表
    **/
-  function addNode(scopeIndex, token, node){
+  function addNode(scopeIndex, token, node, callback){
     nodeMap[scopeIndex] = nodeMap[scopeIndex] || {};
     nodeMap[scopeIndex][token] = nodeMap[scopeIndex][token]  || [];
     nodeMap[scopeIndex][token].push({
       element : node,
-      template : node.$template
+      template : node.$template,
+      callback : callback
     });
   }
 
@@ -35,17 +36,15 @@ Air.Module('B.scope.tagManager', function(require) {
    *参数: <token> 数据路径
    *返回：array  文本节点|属性节点列表
    **/
-  function updateNodeValue(scopeIndex, scope, token){
+  function updateNodeValue(scopeIndex, scope, token, callback){
     var nodes = getNodes(scopeIndex, token);
     for(var i = 0; i< nodes.length; i++){
       var activeNode = nodes[i];
       var newValue = activeNode.template.replace(/{{(.*?)}}/g, function(tag, expression){
-        scope
-        scopeIndex
-        console.count(activeNode)
-        return eval(expression) || '666';
+        return eval(expression) || '';
       });
       activeNode.element.nodeValue = newValue;
+      activeNode.callback && activeNode.callback(newValue);
     }
   }
 

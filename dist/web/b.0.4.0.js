@@ -227,19 +227,21 @@
     util = require('B.util.util');
 
   var attribute = 'b-show';
-  var api = function(target, $scope) {
+  var api = function(target, scopeStructure, watchData) {
     var isShowElement = node(target).hasAttribute(attribute);
-    isShowElement && processShowElement(target, $scope);
+    isShowElement && processShowElement(target, scopeStructure, watchData);
   }
 
-  function processShowElement(target, $scope) {
-    var dataPath = target.getAttribute(attribute);
-    // TODO
-    // $scope.listenDataChange(dataPath, watchElement)
-    function watchElement() {
-      var dataPath = target.getAttribute(attribute);
-      var displayStatus = util.getData(dataPath, $scope);
-      displayStatus = util.isEmpty(displayStatus) ? false : displayStatus;
+  function processShowElement(target, scopeStructure, watchData) {
+    var $scope = scopeStructure.scope;
+    var scopeIndex = scopeStructure.name;
+    var attrNode = target.getAttributeNode(attribute);
+
+    attrNode.nodeValue = '{{' + attrNode.nodeValue + '}}';
+
+    watchData(attrNode.nodeValue, attrNode, scopeIndex, watchElement);
+
+    function watchElement(displayStatus) {
       displayStatus ? showHide(target, true) : showHide(target);
     }
   }
@@ -351,6 +353,8 @@
     }
   }
 
+  // TODO
+
   function bindValue(activeProperty, target, $scope){
     beacon($scope).on(EVENTS.DATA_CHANGE, function(){
       var value = util.getData(activeProperty.dataPath, $scope);
@@ -359,7 +363,7 @@
   }
 
    function getPropertyList(ruleStr){
-     var reg = /(\w+)\s*:\s*(\S+?\b)/g
+     var reg = /(\w+)\s*:\s*([^,}\s]+)/g
      var result = [];
      ruleStr.replace(reg, function(matchRule, propertyName, dataPath){
        var item = {
@@ -379,21 +383,22 @@
   var nodeUtil  = require('B.util.node'),
       util      = require('B.util.util'),
       EVENTS    = require("B.event.events");
+
   var attrName = 'b-model';
-  var api = function(target, $scope){
+  var api = function(target, scopeStructure, watchData){
+      var $scope = scopeStructure.scope;
+      var scopeIndex = scopeStructure.name;
       var activeModel = null;
       if(!nodeUtil(target).hasAttribute(attrName)){
         return;
       }
+      var attrNode = target.getAttributeNode(attrName);
       var dataPath = target.getAttribute(attrName)
                      .replace(/{{|}}/ig,'');
 
       function onInput(e){
         var target = this;
         new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
-        // activeModel = true;
-        // beacon($scope).on(EVENTS.DATA_CHANGE, {fromBModel:true});
-        // activeModel = false;
 
         var removedEvent = e.type === 'input' ? 'change' : 'input';
         beacon(target).off(removedEvent, onInput);
@@ -402,8 +407,8 @@
       beacon(target).on('input', onInput);
       beacon(target).on('change', onInput);
 
-      // TODO
-      // $scope.listenDataChange(dataPath, modelChangeHandle)
+      watchData('{{' + dataPath + '}}', attrNode, scopeIndex, modelChangeHandle);
+
       function modelChangeHandle(){
         var value = util.getData(dataPath, $scope);
         if(target.value === value){return};
@@ -423,7 +428,7 @@
   var EVENTS = require('B.event.events');
   var util = require('B.util.util');
   var Scope = function(parent) {
-    this.parent = parent
+    this.parent = parent;
   }
 
   /**
@@ -431,10 +436,7 @@
    *参数: <textNode> 文本节点或属性节点.
    *返回：文本节点或属性节点数据源的描述符
    **/
-  function createDescriptor(textNode, value, callback, scope) {
-    var template = textNode.nodeValue;
-    textNode.nodeValue = getExpressionValue(template, dataPath, value, scope);
-
+  function createDescriptor(textNode, value, callback, scope, dataPath) {
     var descriptor = {
       enumerable: true,
       configurable: true,
@@ -443,70 +445,25 @@
       },
 
       set: function(val) {
-        var hasChanged = this.value !== value;
+        var hasChanged = value !== val;
         var isPathNode = beacon.utility.isType(value, 'Array') || beacon.utility.isType(value, 'Object');
-        if (hasChanged && isPathNode) {
-          value = val;
-          textNode.nodeValue = getExpressionValue(template, dataPath, value, scope);
-          callback && callback();
+        if (hasChanged) {
+          if (isPathNode) {
+            value = value || {};
+            beacon.utility.merge(value, val);
+          } else {
+            value = beacon.utility.isType(val, 'Undefined') ? '' : val;
+            callback && callback();
+          }
         }
       }
     }
     return descriptor;
   }
 
-  function getExpressionPath(expressionStr) {
-    var tokens = expressionStr.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
-    var result = [];
-    for (var i = 0; i < tokens.length; i++) {
-      var token = tokens[i];
-       token = trim(token);
-       if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
-       } else {
-         result.push(token);
-         // return 'util.getData("' + token + '", $scope)'
-       }
-    }
-    return result;
-  }
-
-  function getExpressionValue(expressionStr, dataPath, value, scope) {
-    dataPath = dataPath.replace(/{{|}}/ig, '');
-    var expression = dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
-       token = trim(token);
-       if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
-         return token
-       } else {
-         return 'util.getData("' + token + '", scope)'
-       }
-    });
-
-    var data = eval(expression) //new Function($scope, 'return ' + expression)($scope);
-    data = util.isEmpty(data) ? '' : data;
-    var temlateReg = new RegExp('\\{\\{' + dataPath.replace(/(\$|\.)/, '\\$1') + '\\}\\}', 'g');
-    return expressionStr.replace(temlateReg, data);
-  }
-
-  var proto = {};
-
-  proto.listenDataChange = function(dataPath, node, callback) {
-    var scope = this;
-    var activePath = '';
-
-    var pathNodes = dataPath.split('.') || [];
-    for (var i = 0; i < pathNodes.length; i++) {
-      var nextPathNode = pathNodes.shift();
-
-      var activeObj = activePath ? util.getData(activePath, scope) : scope;
-      activeObj = activeObj || Air.NS(activePath, scope);
-      var nextObj = nextPathNode && util.getData(nextPathNode, scope);
-      Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, node, nextObj, callback, scope));
-      activePath = nextPathNode ? (activePath + '.' + nextPathNode) : nextPathNode;
-    }
-  }
-
   var api = function(parent) {
-    Scope.prototype = parent || proto;
+    Scope.prototype = parent || {};
+    Scope.prototype.constructor = Scope;
     return new Scope(parent);
   }
   return api;
@@ -793,12 +750,13 @@
    *参数: <node> 文本节点|属性节点
    *返回：array  文本节点|属性节点列表
    **/
-  function addNode(scopeIndex, token, node){
+  function addNode(scopeIndex, token, node, callback){
     nodeMap[scopeIndex] = nodeMap[scopeIndex] || {};
     nodeMap[scopeIndex][token] = nodeMap[scopeIndex][token]  || [];
     nodeMap[scopeIndex][token].push({
       element : node,
-      template : node.$template
+      template : node.$template,
+      callback : callback
     });
   }
 
@@ -819,17 +777,15 @@
    *参数: <token> 数据路径
    *返回：array  文本节点|属性节点列表
    **/
-  function updateNodeValue(scopeIndex, scope, token){
+  function updateNodeValue(scopeIndex, scope, token, callback){
     var nodes = getNodes(scopeIndex, token);
     for(var i = 0; i< nodes.length; i++){
       var activeNode = nodes[i];
       var newValue = activeNode.template.replace(/{{(.*?)}}/g, function(tag, expression){
-        scope
-        scopeIndex
-        console.count(activeNode)
-        return eval(expression) || '666';
+        return eval(expression) || '';
       });
       activeNode.element.nodeValue = newValue;
+      activeNode.callback && activeNode.callback(newValue);
     }
   }
 
@@ -906,7 +862,7 @@
    *参数: <currentScopeIndex> 当前作用域索引值
    *返回：undefind
    **/
-  function bindObjectData(dataPath, currentScopeIndex) {
+  function bindObjectData(dataPath, currentScopeIndex, callback) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
     var scope = scopeStructure.scope
     var activePath = '';
@@ -918,7 +874,7 @@
       var activeObj = activePath ? util.getData(activePath, scope) : scope;
       activeObj = activeObj || Air.NS(activePath, scope);
       var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
-      
+
       nextPathNode && (!Object.getOwnPropertyDescriptor(activeObj, nextPathNode) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
         Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
@@ -934,12 +890,12 @@
    *参数: <scopeIndex> 数据标签所在作用域索引值
    *返回：undefind
    **/
-  function watchData(tag, node, scopeIndex){
+  function watchData(tag, node, scopeIndex, callback){
      var scope = scopeTreeManager.getScope(scopeIndex);
      var tokens = getTokens(tag, node, scopeIndex);
      for(var i = 0; i < tokens.length; i++){
        var activeToken = tokens[i];
-       tagManager.addNode(scopeIndex, activeToken, node);
+       tagManager.addNode(scopeIndex, activeToken, node, callback);
       //  tagManager.updateNodeValue(scopeIndex, scope, activeToken)
        bindObjectData(activeToken, scopeIndex);
      }
@@ -1028,9 +984,9 @@
     scopeStructure = tryGenerateSubViewScope(node, scopeStructure, currentScopeIndex);
     var scope = scopeStructure.scope;
 
-    initModel(node, scope);
+    initModel(node, scopeStructure, watchData);
     eventDirective(node, scope);
-    showDirective(node, scope);
+    showDirective(node, scopeStructure, watchData);
     propertyDirective(node, scope);
 
     var attributes = [].concat.apply([], node.attributes);
@@ -1155,7 +1111,8 @@
     parseScope: parseScope,
     getScope: scopeTreeManager.getScopeByName,
     setRoot: scopeTreeManager.setRootScope,
-    getScopeInstance: scopeTreeManager.getScopeInstanceByName
+    getScopeInstance: scopeTreeManager.getScopeInstanceByName,
+    watchData: watchData
   }
 });
 ;Air.Module('B.network.HTTP', function() {

@@ -18,30 +18,26 @@ describe('b-show', function () {
         }
       }
 
-      function testInit(){
+      setTimeout(function(){
         expect(window.getComputedStyle(dom.p)['display']).toEqual('none');
         expect(window.getComputedStyle(dom.table)['display']).toEqual('none');
         expect(window.getComputedStyle(dom.li)['display']).toEqual('none');
-        Object.unobserve($scope, testInit)
         done();
-      }
+      }, 1000);
 
-      Object.observe($scope, testInit);
       $scope.logined = false;
     });
   });
 
   it('切换可见状态', function(done){
 
-    function toShow(){
+    setTimeout(function(){
         expect(window.getComputedStyle(dom.p)['display']).toEqual('block');
         expect(window.getComputedStyle(dom.table)['display']).toEqual('table');
         expect(window.getComputedStyle(dom.li)['display']).toEqual('list-item');
-        Object.unobserve($$scope, toShow);
         done();
-    }
+    }, 1000);
 
-    Object.observe($$scope, toShow);
     beacon(dom.p).on('click');
   })
 
@@ -49,16 +45,12 @@ describe('b-show', function () {
 
   it('切换隐藏状态', function(done){
 
-
-    function toHide(){
+    setTimeout(function(){
       expect(window.getComputedStyle(dom.p)['display']).toEqual('none');
       expect(window.getComputedStyle(dom.table)['display']).toEqual('none');
       expect(window.getComputedStyle(dom.li)['display']).toEqual('none');
-      Object.unobserve($$scope, toHide)
       done();
-    }
-
-    Object.observe($$scope, toHide);
+    }, 1000);
 
     beacon(dom.p).on('click');
   })
