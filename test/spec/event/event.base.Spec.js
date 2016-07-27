@@ -35,11 +35,11 @@ describe('事件绑定', function () {
           // dispatchEvent(dom.btn, 'click');
           // dispatchEvent(dom.btn, 'test');
           beacon(dom.btn).on('test');
-        }, 1000);
-                
+        }, 0);
+
         // dispatchEvent(dom.btn, 'test');
         // beacon(dom.btn).on('test');
-      }, 1000);
+      }, 0);
 
 
     })

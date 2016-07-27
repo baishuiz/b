@@ -94,7 +94,7 @@ viewport view[active="true"]{display:block}
   <view name="page_repeat_with_event_inner">
     <ul>
       <li b-repeat="item in lista">
-        <a href="javascript:void(0)" b-event="click clickHandle(item.$index)">{{item.name}}</a>
+        <a href="javascript:void(0)" b-event="click clickHandle({{item.$index}})">{{item.name}}</a>
       </li>
     </ul>
   </view>
@@ -102,7 +102,7 @@ viewport view[active="true"]{display:block}
     <p class="title" b-event="click titleClickHandle()">{{notice}}</p>
     <ul>
       <li b-repeat="item in list">
-        <a href="javascript:void(0)" b-event="click itemClickHandle()">{{item.name}}</a>
+        <a href="javascript:void(0)" b-event="click itemClickHandle({{item.$index}})">{{item.name}}</a>
       </li>
     </ul>
   </view>
@@ -111,7 +111,7 @@ viewport view[active="true"]{display:block}
     <div>
       <div class="list1" b-repeat="item1 in list1">
         <div class="list2" b-repeat="item2 in list2">
-          <a href="javascript:void(0)" b-event="click clickHandle()">{{item1.name}}{{item2.name}}</a>
+          <a href="javascript:void(0)" b-event="click clickHandle({{item2.$index}})">{{item1.name}}{{item2.name}}</a>
         </div>
       </div>
     </div>

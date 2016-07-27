@@ -347,9 +347,9 @@
     };
 
     function getParentScope($scope) {
-      if ($scope.parent) {
-        return getParentScope($scope.parent);
-      }
+      // if ($scope.parent) {
+      //   return getParentScope($scope.parent);
+      // }
       return $scope;
     }
 
@@ -920,11 +920,13 @@
     // dataPath = dataPath.replace(/\.\d+$/,'')
     var pathNodes = dataPath.split('.') || [];
     for (var i = 0; i < pathNodes.length; i++) {
-      var nextPathNode = pathNodes.shift();
+      // var nextPathNode = pathNodes.shift();
+      var nextPathNode = pathNodes[i];
       var activeObj = activePath ? util.getData(activePath, scope) : scope;
       activeObj = activeObj || Air.NS(activePath, scope);
       var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
-      nextPathNode &&
+      
+      nextPathNode && (!Object.getOwnPropertyDescriptor(activeObj, nextPathNode) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
         Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }
@@ -1069,10 +1071,12 @@
       currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
       // scopeName = currentScopeIndex;
     } else if (isRepeat(node)) { // view 不允许进行 repeat
+      var nextNode = isSub && node.nextSibling;
       var repeatNode = createRepeatNodes(node, currentScopeIndex);
       if(!repeatNode){
-        var nextNode = isSub && node.nextSibling;
         return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
+      }else {
+        node = repeatNode;
       }
     }
 
@@ -1129,7 +1133,6 @@
    **/
   function createDescriptor(value, dataPath, scopeIndex) {
     var scope = scopeTreeManager.getScope(scopeIndex);
-
     var descriptor = {
       enumerable: true,
       configurable: true,

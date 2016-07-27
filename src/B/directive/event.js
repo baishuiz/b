@@ -17,9 +17,9 @@ Air.Module('B.directive.event', function(require){
     };
 
     function getParentScope($scope) {
-      if ($scope.parent) {
-        return getParentScope($scope.parent);
-      }
+      // if ($scope.parent) {
+      //   return getParentScope($scope.parent);
+      // }
       return $scope;
     }
 

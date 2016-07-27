@@ -7,11 +7,13 @@ Air.Module('B.directive.Repeater', function(require) {
     var reg = new RegExp("\\b\("+ dataPrefix +"\)\\b", 'g');
     // var repeatIndexREG = new RegExp('\\b' + dataPath + '\\[\\d+\\]\\.\\$index\\b');
     var repeatIndexREG = new RegExp('\\b' + dataPath + '\\.\\d+\\.\\$index\\b');
+    var repeatIndexREG2 = new RegExp('{{\\b' + dataPath + '\\.\\d+\\.\\$index\\b}}');
 
     var result = str.replace(/\{\{.*?\}\}|b-show\s*=\s*".*?"|b-model\s*=\s*".*?"|b-property\s*=\s*".*"|b-repeat\s*=\s*".*"/g, function(tag){
         // return tag.replace(reg, dataPath + '[' + idx + ']');
         return tag.replace(reg, dataPath + '.' + idx);
     });
+    result = result.replace(repeatIndexREG2, idx);
     result = result.replace(repeatIndexREG, idx);
 
     return result;
@@ -25,13 +27,15 @@ Air.Module('B.directive.Repeater', function(require) {
    **/
   function Repeater(template, currentScopeIndex, scopeStructure, parseTemplate) {
     var scope = scopeStructure.scope;
-    var tag = generatePlaceholder(template);
     var uiElementCount = 0;
+    var tag = generatePlaceholder(template);
     var expressionStr = template.getAttribute('b-repeat');
     var expressionREG = /(\S+)\s+in\s+(\S+)/;
     var expression = expressionStr.match(expressionREG) || [];
     var dataPath = expression[2];
     var dataPrefix = expression[1];
+    var templateStr = template.outerHTML;
+    template.parentNode.removeChild(template);
 
     function generatePlaceholder(target) {
       if (target.placeholder) {
@@ -55,7 +59,8 @@ Air.Module('B.directive.Repeater', function(require) {
 
     var addUI = function(num) {
 
-      var templateStr = template.outerHTML;
+      // var templateStr = template.outerHTML;
+
       var elementContent = '';
       var elementContainer = document.createDocumentFragment();
       var newFirstNode = null;
@@ -73,7 +78,8 @@ Air.Module('B.directive.Repeater', function(require) {
         newNodeList.push(targetNode)
       }
 
-      template.parentNode.insertBefore(elementContainer, template);
+      // template.parentNode.insertBefore(elementContainer, template);
+      tag.parentNode.insertBefore(elementContainer, tag);
       elementContainer = null;
       docContainer = null;
       uiElementCount += num;
@@ -81,8 +87,9 @@ Air.Module('B.directive.Repeater', function(require) {
     }
 
     var removeUI = function(num) {
+      num = Math.abs(num);
       for (var i = 0; i < num; i++) {
-        tag.parent.removeChild(tag.parent.lastChild);
+        tag.parentNode.removeChild(tag.previousElementSibling);
       }
       uiElementCount -= num;
     }
@@ -106,7 +113,7 @@ Air.Module('B.directive.Repeater', function(require) {
     function bindRepeatData(repeater, dataPath) {
       var activePath = '';
       var pathNodes = dataPath.split('.') || [];
-      (template, currentScopeIndex, scopeStructure, parseTemplate) 
+      // (template, currentScopeIndex, scopeStructure, parseTemplate)
       for (var i = 0; i < pathNodes.length; i++) {
         // var nextPathNode = pathNodes.shift();
         var nextPathNode = pathNodes[i];

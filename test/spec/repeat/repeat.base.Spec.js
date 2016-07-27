@@ -44,7 +44,7 @@ describe('repeat', function () {
         expect(dom.listB.querySelector('span:nth-child(3)').innerText.trim()).toEqual('T3');
         // expect(dom.listB.querySelector('li:nth-child(3)').getAttribute('name')).toEqual('Name 3, welcome');
         done();
-      }, 1000);
+      }, 0);
     });
   });
 
@@ -81,7 +81,7 @@ describe('repeat', function () {
         expect(view.querySelectorAll('.list2').length).toEqual(9);
         expect(view.querySelector('.list1:nth-child(2) .list2:nth-child(2)').innerText.trim()).toEqual('Name 1-2 Name 2-2');
         done();
-      }, 1000);
+      }, 0);
     });
   });
 
@@ -119,7 +119,7 @@ describe('repeat', function () {
         expect(view.querySelector('.list1 li:nth-child(2)').innerText.trim()).toEqual('Name 1-2');
         expect(view.querySelector('.list2 li:nth-child(2)').innerText.trim()).toEqual('Name 2-2');
         done();
-      }, 1000);
+      }, 0);
     });
   });
 
@@ -171,7 +171,9 @@ describe('repeat', function () {
 
           // a[this.$index] = { name: msg };
           a[3] = { name: 'Name 44'};
+          // $scope.list = a;
           $scope.list = a;
+          $scope.list[3] = { name: 'Name 44'};
 
           $scope.a.b = {
               list :[
@@ -202,11 +204,11 @@ describe('repeat', function () {
           expect(dom.listB.querySelector('span:nth-child(2)').innerText.trim()).toEqual('T2');
           expect(dom.listB.querySelector('span:nth-child(3)').innerText.trim()).toEqual('T3');
           done();
-        // });
-        var target = dom.list.querySelector('li:nth-child(3)');
-        beacon(target).on('click');
+      },0);
+      // });
+      var target = dom.list.querySelector('li:nth-child(3)');
+      beacon(target).on('click');
 
-      },1000);
 
     })
 
@@ -217,6 +219,7 @@ describe('repeat', function () {
       var dom = {
         list : document.querySelector('view[name=page_repeat_with_event_inner]>ul')
       }
+      window.ttt = $scope
       $scope.lista = [
         {
           name: 'Name 11'
@@ -232,16 +235,19 @@ describe('repeat', function () {
 
       $scope.$event = {
         'clickHandle' : function(e, index){
+          $scope.lista[1].name = 'hello';
           $scope.lista[index] = { name: 'good' };
           $scope.lista[3] = { name: 'Name 44'};
+          $scope.lista.push({ name: 'Name 55'});
           setTimeout(function(){
-            expect(dom.list.querySelectorAll('li').length).toEqual(4);
+            expect(dom.list.querySelectorAll('li').length).toEqual(5);
             expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 11');
-            expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
+            expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('hello');
             expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('good');
             expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
+            expect(dom.list.querySelector('li:nth-child(5)').innerText.trim()).toEqual('Name 55');
             done();
-          }, 1000);
+          }, 0);
         }
       }
 
@@ -291,10 +297,10 @@ describe('repeat', function () {
             expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
 
             beacon(dom.list.querySelector('li:nth-child(4)>a')).on('click');
-          }, 1000);
+          }, 0);
         },
-        'itemClickHandle' : function(e){
-          $scope.notice = 'Hello ' + this.$index;
+        'itemClickHandle' : function(e, index){
+          $scope.notice = 'Hello ' + index;
 
           setTimeout(function(){
             expect(dom.list.querySelectorAll('li').length).toEqual(4);
@@ -304,7 +310,7 @@ describe('repeat', function () {
             expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
             expect(dom.title.innerText).toEqual('Hello 3');
             done();
-          }, 1000);
+          }, 0);
         }
       }
 
@@ -315,7 +321,7 @@ describe('repeat', function () {
         // expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 33');
 
         beacon(dom.title).on('click');
-      }, 1000);
+      }, 0);
 
     })
 
@@ -351,23 +357,23 @@ describe('repeat', function () {
       var view = document.querySelector('view[name=page_repeat_in_repeat_event]');
 
       $scope.$event = {
-        clickHandle: function(){
+        clickHandle: function(e, index){
           $scope.notice = 'Hello1';
           $scope.list1[3] = { name: 'Name 1-4'};
-          $scope.list2[this.$index] = { name: ' Name 2-333'};
+          $scope.list2[index] = { name: ' Name 2-333'};
 
           setTimeout(function(){
             expect(view.querySelector('.title').innerText.trim()).toEqual('Hello1');
             expect(view.querySelector('.list1:nth-child(4) .list2:nth-child(1)').innerText.trim()).toEqual('Name 1-4 Name 2-1');
             expect(view.querySelector('.list1:nth-child(2) .list2:nth-child(3)').innerText.trim()).toEqual('Name 1-2 Name 2-333');
             done();
-          }, 1000);
+          }, 0);
         }
       };
 
       setTimeout(function(){
         beacon(view.querySelector('.list1:nth-child(2) .list2:nth-child(3) a')).on('click');
-      }, 1000);
+      }, 0);
     });
   });
 
