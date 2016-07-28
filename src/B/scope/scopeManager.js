@@ -130,7 +130,6 @@ Air.Module('B.scope.scopeManager', function(require) {
 
   /**
    *作用：解析文本|属性节点，监听数据变化
-   * TODO option
    *参数: <node> 文本节点|属性节点
    *参数: <currentScopeIndex> 数据标签所在作用域索引值
    *返回：undefind
