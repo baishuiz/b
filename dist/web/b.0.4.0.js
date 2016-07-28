@@ -781,7 +781,7 @@
     var nodes = getNodes(scopeIndex, token);
     for(var i = 0; i< nodes.length; i++){
       var activeNode = nodes[i];
-      var newValue = activeNode.template.replace(/{{(.*?)}}/g, function(tag, expression){
+      var newValue = activeNode.element.$template.replace(/{{(.*?)}}/g, function(tag, expression){
         return eval(expression) || '';
       });
       activeNode.element.nodeValue = newValue;
@@ -916,8 +916,8 @@
       if(!(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false')){
         // node.nodeValue = node.nodeValue.replace(token, 'util.getData("' + token + '", scope)')
         // console.log(token, '*************')
-
-        node.$template = node.$template.replace(token, 'util.getData("' + token + '", scope)')
+        var tokenReg = new RegExp(token.replace(/([.*?+\-^\/$])/g, '\\$1'), 'g');
+        node.$template = node.$template.replace(tokenReg, 'util.getData("' + token + '", scope)')
         if(tokens.length === 1){
           node.nodeValue = node.nodeValue.replace(tag, util.getData(token, scope.scope)||'');
         }
@@ -1096,8 +1096,10 @@
           value = value || {};
           beacon.utility.merge(value, val);
         } else {
-          value = val;
-          tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
+          if(value !== val){
+            value = val;
+            tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
+          }
         }
       }
     }

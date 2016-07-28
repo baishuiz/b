@@ -40,7 +40,7 @@ Air.Module('B.scope.tagManager', function(require) {
     var nodes = getNodes(scopeIndex, token);
     for(var i = 0; i< nodes.length; i++){
       var activeNode = nodes[i];
-      var newValue = activeNode.template.replace(/{{(.*?)}}/g, function(tag, expression){
+      var newValue = activeNode.element.$template.replace(/{{(.*?)}}/g, function(tag, expression){
         return eval(expression) || '';
       });
       activeNode.element.nodeValue = newValue;
