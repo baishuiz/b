@@ -7,13 +7,17 @@ describe('b-property', function () {
     b.run('page_b-property', function(require, $scope){
       $scope.$event = {
         switchi : function(){
-          $scope.readonly = false;
-          $scope.disable  = true;
+          $scope.a.b.readonly = false;
+          $scope.a.b.disable  = true;
         }
       }
 
-      $scope.readonly = true;
-      $scope.disable  = false;
+      $scope.a = {
+        b: {
+          readonly: true,
+          disabled: false
+        }
+      };
 
       setTimeout(function(){
         expect(dom.input.hasAttribute('readonly')).toEqual(true);
