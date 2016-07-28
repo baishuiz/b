@@ -23,15 +23,17 @@ describe('b-property', function () {
         expect(dom.input.hasAttribute('readonly')).toEqual(true);
         expect(dom.input.hasAttribute('disabled')).toEqual(false);
         done();
-      }, 0);
+      }, 18);
     });
   });
 
   it('切换特性', function(done){
     beacon(dom.input).once('click', function(){
-      expect(dom.input.hasAttribute('readonly')).toEqual(false);
-      expect(dom.input.hasAttribute('disabled')).toEqual(true);
-      done();
+      setTimeout(function(){
+        expect(dom.input.hasAttribute('readonly')).toEqual(false);
+        expect(dom.input.hasAttribute('disabled')).toEqual(true);
+        done();
+      }, 18);
     });
 
     beacon(dom.input).on('click');
