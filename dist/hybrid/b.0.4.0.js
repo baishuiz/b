@@ -813,6 +813,7 @@
   var initModel =  require('B.directive.model');
   var eventDirective = require('B.directive.event');
   var showDirective = require('B.directive.show');
+  var styleDirective = require('B.directive.style');
   var propertyDirective = require('B.directive.property');
   var Repeater = require('B.directive.Repeater');
   var tagManager = require('B.scope.tagManager');
@@ -938,7 +939,7 @@
 
   /**
    *作用：解析文本|属性节点，监听数据变化
-   * TODO 表达式、option、b-style
+   * TODO option、b-style
    *参数: <node> 文本节点|属性节点
    *参数: <currentScopeIndex> 数据标签所在作用域索引值
    *返回：undefind
@@ -995,6 +996,7 @@
     initModel(node, scopeStructure, watchData);
     eventDirective(node, scope);
     showDirective(node, scopeStructure, watchData);
+    styleDirective(node, scopeStructure, watchData);
     propertyDirective(node, scope);
 
     var attributes = [].concat.apply([], node.attributes);

@@ -47,6 +47,7 @@ module.exports = function(grunt){
                         './src/B/event/events.js',
                         './src/B/directive/event.js',
                         './src/B/directive/show.js',
+                        './src/B/directive/style.js',
                         './src/B/directive/property.js',
                         './src/B/directive/model.js',
                         './src/B/scope/Scope.js',
@@ -114,6 +115,7 @@ module.exports = function(grunt){
                   './test/spec/repeat/*Spec.js',
                   './test/spec/model/*Spec.js',
                   './test/spec/b-show/*Spec.js',
+                  './test/spec/b-style/*Spec.js',
                   './test/spec/b-property/*Spec.js',
                   './test/spec/TDK/*Spec.js'
                 ],

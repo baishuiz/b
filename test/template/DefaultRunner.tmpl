@@ -131,6 +131,15 @@ viewport view[active="true"]{display:block}
     </ul>
   </view>
 
+  <view name="page_b-style">
+    <style>#page_b-style_table { display: none; }</style>
+    <p b-style="display:{{logined}}" b-event="click switchi()"></p>
+    <table b-style="display:{{logined}}" id="page_b-style_table"></table>
+    <ul>
+      <li b-style="display:{{logined}}" id="page_b-style_list_item"></li>
+    </ul>
+  </view>
+
   <view name="page_b-property">
     <input b-event="click switchi()" b-property="{readOnly: a.b.readonly, disabled: a.b.disable}" id="page_b-property-input" />
   </view>
