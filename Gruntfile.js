@@ -116,6 +116,7 @@ module.exports = function(grunt){
                   './test/spec/model/*Spec.js',
                   './test/spec/b-show/*Spec.js',
                   './test/spec/b-style/*Spec.js',
+                  './test/spec/formElement/*Spec.js',
                   './test/spec/b-property/*Spec.js',
                   './test/spec/TDK/*Spec.js'
                 ],
@@ -144,6 +145,8 @@ module.exports = function(grunt){
                   './test/spec/repeat/*Spec.js',
                   './test/spec/model/*Spec.js',
                   './test/spec/b-show/*Spec.js',
+                  './test/spec/b-style/*Spec.js',
+                  './test/spec/formElement/*Spec.js',
                   './test/spec/b-property/*Spec.js',
                   './test/spec/TDK/*Spec.js'
                 ],

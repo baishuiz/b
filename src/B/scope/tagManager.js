@@ -43,6 +43,19 @@ Air.Module('B.scope.tagManager', function(require) {
       var newValue = activeNode.element.$template.replace(/{{(.*?)}}/g, function(tag, expression){
         return eval(expression) || '';
       });
+
+      // 修正 select 开始
+      // ToDo: 代码外移
+      var ownerElement = activeNode.ownerElement;
+      if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
+        setTimeout(function(){
+          if (ownerElement.parentNode) {
+            ownerElement.parentNode.value = ownerElement.parentNode.defaultValue;
+          }
+        },0);
+      }
+      // 修正 select 结束
+
       activeNode.element.nodeValue = newValue;
       activeNode.callback && activeNode.callback(newValue);
     }

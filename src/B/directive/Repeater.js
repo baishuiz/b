@@ -19,6 +19,15 @@ Air.Module('B.directive.Repeater', function(require) {
     return result;
   }
 
+
+  function fixSelectElement(placeholder, target){
+    if(target.nodeName.toLowerCase()=='option'){
+      setTimeout(function(){
+        placeholder.parentNode.value = placeholder.parentNode.defaultValue;
+      },0);
+    }
+  }
+
   /**
    *作用：repeat模板控制器类
    *参数: <template> repeat模板引用.
@@ -80,6 +89,7 @@ Air.Module('B.directive.Repeater', function(require) {
 
       // template.parentNode.insertBefore(elementContainer, template);
       tag.parentNode.insertBefore(elementContainer, tag);
+      fixSelectElement(tag, targetNode)
       elementContainer = null;
       docContainer = null;
       uiElementCount += num;

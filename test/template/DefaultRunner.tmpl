@@ -140,6 +140,12 @@ viewport view[active="true"]{display:block}
     </ul>
   </view>
 
+  <view name="page_select-option">
+     <select b-model="initNum" name="numSelector" >
+        <option b-repeat="num in nums" value="{{num}}"></option>
+     </select>
+  </view>
+
   <view name="page_b-property">
     <input b-event="click switchi()" b-property="{readOnly: a.b.readonly, disabled: a.b.disable}" id="page_b-property-input" />
   </view>

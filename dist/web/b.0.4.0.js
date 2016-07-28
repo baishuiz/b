@@ -607,6 +607,15 @@
     return result;
   }
 
+
+  function fixSelectElement(placeholder, target){
+    if(target.nodeName.toLowerCase()=='option'){
+      setTimeout(function(){
+        placeholder.parentNode.value = placeholder.parentNode.defaultValue;
+      },0);
+    }
+  }
+
   /**
    *作用：repeat模板控制器类
    *参数: <template> repeat模板引用.
@@ -668,6 +677,7 @@
 
       // template.parentNode.insertBefore(elementContainer, template);
       tag.parentNode.insertBefore(elementContainer, tag);
+      fixSelectElement(tag, targetNode)
       elementContainer = null;
       docContainer = null;
       uiElementCount += num;
@@ -822,6 +832,19 @@
       var newValue = activeNode.element.$template.replace(/{{(.*?)}}/g, function(tag, expression){
         return eval(expression) || '';
       });
+
+      // 修正 select 开始
+      // ToDo: 代码外移
+      var ownerElement = activeNode.ownerElement;
+      if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
+        setTimeout(function(){
+          if (ownerElement.parentNode) {
+            ownerElement.parentNode.value = ownerElement.parentNode.defaultValue;
+          }
+        },0);
+      }
+      // 修正 select 结束
+
       activeNode.element.nodeValue = newValue;
       activeNode.callback && activeNode.callback(newValue);
     }
@@ -969,7 +992,7 @@
 
   /**
    *作用：解析文本|属性节点，监听数据变化
-   * TODO option、b-style
+   * TODO option
    *参数: <node> 文本节点|属性节点
    *参数: <currentScopeIndex> 数据标签所在作用域索引值
    *返回：undefind

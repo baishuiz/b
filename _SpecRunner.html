@@ -140,6 +140,12 @@ viewport view[active="true"]{display:block}
     </ul>
   </view>
 
+  <view name="page_select-option">
+     <select b-model="initNum" name="numSelector" >
+        <option b-repeat="num in nums" value="{{num}}"></option>
+     </select>
+  </view>
+
   <view name="page_b-property">
     <input b-event="click switchi()" b-property="{readOnly: a.b.readonly, disabled: a.b.disable}" id="page_b-property-input" />
   </view>
@@ -170,7 +176,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.4.0.js"></script>
+  <script src="dist/web/b.0.4.0.min.js"></script>
   
 
 
@@ -256,11 +262,11 @@ viewport view[active="true"]{display:block}
   
   <script src="test/spec/b-style/style.base.Spec.js"></script>
   
+  <script src="test/spec/formElement/select-option.base.Spec.js"></script>
+  
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   
   <script src="test/spec/TDK/TDK.Spec.js"></script>
-  
-  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   
