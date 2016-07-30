@@ -1133,7 +1133,8 @@ Object.observe || (function(O, A, root, _undefined) {
 
       function onInput(e){
         var target = this;
-        new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
+        var value = target.type==='checkbox' ?  target.checked : target.value;
+        new Function('$scope','value','$scope.' + dataPath + '= value')($scope, value)
         // activeModel = true;
         // beacon($scope).on(EVENTS.DATA_CHANGE, {fromBModel:true});
         // activeModel = false;
@@ -1156,6 +1157,7 @@ Object.observe || (function(O, A, root, _undefined) {
          target.defaultValue = result;
          if (target.type !== 'file') {
            target.value = result;
+           target.checked = result;
          }
         }
       }
