@@ -436,7 +436,9 @@
 
       function onInput(e){
         var target = this;
-        new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
+        var value = target.type==='checkbox' ?  target.checked : target.value;
+        // new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
+        new Function('$scope','value','$scope.' + dataPath + '= value')($scope, value)
 
         var removedEvent = e.type === 'input' ? 'change' : 'input';
         beacon(target).off(removedEvent, onInput);
@@ -455,7 +457,12 @@
         if(target.value !== value) {
          target.defaultValue = result;
          if (target.type !== 'file') {
-           target.value = result;
+          //  if(beacon.utility.isType(target.checked, 'Boolean')){
+             target.checked = result;
+          //  } else {
+             target.value = result;
+          //  }
+
          }
         }
       }
@@ -992,7 +999,6 @@
 
   /**
    *作用：解析文本|属性节点，监听数据变化
-   * TODO option
    *参数: <node> 文本节点|属性节点
    *参数: <currentScopeIndex> 数据标签所在作用域索引值
    *返回：undefind
