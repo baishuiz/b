@@ -2870,8 +2870,9 @@ Air.run(function(require){
       router = require("B.router.router"),
       memCache = require('B.data.memCache'),
       run = require('B.controller.run'),
-      serviceFactory = require('B.service.serviceFactory');
-      TDK = require('B.TDK.TDK');
+      serviceFactory = require('B.service.serviceFactory'),
+      HTTP = require('B.network.HTTP'),
+      TDK = require('B.TDK.TDK'),
       bridge = require('B.bridge');
   void function main(){
     var FRAMEWORK_NAME = "b";
@@ -2879,7 +2880,9 @@ Air.run(function(require){
       views    : viewManager, // ViewManager
       router   : router, // Router
       service  : serviceFactory,
-      utility  : null,
+      utility  : {
+        HTTP: HTTP
+      },
 
       /**
        * [环境初始化]
