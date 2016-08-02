@@ -119,10 +119,15 @@ viewport view[active="true"]{display:block}
     <input b-model="checked" type="checkbox" class="checkbox"></input>
   </view>
   <view name="page_model_input">
-    <input b-event="input inputHandle()" b-model="username" type="text" class="username"></input>
+    <input b-event="input inputHandle()"  b-model="username" type="text" class="username"></input>
   </view>
   <view name="page_model_checkbox">
     <input b-event="click clickHandle()" b-model="check" type="checkbox" class="checktest"></input>
+  </view>
+
+  <view name="page_model_radio">
+    <input  b-model="check" type="radio" class="checktest" name="radioTest" value="on" />
+    <input  b-model="check" type="radio" class="checktest" name="radioTest" value="off" />
   </view>
   <view name="page_b-show">
     <style>#page_b-show_table { display: none; }</style>
@@ -163,7 +168,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.3.3.min.js"></script>
+  <script src="dist/web/b.0.3.3.js"></script>
   
 
 
@@ -250,6 +255,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   
   <script src="test/spec/TDK/TDK.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   
