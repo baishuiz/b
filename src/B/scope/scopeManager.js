@@ -109,7 +109,8 @@ Air.Module('B.scope.scopeManager', function(require) {
   function getTokens(tag, node, scopeIndex){
     node.$template = node.$template || node.nodeValue;
     var scope = scopeTreeManager.getScope(scopeIndex);
-    var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
+    // var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
+    var tokens = tag.match(/(['"])\s*([$a-zA-Z\._0-9\s\-]+)\s*\1|(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g) || [];
     var result = [];
     for (var i = 0; i < tokens.length; i++) {
       var token = trim(tokens[i]);

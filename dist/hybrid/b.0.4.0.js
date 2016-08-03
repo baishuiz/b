@@ -918,7 +918,8 @@
   function getTokens(tag, node, scopeIndex){
     node.$template = node.$template || node.nodeValue;
     var scope = scopeTreeManager.getScope(scopeIndex);
-    var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
+    // var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
+    var tokens = tag.match(/(['"])\s*([$a-zA-Z\._0-9\s\-]+)\s*\1|(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g) || [];
     var result = [];
     for (var i = 0; i < tokens.length; i++) {
       var token = trim(tokens[i]);
@@ -939,7 +940,6 @@
 
   /**
    *作用：解析文本|属性节点，监听数据变化
-   * TODO option
    *参数: <node> 文本节点|属性节点
    *参数: <currentScopeIndex> 数据标签所在作用域索引值
    *返回：undefind
