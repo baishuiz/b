@@ -1575,7 +1575,8 @@ Object.observe || (function(O, A, root, _undefined) {
       })(node, node.nodeValue);
 
       function getExpression(dataPath, init){
-        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
+        // return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
+        return dataPath.replace(/(['"])\s*([$a-zA-Z\._0-9\s\-]+)\s*\1|(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
            token = trim(token);
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token
