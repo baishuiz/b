@@ -555,7 +555,9 @@
 
       function onInput(e){
         var target = this;
-        new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
+        var value = target.type==='checkbox' ?  target.checked : target.value;
+        // new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
+        new Function('$scope','value','$scope.' + dataPath + '= value')($scope, value)
 
         var removedEvent = e.type === 'input' ? 'change' : 'input';
         beacon(target).off(removedEvent, onInput);
@@ -574,7 +576,12 @@
         if(target.value !== value) {
          target.defaultValue = result;
          if (target.type !== 'file') {
-           target.value = result;
+          //  if(beacon.utility.isType(target.checked, 'Boolean')){
+             target.checked = result;
+          //  } else {
+             target.value = result;
+          //  }
+
          }
         }
       }
