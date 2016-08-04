@@ -36,12 +36,8 @@ Air.Module("B.bridge", function() {
     param = param || {};
     var url = PROTOCOL_KEY + '://' + fnName + '?jsparams=';
 
-    param.success = registerCallback(param.success);
-    param.failed = registerCallback(param.failed);
-
-    // TODO 调试用console，后续删除
-    console.log(fnName, param.success);
-    console.log(fnName, param.failed);
+    param.success = register(fnName, param.success);
+    param.failed = register(fnName, param.failed);
 
     url += encodeURIComponent(JSON.stringify(param));
 
@@ -50,11 +46,13 @@ Air.Module("B.bridge", function() {
 
   /**
    * 注册全局回调
+   * @param {String} fnName 方法名
    * @param {Function} fn 回调方法
    * @return {String} callbackName 方法名（PROTOCOL_KEY + GUID + 毫秒数）
    */
-  function registerCallback(fn) {
+  function register(fnName, fn) {
     var callbackName = PROTOCOL_KEY + getGUID() + new Date().getTime();
+    console.log(fnName, callbackName);
 
     window[callbackName] = function() {
       if (typeof fn === 'function') {
@@ -65,7 +63,6 @@ Air.Module("B.bridge", function() {
 
     return callbackName;
   }
-
   /**
    * 销毁全局回调
    * @param {String} callbackName 方法名
@@ -100,6 +97,7 @@ Air.Module("B.bridge", function() {
 
   return {
     run: run,
+    register: register,
     isHybrid: isHybrid,
     isInApp: true
   };
