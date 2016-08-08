@@ -56,15 +56,19 @@ Air.Module("B.bridge", function() {
    * @param {Function} fn 回调方法
    * @return {String} callbackName 方法名（PROTOCOL_KEY + GUID + 毫秒数）
    */
-  function register(fnName, fn) {
+  function register(fnName, fn, options) {
     var callbackName = PROTOCOL_KEY + getGUID() + new Date().getTime();
+    options = options || {};
+    var keepCallback = typeof options.keepCallback === 'boolean' ? options.keepCallback : false;
     console.log(fnName, callbackName);
 
     window[callbackName] = function() {
       if (typeof fn === 'function') {
         fn.apply(window, arguments);
       }
-      destroyCallback(callbackName);
+      if (!keepCallback) {
+        destroyCallback(callbackName);
+      }
     }
 
     return callbackName;

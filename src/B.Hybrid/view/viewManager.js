@@ -300,7 +300,7 @@ Air.Module("B.view.viewManager", function(require){
   */
   function listenNativeAppear() {
     bridge.run('appear', {
-      callback: bridge.register('appear', viewAppear)
+      callback: bridge.register('appear', viewAppear, { keepCallback: true })
     }, {
       unified: false
     });
