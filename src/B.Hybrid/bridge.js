@@ -6,12 +6,13 @@ Air.Module("B.bridge", function() {
    * @param {String} fnName 方法名
    * @param {Object} param  传入参数对象
    */
-  function run(fnName, param) {
+  function run(fnName, param, options) {
     if (!fnName) {
       return;
     }
+    options = options || {};
 
-    var url = generateUrl(fnName, param);
+    var url = generateUrl(fnName, param, options);
 
     var iframe = document.createElement('iframe');
     var cont = document.body || document.documentElement;
@@ -28,16 +29,21 @@ Air.Module("B.bridge", function() {
 
   /**
    * 生成访问的Url
-   * @param {String} fnName 方法名
-   * @param {Object} param  传入参数对象
+   * @param {String} fnName       方法名
+   * @param {Object} param        传入参数对象
+   * @param {Object} options      选项
+   *   @options {boolean} unified 使用统一回调，默认 true
    * @return {String} url
    */
-  function generateUrl(fnName, param) {
+  function generateUrl(fnName, param, options) {
     param = param || {};
     var url = PROTOCOL_KEY + '://' + fnName + '?jsparams=';
+    var unified = typeof options.unified === 'boolean' ? options.unified : true;
 
-    param.success = register(fnName, param.success);
-    param.failed = register(fnName, param.failed);
+    if (unified) {
+      param.success = register(fnName, param.success);
+      param.failed = register(fnName, param.failed);
+    }
 
     url += encodeURIComponent(JSON.stringify(param));
 

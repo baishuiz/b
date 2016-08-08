@@ -33,6 +33,7 @@ Air.Module("B.view.viewManager", function(require){
       throw404();
     }
     listenURLChange();
+    listenNativeAppear();
   }
 
   function initLocalViewport(){
@@ -294,6 +295,30 @@ Air.Module("B.view.viewManager", function(require){
     triggerOnShow(activeView, lastViewName);
   }
 
+  /**
+  * 监听Native appear
+  */
+  function listenNativeAppear() {
+    bridge.run('appear', {
+      callback: bridge.register('appear', viewAppear)
+    }, {
+      unified: false
+    });
+  }
+
+  /**
+  * Native appear 后执行 view onShow
+  */
+  function viewAppear() {
+    var params = {
+      viewName: activeView.getViewName()
+    };
+    runOnAppear(params, function() {
+      activeView.show();
+      triggerOnShow(activeView);
+    });
+  }
+
   function triggerOnHide(curView, toView, noHide) {
     var viewName = curView.getViewName();
     !noHide && curView && curView.hide();
@@ -346,6 +371,14 @@ Air.Module("B.view.viewManager", function(require){
   function back () {
     activeView && triggerOnHide(activeView, null ,true);
     bridge.run('goback');
+  }
+
+  /**
+  * show 之前对外提供中间件 onAppear
+  */
+  function runOnAppear(params, next) {
+    var fnName = 'onAppear';
+    middleware.run(fnName, params, next);
   }
 
   api = {
