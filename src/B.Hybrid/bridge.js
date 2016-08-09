@@ -6,12 +6,13 @@ Air.Module("B.bridge", function() {
    * @param {String} fnName 方法名
    * @param {Object} param  传入参数对象
    */
-  function run(fnName, param) {
+  function run(fnName, param, options) {
     if (!fnName) {
       return;
     }
+    options = options || {};
 
-    var url = generateUrl(fnName, param);
+    var url = generateUrl(fnName, param, options);
 
     var iframe = document.createElement('iframe');
     var cont = document.body || document.documentElement;
@@ -28,20 +29,21 @@ Air.Module("B.bridge", function() {
 
   /**
    * 生成访问的Url
-   * @param {String} fnName 方法名
-   * @param {Object} param  传入参数对象
+   * @param {String} fnName       方法名
+   * @param {Object} param        传入参数对象
+   * @param {Object} options      选项
+   *   @options {boolean} unified 使用统一回调，默认 true
    * @return {String} url
    */
-  function generateUrl(fnName, param) {
+  function generateUrl(fnName, param, options) {
     param = param || {};
     var url = PROTOCOL_KEY + '://' + fnName + '?jsparams=';
+    var unified = typeof options.unified === 'boolean' ? options.unified : true;
 
-    param.success = registerCallback(param.success);
-    param.failed = registerCallback(param.failed);
-
-    // TODO 调试用console，后续删除
-    console.log(fnName, param.success);
-    console.log(fnName, param.failed);
+    if (unified) {
+      param.success = register(fnName, param.success);
+      param.failed = register(fnName, param.failed);
+    }
 
     url += encodeURIComponent(JSON.stringify(param));
 
@@ -50,22 +52,27 @@ Air.Module("B.bridge", function() {
 
   /**
    * 注册全局回调
+   * @param {String} fnName 方法名
    * @param {Function} fn 回调方法
    * @return {String} callbackName 方法名（PROTOCOL_KEY + GUID + 毫秒数）
    */
-  function registerCallback(fn) {
+  function register(fnName, fn, options) {
     var callbackName = PROTOCOL_KEY + getGUID() + new Date().getTime();
+    options = options || {};
+    var keepCallback = typeof options.keepCallback === 'boolean' ? options.keepCallback : false;
+    console.log(fnName, callbackName);
 
     window[callbackName] = function() {
       if (typeof fn === 'function') {
         fn.apply(window, arguments);
       }
-      destroyCallback(callbackName);
+      if (!keepCallback) {
+        destroyCallback(callbackName);
+      }
     }
 
     return callbackName;
   }
-
   /**
    * 销毁全局回调
    * @param {String} callbackName 方法名
@@ -100,6 +107,7 @@ Air.Module("B.bridge", function() {
 
   return {
     run: run,
+    register: register,
     isHybrid: isHybrid,
     isInApp: true
   };

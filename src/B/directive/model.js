@@ -30,14 +30,24 @@ Air.Module('B.directive.model', function(require){
       $scope.listenDataChange(dataPath, modelChangeHandle)
       function modelChangeHandle(){
         var value = util.getData(dataPath, $scope);
-        if(target.value === value){return};
+        if(target.value === value && target.type!=="radio"){return};
         var result = !util.isEmpty(value) ? value : "";
 
-        if(target.value !== value) {
-         target.defaultValue = result;
+        if(target.value !== value ||target.type=="radio" ) {
+         target.initValue = result;
          if (target.type !== 'file') {
-           target.value = result;
-           target.checked = result;
+
+
+
+           //TODO: 此处代码修改匆忙，择日重构
+           if(target.type=="radio" ){
+            target.checked = target.value == result;
+           } else {
+             target.checked = result;
+             target.value = result;
+           }
+
+
          }
         }
       }

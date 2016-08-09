@@ -136,7 +136,7 @@ Air.Module('B.scope.scopeManager', function(require){
             if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
               setTimeout(function(){
                 if (ownerElement.parentNode) {
-                  ownerElement.parentNode.value = ownerElement.parentNode.defaultValue;
+                  ownerElement.parentNode.value = ownerElement.parentNode.initValue;
                 }
               },0);
             }
@@ -149,7 +149,8 @@ Air.Module('B.scope.scopeManager', function(require){
       })(node, node.nodeValue);
 
       function getExpression(dataPath, init){
-        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
+        // return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
+        return dataPath.replace(/(['"])\s*([$a-zA-Z\._0-9\s\-]+)\s*\1|(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
            token = trim(token);
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token

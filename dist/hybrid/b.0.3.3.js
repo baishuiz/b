@@ -1307,14 +1307,24 @@ Object.observe || (function(O, A, root, _undefined) {
       $scope.listenDataChange(dataPath, modelChangeHandle)
       function modelChangeHandle(){
         var value = util.getData(dataPath, $scope);
-        if(target.value === value){return};
+        if(target.value === value && target.type!=="radio"){return};
         var result = !util.isEmpty(value) ? value : "";
 
-        if(target.value !== value) {
-         target.defaultValue = result;
+        if(target.value !== value ||target.type=="radio" ) {
+         target.initValue = result;
          if (target.type !== 'file') {
-           target.value = result;
-           target.checked = result;
+
+
+
+           //TODO: 此处代码修改匆忙，择日重构
+           if(target.type=="radio" ){
+            target.checked = target.value == result;
+           } else {
+             target.checked = result;
+             target.value = result;
+           }
+
+
          }
         }
       }
@@ -1495,7 +1505,7 @@ Object.observe || (function(O, A, root, _undefined) {
   function fixSelectElement(placeholder, target){
     if(target.nodeName.toLowerCase()=='option'){
       setTimeout(function(){
-        placeholder.parentNode.value = placeholder.parentNode.defaultValue;
+        placeholder.parentNode.value = placeholder.parentNode.initValue;
       },0);
     }
   }
@@ -1709,7 +1719,7 @@ Object.observe || (function(O, A, root, _undefined) {
             if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
               setTimeout(function(){
                 if (ownerElement.parentNode) {
-                  ownerElement.parentNode.value = ownerElement.parentNode.defaultValue;
+                  ownerElement.parentNode.value = ownerElement.parentNode.initValue;
                 }
               },0);
             }
@@ -1777,7 +1787,8 @@ Object.observe || (function(O, A, root, _undefined) {
     setRoot: setRoot,
     getAncestorScope : getAncestorScope
   }
-});;Air.Module('B.network.HTTP', function() {
+});
+;Air.Module('B.network.HTTP', function() {
 
   var state = {
     unInit: 0,

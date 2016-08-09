@@ -1575,7 +1575,8 @@ Object.observe || (function(O, A, root, _undefined) {
       })(node, node.nodeValue);
 
       function getExpression(dataPath, init){
-        return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
+        // return dataPath.replace(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g, function(token){
+        return dataPath.replace(/(['"])\s*([$a-zA-Z\._0-9\s\-]+)\s*\1|(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g, function(token){
            token = trim(token);
            if(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false' ){
              return token
@@ -2680,7 +2681,8 @@ Air.run(function(require){
       router = require("B.router.router"),
       memCache = require('B.data.memCache'),
       run = require('B.controller.run'),
-      serviceFactory = require('B.service.serviceFactory');
+      serviceFactory = require('B.service.serviceFactory'),
+      HTTP = require('B.network.HTTP'),
       TDK = require('B.TDK.TDK');
   void function main(){
     var FRAMEWORK_NAME = "b";
@@ -2688,7 +2690,9 @@ Air.run(function(require){
       views    : viewManager, // ViewManager
       router   : router, // Router
       service  : serviceFactory,
-      utility  : null,
+      utility  : {
+        HTTP: HTTP
+      },
 
       /**
        * [环境初始化]
