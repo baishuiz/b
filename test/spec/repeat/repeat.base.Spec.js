@@ -167,7 +167,10 @@ describe('repeat', function () {
         count: 1
       }, {
         count: 2
-      }]
+      }];
+      $scope.pager = {
+        index: 2
+      }
 
       var view = document.querySelector('view[name="page_repeat_expression_in_repeat"]');
 

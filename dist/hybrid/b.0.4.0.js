@@ -933,14 +933,15 @@
       var token = trim(tokens[i]);
       if (!(/^\d+$/.test(token) || /^['"]/.test(token) || token == '' || token === 'true' || token === 'false')) {
         var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
-        var tagStr = (node.$tag || tag).replace(tokenReg, function($0, $1, $2) {
-          if ($0.indexOf('util.getData') >= 0) {
+        var lastTagStr = (node.$tag || tag);
+        var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
+          if ($0.indexOf('util.getData("' + token) >= 0) {
             return $0
           } else {
             return $0.replace($2, 'util.getData("' + token + '", scope)')
           }
         });
-        node.$template = node.$template.replace(tag, tagStr);
+        node.$template = node.$template.replace(lastTagStr, tagStr);
         node.$tag = tagStr;
 
         result.push(token);
