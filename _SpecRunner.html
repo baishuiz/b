@@ -56,6 +56,21 @@ viewport view[active="true"]{display:block}
   <view name="page_event_multiple">
     <a href="javascript:void(0)" class="btn" b-event="click clickHandle('click'); focus focusHandle('focus')">Hello Event</a>
   </view>
+
+  <view name="remote_page_partialTestA">
+    <p>{{pageName}}</p>
+    <view b-scope-key="remote_page_partialTestA_partialPage" name="partialPage">
+      <a href="javascript:void(0)" class="partialBtn" b-event="click partialViewEventTest('AOK')">{{pageName}}{{eventMsg}}</a>
+    <view>
+  </view>
+
+  <view name="remote_page_partialTestB">
+    <p>{{pageName}}</p>
+    <view b-scope-key="remote_page_partialTestB_partialPage" name="partialPage">
+      <a href="javascript:void(0)" class="partialBtn" b-event="click partialViewEventTest('BOK')">{{pageName}}{{eventMsg}}</a>
+    <view>
+  </view>
+
   <view name="page_repeat">
     <p>{{notice}}</p>
     <ul>
@@ -241,7 +256,17 @@ viewport view[active="true"]{display:block}
       b.router.set({
         rule : '/page_url_change_after',
         viewName : 'page_url_change_after'
-      })
+      });
+
+      b.router.set({
+        rule : '/remote_page_partialTestA',
+        viewName : 'remote_page_partialTestA'
+      });
+
+      b.router.set({
+        rule : '/remote_page_partialTestB',
+        viewName : 'remote_page_partialTestB'
+      });
 
     }());
 </script>
@@ -257,6 +282,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/service/service.base.Spec.js"></script>
   
   <script src="test/spec/event/event.base.Spec.js"></script>
+  
+  <script src="test/spec/event/event.partialView.Spec.js"></script>
   
   <script src="test/spec/repeat/repeat.base.Spec.js"></script>
   

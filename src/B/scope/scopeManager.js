@@ -217,7 +217,7 @@ Air.Module('B.scope.scopeManager', function(require) {
 
     if (isView(node) || needScope) {
       // view scope 压栈
-      scopeName = node.getAttribute('name')
+      scopeName = node.getAttribute('b-scope-key') || node.getAttribute('name');
       currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
       // scopeName = currentScopeIndex;
     } else if (isRepeat(node)) { // view 不允许进行 repeat
