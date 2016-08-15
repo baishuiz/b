@@ -34,6 +34,7 @@ describe('partialViw 事件绑定', function () {
       setTimeout(function(){
         dispatchEvent(dom.btn, 'click');
         dispatchEvent(dom.btnB, 'click');
+        dispatchEvent(dom.btn, 'click');
       }, 0);
       // beacon(dom.btn).on('click');
 

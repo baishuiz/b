@@ -76,7 +76,7 @@ Air.Module('B.scope.scopeManager', function(require) {
       var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
 
       nextPathNode && (!Object.getOwnPropertyDescriptor(activeObj, nextPathNode) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
-        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex));
+        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }
   }
@@ -97,7 +97,7 @@ Air.Module('B.scope.scopeManager', function(require) {
        var activeToken = tokens[i];
        tagManager.addNode(scopeIndex, activeToken, node, callback);
       //  tagManager.updateNodeValue(scopeIndex, scope, activeToken)
-       bindObjectData(activeToken, scopeIndex);
+       bindObjectData(activeToken, scopeIndex, callback);
      }
   }
 
@@ -281,12 +281,13 @@ Air.Module('B.scope.scopeManager', function(require) {
    *参数: <scope> 当前标签所在的作用域id.
    *返回：文本节点或属性节点数据源的描述符
    **/
-  function createDescriptor(value, dataPath, scopeIndex) {
+  function createDescriptor(value, dataPath, scopeIndex, callBack) {
     var scope = scopeTreeManager.getScope(scopeIndex);
     var descriptor = {
       enumerable: true,
       configurable: true,
       get: function() {
+        // callBack && callBack();
         return value;
       },
 
@@ -294,8 +295,9 @@ Air.Module('B.scope.scopeManager', function(require) {
         var hasChanged = value !== val;
         var isPathNode = beacon.utility.isType(val, 'Array') || beacon.utility.isType(val, 'Object');
         if (hasChanged && isPathNode) {
-          value = value || {};
+          value = value || [];
           beacon.utility.merge(value, val);
+          callBack && callBack();
         } else {
           if(value !== val){
             value = val;

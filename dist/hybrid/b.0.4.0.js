@@ -542,6 +542,22 @@
       EVENTS    = require("B.event.events");
 
   var attrName = 'b-model';
+
+  function getTargetIndex(checkedList, target, selector, context){
+     context = context || document;
+     var targetGroup = context.querySelectorAll(selector);
+     for (var i = 0; i < targetGroup.length; i++) {
+       var activeTarget = targetGroup[i];
+       if( beacon.utility.arrayIndexOf(checkedList, activeTarget.value) >= 0 ){
+         activeTarget.checked = true;
+       }else {
+         activeTarget.checked = false;
+       }
+     }
+  }
+
+
+
   var api = function(target, scopeStructure, watchData){
       var $scope = scopeStructure.scope;
       var scopeIndex = scopeStructure.name;
@@ -555,7 +571,35 @@
 
       function onInput(e){
         var target = this;
-        var value = target.type==='checkbox' ?  target.checked : target.value;
+        var value;
+        // var value = target.type==='checkbox' ?  target.checked : target.value;
+        if(target.type==='checkbox'){
+          var _dataPath = target.getAttribute('b-model');
+          value = util.getData(_dataPath, $scope);
+           if(beacon.utility.isType(value, 'Array')){
+
+               var itemIndex = beacon.utility.arrayIndexOf(value, target.value);
+               if( target.checked){
+                //  value.splice(itemIndex,1);
+                 value.push(target.value)
+                //  value = [].concat(value);
+               }else {
+                //  target.checked = false;
+                 itemIndex >=0  && value.splice(itemIndex,1);
+                //  value = [].concat(value);
+               }
+
+             var selector = target.nodeName.toLowerCase() + '[name=' + target.getAttribute('name') +']';
+             var context = b.views.getActive().getDom();
+            //  getTargetIndex(value, target, selector, context);
+           }else{
+             value = target.checked
+           }
+        }else{
+          value = target.value
+        }
+
+
         // new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
         new Function('$scope','value','$scope.' + dataPath + '= value')($scope, value)
 
@@ -572,6 +616,13 @@
         var value = util.getData(dataPath, $scope);
         if(target.value === value){return};
         var result = !util.isEmpty(value) ? value : "";
+
+        if(beacon.utility.isType(result, 'Array')){
+          var selector = target.nodeName.toLowerCase() + '[name=' + target.getAttribute('name') +']';
+          var context = b.views.getActive().getDom();
+          var targetIndex = getTargetIndex(result, target, selector, context);
+          return;
+        }
 
         if(target.value !== value) {
          target.defaultValue = result;
@@ -892,7 +943,7 @@
       var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
 
       nextPathNode && (!Object.getOwnPropertyDescriptor(activeObj, nextPathNode) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
-        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex));
+        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }
   }
@@ -913,7 +964,7 @@
        var activeToken = tokens[i];
        tagManager.addNode(scopeIndex, activeToken, node, callback);
       //  tagManager.updateNodeValue(scopeIndex, scope, activeToken)
-       bindObjectData(activeToken, scopeIndex);
+       bindObjectData(activeToken, scopeIndex, callback);
      }
   }
 
@@ -1097,12 +1148,13 @@
    *参数: <scope> 当前标签所在的作用域id.
    *返回：文本节点或属性节点数据源的描述符
    **/
-  function createDescriptor(value, dataPath, scopeIndex) {
+  function createDescriptor(value, dataPath, scopeIndex, callBack) {
     var scope = scopeTreeManager.getScope(scopeIndex);
     var descriptor = {
       enumerable: true,
       configurable: true,
       get: function() {
+        // callBack && callBack();
         return value;
       },
 
@@ -1110,8 +1162,9 @@
         var hasChanged = value !== val;
         var isPathNode = beacon.utility.isType(val, 'Array') || beacon.utility.isType(val, 'Object');
         if (hasChanged && isPathNode) {
-          value = value || {};
+          value = value || [];
           beacon.utility.merge(value, val);
+          callBack && callBack();
         } else {
           if(value !== val){
             value = val;

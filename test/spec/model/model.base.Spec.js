@@ -83,10 +83,53 @@ describe('model', function () {
         }, 0);
       },0)
 
+    });
 
+  });
+
+
+  it("同名 checkbox 绑定数组", function(){
+
+    b.views.goTo('page_model_checkboxGroup');
+    b.run('page_model_checkboxGroup', function(require, $scope) {
+      $scope.$event = {
+        clickHandle : function(){
+
+        }
+      }
+
+      // scope 赋值
+      $scope.checks = ['2', '4'];
+      var dom = {
+        checktest : document.querySelectorAll('view[name=page_model_checkboxGroup] .checktest')
+      }
+
+
+      expect(dom.checktest[0].checked).toEqual(false);
+      expect(dom.checktest[1].checked).toEqual(true);
+      expect(dom.checktest[2].checked).toEqual(false);
+      expect(dom.checktest[3].checked).toEqual(true);
+
+      // it("初始化", function(){
+      //
+      //
+      // })
+
+      // setTimeout(function(){
+      //   dom.checktest.checked = false;
+      //   beacon(dom.checktest).on('change');
+      //   // 等待 view 更新
+      //   setTimeout(function(){
+      //     // 验证
+      //     expect($scope.check).toEqual(false);
+      //     done();
+      //   }, 0);
+      // },0)
 
     });
 
   });
+
+
 
 });

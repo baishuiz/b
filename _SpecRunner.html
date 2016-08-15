@@ -61,14 +61,14 @@ viewport view[active="true"]{display:block}
     <p>{{pageName}}</p>
     <view b-scope-key="remote_page_partialTestA_partialPage" name="partialPage">
       <a href="javascript:void(0)" class="partialBtn" b-event="click partialViewEventTest('AOK')">{{pageName}}{{eventMsg}}</a>
-    <view>
+    </view>
   </view>
 
   <view name="remote_page_partialTestB">
     <p>{{pageName}}</p>
     <view b-scope-key="remote_page_partialTestB_partialPage" name="partialPage">
       <a href="javascript:void(0)" class="partialBtn" b-event="click partialViewEventTest('BOK')">{{pageName}}{{eventMsg}}</a>
-    <view>
+    </view>
   </view>
 
   <view name="page_repeat">
@@ -140,6 +140,12 @@ viewport view[active="true"]{display:block}
   </view>
   <view name="page_model_checkbox">
     <input b-event="click clickHandle()" b-model="check" type="checkbox" class="checktest"></input>
+  </view>
+  <view name="page_model_checkboxGroup">
+      <input  b-model="checks" value="1" type="checkbox" name="checktest" class="checktest"></input>
+      <input  b-model="checks" value="2" type="checkbox" name="checktest" class="checktest"></input>
+      <input  b-model="checks" value="3" type="checkbox" name="checktest" class="checktest"></input>
+      <input  b-model="checks" value="4" type="checkbox" name="checktest" class="checktest"></input>
   </view>
   <view name="page_b-show">
     <style>#page_b-show_table { display: none; }</style>
