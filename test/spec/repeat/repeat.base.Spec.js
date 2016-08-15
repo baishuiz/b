@@ -42,9 +42,10 @@ describe('repeat', function () {
         expect(dom.listB.querySelector('span:nth-child(1)').innerText.trim()).toEqual('T1');
         expect(dom.listB.querySelector('span:nth-child(2)').innerText.trim()).toEqual('T2');
         expect(dom.listB.querySelector('span:nth-child(3)').innerText.trim()).toEqual('T3');
-        // expect(dom.listB.querySelector('li:nth-child(3)').getAttribute('name')).toEqual('Name 3, welcome');
+
         done();
-      }, 0);
+
+      }, 50);
     });
   });
 
@@ -110,11 +111,12 @@ describe('repeat', function () {
           name: ' Name 2-3'
         }
       ];
+      $scope.list1.length = 2;
 
       var view = document.querySelector('view[name="page_repeat_nearby_repeat"]');
 
       setTimeout(function(){
-        expect(view.querySelectorAll('.list1 li').length).toEqual(3);
+        expect(view.querySelectorAll('.list1 li').length).toEqual(2);
         expect(view.querySelectorAll('.list2 li').length).toEqual(3);
         expect(view.querySelector('.list1 li:nth-child(2)').innerText.trim()).toEqual('Name 1-2');
         expect(view.querySelector('.list2 li:nth-child(2)').innerText.trim()).toEqual('Name 2-2');
@@ -279,7 +281,6 @@ describe('repeat', function () {
       var dom = {
         list : document.querySelector('view[name=page_repeat_with_event_inner]>ul')
       }
-      window.ttt = $scope
       $scope.lista = [
         {
           name: 'Name 11'
@@ -334,27 +335,26 @@ describe('repeat', function () {
       }
       $scope.list = [
         {
-          name: 'Name 11'
+          name: 'Name 111'
         },
         {
-          name: 'Name 22'
+          name: 'Name 222'
         },
         {
-          name: 'Name 33'
+          name: 'Name 333'
         }
       ];
 
-
       $scope.$event = {
         'titleClickHandle' : function(e) {
-          $scope.list[3] = { name: 'Name 44'};
+          $scope.list[3] = { name: 'Name 444'};
 
           setTimeout(function(){
             expect(dom.list.querySelectorAll('li').length).toEqual(4);
-            expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 11');
-            expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
-            expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 33');
-            expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
+            expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 111');
+            expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 222');
+            expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 333');
+            expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 444');
 
             beacon(dom.list.querySelector('li:nth-child(4)>a')).on('click');
           }, 0);
@@ -364,10 +364,10 @@ describe('repeat', function () {
 
           setTimeout(function(){
             expect(dom.list.querySelectorAll('li').length).toEqual(4);
-            expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 11');
-            expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 22');
-            expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 33');
-            expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
+            expect(dom.list.querySelector('li:nth-child(1)').innerText.trim()).toEqual('Name 111');
+            expect(dom.list.querySelector('li:nth-child(2)').innerText.trim()).toEqual('Name 222');
+            expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 333');
+            expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 444');
             expect(dom.title.innerText).toEqual('Hello 3');
             done();
           }, 0);

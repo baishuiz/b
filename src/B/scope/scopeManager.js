@@ -300,15 +300,24 @@ Air.Module('B.scope.scopeManager', function(require) {
       enumerable: true,
       configurable: true,
       get: function() {
-        // callBack && callBack();
         return value;
       },
 
       set: function(val) {
         var hasChanged = value !== val;
-        var isPathNode = beacon.utility.isType(val, 'Array') || beacon.utility.isType(val, 'Object');
+        var isArray = beacon.utility.isType(val, 'Array');
+        var isPathNode = isArray || beacon.utility.isType(val, 'Object');
         if (hasChanged && isPathNode) {
           value = value || [];
+          if (isArray) {
+            var oldLen = value.length;
+            var newLen = val.length;
+
+            if (newLen < oldLen) {
+              value.splice(newLen - oldLen, oldLen - newLen);
+            }
+          }
+
           beacon.utility.merge(value, val);
           callBack && callBack();
         } else {

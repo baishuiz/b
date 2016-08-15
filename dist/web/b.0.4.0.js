@@ -651,15 +651,15 @@
   var util = require('B.util.util');
 
 
-  function getTemplateStr(str, idx, dataPath, dataPrefix){
-    var reg = new RegExp("\\b\("+ dataPrefix +"\)\\b", 'g');
+  function getTemplateStr(str, idx, dataPath, dataPrefix) {
+    var reg = new RegExp("\\b\(" + dataPrefix + "\)\\b", 'g');
     // var repeatIndexREG = new RegExp('\\b' + dataPath + '\\[\\d+\\]\\.\\$index\\b');
     var repeatIndexREG = new RegExp('\\b' + dataPath + '\\.\\d+\\.\\$index\\b');
     var repeatIndexREG2 = new RegExp('{{\\b' + dataPath + '\\.\\d+\\.\\$index\\b}}');
 
-    var result = str.replace(/\{\{.*?\}\}|b-show\s*=\s*".*?"|b-model\s*=\s*".*?"|b-property\s*=\s*".*"|b-repeat\s*=\s*".*"/g, function(tag){
-        // return tag.replace(reg, dataPath + '[' + idx + ']');
-        return tag.replace(reg, dataPath + '.' + idx);
+    var result = str.replace(/\{\{.*?\}\}|b-show\s*=\s*".*?"|b-model\s*=\s*".*?"|b-property\s*=\s*".*"|b-repeat\s*=\s*".*"/g, function(tag) {
+      // return tag.replace(reg, dataPath + '[' + idx + ']');
+      return tag.replace(reg, dataPath + '.' + idx);
     });
     result = result.replace(repeatIndexREG2, idx);
     result = result.replace(repeatIndexREG, idx);
@@ -668,11 +668,11 @@
   }
 
 
-  function fixSelectElement(placeholder, target){
-    if(target.nodeName.toLowerCase()=='option'){
-      setTimeout(function(){
+  function fixSelectElement(placeholder, target) {
+    if (target.nodeName.toLowerCase() == 'option') {
+      setTimeout(function() {
         placeholder.parentNode.value = placeholder.parentNode.defaultValue;
-      },0);
+      }, 0);
     }
   }
 
@@ -746,10 +746,21 @@
       return newNodeList;
     }
 
+    var getPreviousElement = function(elm) {
+      var e = elm.previousSibling;
+      while (e && 1 !== e.nodeType) {
+        e = e.previousSibling;
+      }
+      return e;
+    }
+
     var removeUI = function(num) {
       num = Math.abs(num);
       for (var i = 0; i < num; i++) {
-        tag.parentNode.removeChild(tag.previousElementSibling);
+        var previousSibling = getPreviousElement(tag);
+        if (previousSibling) {
+          tag.parentNode.removeChild(previousSibling);
+        }
       }
       uiElementCount -= num;
     }
@@ -804,7 +815,7 @@
             if (oldLength !== value.length) {
               var nodes = repeater.updateUI();
               // node && parseTemplate(node, currentScopeIndex);
-              for(var i=0; i<nodes.length; i++){
+              for (var i = 0; i < nodes.length; i++) {
                 var activeNode = nodes[i];
                 activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
               }
@@ -824,10 +835,18 @@
             beacon.utility.merge(value, val);
           } else if (hasChanged && isArray) {
             value = value || [];
+            var oldLen = value.length;
+            var newLen = val.length;
+
+            if (newLen < oldLen) {
+              value.splice(newLen - oldLen, oldLen - newLen);
+              oldLength = newLen;
+            }
+
             beacon.utility.merge(value, val);
+
             var nodes = repeater.updateUI();
-            // node && parseTemplate(node, currentScopeIndex, currentScopeIndex);
-            for(var i=0; i<nodes.length; i++){
+            for (var i = 0; i < nodes.length; i++) {
               var activeNode = nodes[i];
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
@@ -1015,26 +1034,15 @@
    *参数: <scopeIndex> 数据标签所在作用域索引值
    *返回：undefind
    **/
-<<<<<<< HEAD
   function watchData(tag, node, scopeIndex, callback){
      var scope = scopeTreeManager.getScope(scopeIndex);
      var tokens = getTokens(tag, node, scopeIndex);
      for(var i = 0; i < tokens.length; i++){
        var activeToken = tokens[i];
        tagManager.addNode(scopeIndex, activeToken, node, callback);
-      //  tagManager.updateNodeValue(scopeIndex, scope, activeToken)
        bindObjectData(activeToken, scopeIndex, callback);
      }
-=======
-  function watchData(tag, node, scopeIndex, callback) {
-    var scope = scopeTreeManager.getScope(scopeIndex);
-    var tokens = getTokens(tag, node, scopeIndex);
-    for (var i = 0; i < tokens.length; i++) {
-      var activeToken = tokens[i];
-      tagManager.addNode(scopeIndex, activeToken, node, callback);
-      bindObjectData(activeToken, scopeIndex);
-    }
->>>>>>> d9ff5e98cc1e151cc4102bea46ce5c71e6dd8769
+
   }
 
   /**
@@ -1236,15 +1244,24 @@
       enumerable: true,
       configurable: true,
       get: function() {
-        // callBack && callBack();
         return value;
       },
 
       set: function(val) {
         var hasChanged = value !== val;
-        var isPathNode = beacon.utility.isType(val, 'Array') || beacon.utility.isType(val, 'Object');
+        var isArray = beacon.utility.isType(val, 'Array');
+        var isPathNode = isArray || beacon.utility.isType(val, 'Object');
         if (hasChanged && isPathNode) {
           value = value || [];
+          if (isArray) {
+            var oldLen = value.length;
+            var newLen = val.length;
+
+            if (newLen < oldLen) {
+              value.splice(newLen - oldLen, oldLen - newLen);
+            }
+          }
+
           beacon.utility.merge(value, val);
           callBack && callBack();
         } else {
