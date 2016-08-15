@@ -123,6 +123,66 @@ describe('repeat', function () {
     });
   });
 
+  it('repeat table元素', function (done) {
+    b.run('page_repeat_table', function(require, $scope){
+      $scope.headers = [{
+        text: 'header_1'
+      }, {
+        text: 'header_2'
+      }]
+      $scope.items = [{
+        text: 'item_1',
+        list: [{
+          text: 'td_1'
+        }, {
+          text: 'td_2'
+        }]
+      }, {
+        text: 'item_2',
+        list: [{
+          text: 'td_1'
+        }, {
+          text: 'td_2'
+        }]
+      }]
+
+      var view = document.querySelector('view[name="page_repeat_table"]');
+
+      setTimeout(function(){
+        expect(view.querySelectorAll('th').length).toEqual(2);
+        expect(view.querySelectorAll('td').length).toEqual(4);
+        expect(view.querySelector('th:nth-child(2)').innerText.trim()).toEqual('header_2');
+        expect(view.querySelector('.tr_item_1 td:nth-child(2)').innerText.trim()).toEqual('item_1td_2');
+        expect(view.querySelector('.tr_item_2 td:nth-child(2)').innerText.trim()).toEqual('item_2td_2');
+        done();
+      }, 0);
+    });
+  });
+
+  it('repeat 内的表达式', function (done) {
+    b.run('page_repeat_expression_in_repeat', function(require, $scope){
+      $scope.list = [{
+        count: 0
+      }, {
+        count: 1
+      }, {
+        count: 2
+      }];
+      $scope.pager = {
+        index: 2
+      }
+
+      var view = document.querySelector('view[name="page_repeat_expression_in_repeat"]');
+
+      setTimeout(function(){
+        expect(view.querySelector('ul li:nth-child(1)').innerText.trim()).toEqual('1');
+        expect(view.querySelector('ul li:nth-child(2)').innerText.trim()).toEqual('1');
+        expect(view.querySelector('ul li:nth-child(3)').innerText.trim()).toEqual('2');
+        done();
+      }, 0);
+    });
+  });
+
   it('repeat 元素上绑定事件', function(done){
     b.run('page_repeat_with_event_outer', function(require, $scope){
       var dom = {

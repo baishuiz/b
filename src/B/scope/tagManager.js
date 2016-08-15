@@ -26,7 +26,8 @@ Air.Module('B.scope.tagManager', function(require) {
    *返回：array  文本节点|属性节点列表
    **/
   function getNodes(scopeIndex, token){
-    var nodeList = nodeMap[scopeIndex][token]  || [];
+    var node = nodeMap[scopeIndex];
+    var nodeList = node && node[token]  || [];
     return nodeList;
   }
 

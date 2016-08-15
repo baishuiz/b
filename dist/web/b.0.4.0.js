@@ -231,6 +231,7 @@
     var isShowElement = node(target).hasAttribute(attribute);
     isShowElement && processShowElement(target, scopeStructure, watchData);
   }
+  api.key = attribute;
 
   function processShowElement(target, scopeStructure, watchData) {
     var $scope = scopeStructure.scope;
@@ -518,6 +519,7 @@
         }
       }
   }
+  api.key = attrName;
   return api;
 })
 ;Air.Module('B.scope.Scope', function(require) {
@@ -690,7 +692,9 @@
     var dataPath = expression[2];
     var dataPrefix = expression[1];
     var templateStr = template.outerHTML;
-    template.parentNode.removeChild(template);
+    var parentNode = template.parentNode;
+    var containerTagName = parentNode.tagName.toLowerCase();
+    parentNode.removeChild(template);
 
     function generatePlaceholder(target) {
       if (target.placeholder) {
@@ -723,7 +727,7 @@
       for (var i = 0; i < num; i++) {
         var uiIndex = uiElementCount + i;
         elementContent = getTemplateStr(templateStr, uiIndex, dataPath, dataPrefix);
-        var docContainer = document.createElement('div');
+        var docContainer = document.createElement(containerTagName);
         docContainer.innerHTML = elementContent;
         var targetNode = docContainer.firstChild;
         targetNode.removeAttribute('b-repeat');
@@ -873,7 +877,8 @@
    *返回：array  文本节点|属性节点列表
    **/
   function getNodes(scopeIndex, token){
-    var nodeList = nodeMap[scopeIndex][token]  || [];
+    var node = nodeMap[scopeIndex];
+    var nodeList = node && node[token]  || [];
     return nodeList;
   }
 
@@ -921,7 +926,7 @@
 ;Air.Module('B.scope.scopeManager', function(require) {
   var rootScope = {};
   var ScopeTreeManager = require('B.scope.ScopeTreeManager');
-  var initModel =  require('B.directive.model');
+  var initModel = require('B.directive.model');
   var eventDirective = require('B.directive.event');
   var showDirective = require('B.directive.show');
   var styleDirective = require('B.directive.style');
@@ -937,7 +942,7 @@
 
   var trim = function(str) {
     str = str || ''
-    return str.trim ? str.trim() : str.replace(/^\s+|\s+^/,'');
+    return str.trim ? str.trim() : str.replace(/^\s+|\s+^/, '');
   }
 
   function parseScope(scopeName, dom, needScope) {
@@ -1010,6 +1015,7 @@
    *参数: <scopeIndex> 数据标签所在作用域索引值
    *返回：undefind
    **/
+<<<<<<< HEAD
   function watchData(tag, node, scopeIndex, callback){
      var scope = scopeTreeManager.getScope(scopeIndex);
      var tokens = getTokens(tag, node, scopeIndex);
@@ -1019,6 +1025,16 @@
       //  tagManager.updateNodeValue(scopeIndex, scope, activeToken)
        bindObjectData(activeToken, scopeIndex, callback);
      }
+=======
+  function watchData(tag, node, scopeIndex, callback) {
+    var scope = scopeTreeManager.getScope(scopeIndex);
+    var tokens = getTokens(tag, node, scopeIndex);
+    for (var i = 0; i < tokens.length; i++) {
+      var activeToken = tokens[i];
+      tagManager.addNode(scopeIndex, activeToken, node, callback);
+      bindObjectData(activeToken, scopeIndex);
+    }
+>>>>>>> d9ff5e98cc1e151cc4102bea46ce5c71e6dd8769
   }
 
   /**
@@ -1026,7 +1042,7 @@
    *参数: <tag> 数据标签
    *返回：有效 token 列表
    **/
-  function getTokens(tag, node, scopeIndex){
+  function getTokens(tag, node, scopeIndex) {
     node.$template = node.$template || node.nodeValue;
     var scope = scopeTreeManager.getScope(scopeIndex);
     // var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
@@ -1034,14 +1050,18 @@
     var result = [];
     for (var i = 0; i < tokens.length; i++) {
       var token = trim(tokens[i]);
-      if(!(/^\d+$/.test(token) || /^['"]/.test(token) || token=='' || token==='true' || token ==='false')){
-        // node.nodeValue = node.nodeValue.replace(token, 'util.getData("' + token + '", scope)')
-        // console.log(token, '*************')
-        var tokenReg = new RegExp(token.replace(/([.*?+\-^\/$])/g, '\\$1'), 'g');
-        node.$template = node.$template.replace(tokenReg, 'util.getData("' + token + '", scope)')
-        if(tokens.length === 1){
-          node.nodeValue = node.nodeValue.replace(tag, util.getData(token, scope.scope)||'');
-        }
+      if (!(/^\d+$/.test(token) || /^['"]/.test(token) || token == '' || token === 'true' || token === 'false')) {
+        var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
+        var lastTagStr = (node.$tag || tag);
+        var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
+          if ($0.indexOf('util.getData("' + token) >= 0) {
+            return $0
+          } else {
+            return $0.replace($2, 'util.getData("' + token + '", scope)')
+          }
+        });
+        node.$template = node.$template.replace(lastTagStr, tagStr);
+        node.$tag = tagStr;
 
         result.push(token);
       }
@@ -1056,13 +1076,19 @@
    *返回：undefind
    **/
   function parseTEXT(node, currentScopeIndex) {
-     var tags = node.nodeValue.match(/{{.*?}}/g) || [];
+    var tags = node.nodeValue.match(/{{.*?}}/g) || [];
+    var scope = scopeTreeManager.getScope(currentScopeIndex).scope;
 
-     // 遍历节点内所有数据标签
-     for(var i = 0; i < tags.length; i++){
-       var activeTag = tags[i];
-       watchData(activeTag, node, currentScopeIndex);
-     }
+    // 遍历节点内所有数据标签
+    for (var i = 0; i < tags.length; i++) {
+      var activeTag = tags[i];
+      watchData(activeTag, node, currentScopeIndex);
+      if (node.$tag) {
+        var val = eval(node.$tag.replace(/(^{{)|(}}$)/g, '')) || '';
+        node.nodeValue = node.nodeValue.replace(activeTag, val);
+        node.$tag = '';
+      }
+    }
   }
 
   function tryGenerateSubViewScope(node, scopeStructure, currentScopeIndex) {
@@ -1083,7 +1109,7 @@
         var controller = controllerMap[viewName];
 
         if (controller) {
-          setTimeout(function(){
+          setTimeout(function() {
             b.run(viewName, controller);
           }, 0);
         }
@@ -1113,6 +1139,9 @@
     var attributes = [].concat.apply([], node.attributes);
     for (var i = 0; i < attributes.length; i++) {　
       var activeAttribute = attributes[i];
+      if ([initModel.key, showDirective.key].indexOf(activeAttribute.name) !== -1) {
+        continue;
+      }
       parseTEXT(activeAttribute, currentScopeIndex);
     }
   }
@@ -1130,7 +1159,7 @@
       return
     }
 
-    if(!isSub) {
+    if (!isSub) {
       backtrackingPoints = [];
     }
     currentScopeIndex = currentScopeIndex || 0;
@@ -1143,9 +1172,9 @@
     } else if (isRepeat(node)) { // view 不允许进行 repeat
       var nextNode = isSub && node.nextSibling;
       var repeatNode = createRepeatNodes(node, currentScopeIndex);
-      if(!repeatNode){
+      if (!repeatNode) {
         return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
-      }else {
+      } else {
         node = repeatNode;
       }
     }
@@ -1167,7 +1196,7 @@
     }
 
     var nextNode = node.firstChild || (isSub && node.nextSibling);
-    if (!nextNode && isSub ) {
+    if (!nextNode && isSub) {
       var lastNode = backtrackingPoints.pop();
       nextNode = lastNode && lastNode.nextSibling;
       var targetScopeIndex = isView(lastNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
@@ -1219,7 +1248,7 @@
           beacon.utility.merge(value, val);
           callBack && callBack();
         } else {
-          if(value !== val){
+          if (value !== val) {
             value = val;
             tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
           }

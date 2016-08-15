@@ -19,7 +19,7 @@ viewport view[active="true"]{display:block}
 <viewport main="true">
   <view name="page_default" >
     <p>Hello</p>
-    <span class="flower" attr="{{attr}}">{{flower}}</span>
+    <span class="flower" attr="{{attr}}">{{flower === attr ? '' : flower}} - {{attr}}</span>
     <span class="flower_A" attr="{{attr}}">{{1-1==0 ? citySH : cityTL}}</span>
     <span class="flower_B" attr="{{attr}}">{{true ? 'tie ling' : citySH}}</span>
   </view>
@@ -98,6 +98,25 @@ viewport view[active="true"]{display:block}
       <li b-repeat="item2 in list2">{{item2.name}}</li>
     </ul>
   </view>
+  <view name="page_repeat_table">
+    <table>
+      <tr>
+        <th b-repeat="header in headers">
+          {{header.text}}
+        </th>
+      </tr>
+      <tr b-repeat="item in items" class="tr_{{item.text}}">
+        <td b-repeat="td in item.list">
+          {{item.text}}{{td.text}}
+        </td>
+      </tr>
+    </table>
+  </view>
+  <view name="page_repeat_expression_in_repeat">
+    <ul class="list">
+      <li b-repeat="item in list">{{item.count === pager.index ? item.count : 1}}</li>
+    </ul>
+  </view>
   <view name="page_repeat_with_event_outer">
     <ul>
       <li b-repeat="item in list" b-event="click clickHandle('good')">{{item.name}}</li>
@@ -149,11 +168,12 @@ viewport view[active="true"]{display:block}
   </view>
   <view name="page_b-show">
     <style>#page_b-show_table { display: none; }</style>
-    <p b-show="logined" b-event="click switchi()"></p>
+    <p class="p1" b-show="logined" b-event="click switchi()"></p>
     <table b-show="logined" id="page_b-show_table"></table>
     <ul>
       <li b-show="logined" id="page_b-show_list_item"></li>
     </ul>
+    <p class="p2" b-show="count > 1"></p>
   </view>
 
   <view name="page_b-style">

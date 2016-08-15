@@ -8,6 +8,7 @@ Air.Module('B.directive.show', function(require) {
     var isShowElement = node(target).hasAttribute(attribute);
     isShowElement && processShowElement(target, scopeStructure, watchData);
   }
+  api.key = attribute;
 
   function processShowElement(target, scopeStructure, watchData) {
     var $scope = scopeStructure.scope;

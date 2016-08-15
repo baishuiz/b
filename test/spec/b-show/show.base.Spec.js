@@ -1,14 +1,14 @@
 describe('b-show', function () {
   var dom = {
-    p : document.querySelector('view[name=page_b-show] P'),
+    p : document.querySelector('view[name=page_b-show] .p1'),
     table : document.querySelector('#page_b-show_table'),
-    li : document.querySelector('#page_b-show_list_item')
+    li : document.querySelector('#page_b-show_list_item'),
+    p2 : document.querySelector('view[name=page_b-show] .p2')
   }
-  var $$scope;
   it('可见状态初始化', function (done) {
     b.views.goTo('page_b-show');
     b.run('page_b-show', function(require, $scope){
-      $$scope = $scope;
+      $scope.count = 0;
       $scope.$event = {
         switchi : function(){
           // if (typeof $scope.logined !== 'boolean') {
@@ -18,12 +18,20 @@ describe('b-show', function () {
         }
       }
 
+      expect(window.getComputedStyle(dom.p2)['display']).toEqual('none');
+
       setTimeout(function(){
+        $scope.count = 2;
+
         expect(window.getComputedStyle(dom.p)['display']).toEqual('none');
         expect(window.getComputedStyle(dom.table)['display']).toEqual('none');
         expect(window.getComputedStyle(dom.li)['display']).toEqual('none');
-        done();
-      }, 1000);
+
+        setTimeout(function(){
+          expect(window.getComputedStyle(dom.p2)['display']).toEqual('block');
+          done();
+        }, 0);
+      }, 0);
 
       $scope.logined = false;
     });
