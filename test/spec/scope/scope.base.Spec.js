@@ -5,13 +5,14 @@ describe('数据绑定', function () {
         $scope.flower = 'sun';
         $scope.cityTL = 'tieling'
         $scope.citySH = 'shanghai'
+        $scope.attr = 'attr';
         var dom = {
           flower : document.querySelector('view[name=page_default] .flower'),
           flower_A : document.querySelector('view[name=page_default] .flower_A'),
           flower_B : document.querySelector('view[name=page_default] .flower_B')
         }
         setTimeout(function(){
-          expect(dom.flower.innerText).toEqual('sun');
+          expect(dom.flower.innerText).toEqual('sun - attr');
           expect(dom.flower_A.innerText).toEqual('shanghai');
           expect(dom.flower_B.innerText).toEqual('tie ling');
           done();

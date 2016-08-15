@@ -159,6 +159,27 @@ describe('repeat', function () {
     });
   });
 
+  it('repeat 内的表达式', function (done) {
+    b.run('page_repeat_expression_in_repeat', function(require, $scope){
+      $scope.list = [{
+        count: 0
+      }, {
+        count: 1
+      }, {
+        count: 2
+      }]
+
+      var view = document.querySelector('view[name="page_repeat_expression_in_repeat"]');
+
+      setTimeout(function(){
+        expect(view.querySelector('ul li:nth-child(1)').innerText.trim()).toEqual('1');
+        expect(view.querySelector('ul li:nth-child(2)').innerText.trim()).toEqual('1');
+        expect(view.querySelector('ul li:nth-child(3)').innerText.trim()).toEqual('2');
+        done();
+      }, 0);
+    });
+  });
+
   it('repeat 元素上绑定事件', function(done){
     b.run('page_repeat_with_event_outer', function(require, $scope){
       var dom = {
