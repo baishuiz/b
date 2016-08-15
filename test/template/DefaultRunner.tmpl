@@ -98,6 +98,20 @@ viewport view[active="true"]{display:block}
       <li b-repeat="item2 in list2">{{item2.name}}</li>
     </ul>
   </view>
+  <view name="page_repeat_table">
+    <table>
+      <tr>
+        <th b-repeat="header in headers">
+          {{header.text}}
+        </th>
+      </tr>
+      <tr b-repeat="item in items" class="tr_{{item.text}}">
+        <td b-repeat="td in item.list">
+          {{item.text}}{{td.text}}
+        </td>
+      </tr>
+    </table>
+  </view>
   <view name="page_repeat_with_event_outer">
     <ul>
       <li b-repeat="item in list" b-event="click clickHandle('good')">{{item.name}}</li>

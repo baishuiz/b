@@ -639,7 +639,9 @@
     var dataPath = expression[2];
     var dataPrefix = expression[1];
     var templateStr = template.outerHTML;
-    template.parentNode.removeChild(template);
+    var parentNode = template.parentNode;
+    var containerTagName = parentNode.tagName.toLowerCase();
+    parentNode.removeChild(template);
 
     function generatePlaceholder(target) {
       if (target.placeholder) {
@@ -672,7 +674,7 @@
       for (var i = 0; i < num; i++) {
         var uiIndex = uiElementCount + i;
         elementContent = getTemplateStr(templateStr, uiIndex, dataPath, dataPrefix);
-        var docContainer = document.createElement('div');
+        var docContainer = document.createElement(containerTagName);
         docContainer.innerHTML = elementContent;
         var targetNode = docContainer.firstChild;
         targetNode.removeAttribute('b-repeat');

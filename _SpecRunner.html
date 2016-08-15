@@ -98,6 +98,20 @@ viewport view[active="true"]{display:block}
       <li b-repeat="item2 in list2">{{item2.name}}</li>
     </ul>
   </view>
+  <view name="page_repeat_table">
+    <table>
+      <tr>
+        <th b-repeat="header in headers">
+          {{header.text}}
+        </th>
+      </tr>
+      <tr b-repeat="item in items" class="tr_{{item.text}}">
+        <td b-repeat="td in item.list">
+          {{item.text}}{{td.text}}
+        </td>
+      </tr>
+    </table>
+  </view>
   <view name="page_repeat_with_event_outer">
     <ul>
       <li b-repeat="item in list" b-event="click clickHandle('good')">{{item.name}}</li>
@@ -195,7 +209,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.4.0.js"></script>
+  <script src="dist/web/b.0.4.0.min.js"></script>
   
 
 
@@ -298,8 +312,6 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   
   <script src="test/spec/TDK/TDK.Spec.js"></script>
-  
-  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   
