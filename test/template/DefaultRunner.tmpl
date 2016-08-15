@@ -157,11 +157,12 @@ viewport view[active="true"]{display:block}
   </view>
   <view name="page_b-show">
     <style>#page_b-show_table { display: none; }</style>
-    <p b-show="logined" b-event="click switchi()"></p>
+    <p class="p1" b-show="logined" b-event="click switchi()"></p>
     <table b-show="logined" id="page_b-show_table"></table>
     <ul>
       <li b-show="logined" id="page_b-show_list_item"></li>
     </ul>
+    <p class="p2" b-show="count > 1"></p>
   </view>
 
   <view name="page_b-style">

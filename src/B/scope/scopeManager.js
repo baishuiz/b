@@ -193,6 +193,9 @@ Air.Module('B.scope.scopeManager', function(require) {
     var attributes = [].concat.apply([], node.attributes);
     for (var i = 0; i < attributes.length; i++) {　
       var activeAttribute = attributes[i];
+      if ([initModel.key, showDirective.key].indexOf(activeAttribute.name) !== -1) {
+        continue;
+      }
       parseTEXT(activeAttribute, currentScopeIndex);
     }
   }

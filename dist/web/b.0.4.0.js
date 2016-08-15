@@ -231,6 +231,7 @@
     var isShowElement = node(target).hasAttribute(attribute);
     isShowElement && processShowElement(target, scopeStructure, watchData);
   }
+  api.key = attribute;
 
   function processShowElement(target, scopeStructure, watchData) {
     var $scope = scopeStructure.scope;
@@ -467,6 +468,7 @@
         }
       }
   }
+  api.key = attrName;
   return api;
 })
 ;Air.Module('B.scope.Scope', function(require) {
@@ -1064,6 +1066,9 @@
     var attributes = [].concat.apply([], node.attributes);
     for (var i = 0; i < attributes.length; i++) {　
       var activeAttribute = attributes[i];
+      if ([initModel.key, showDirective.key].indexOf(activeAttribute.name) !== -1) {
+        continue;
+      }
       parseTEXT(activeAttribute, currentScopeIndex);
     }
   }

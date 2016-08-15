@@ -48,5 +48,6 @@ Air.Module('B.directive.model', function(require){
         }
       }
   }
+  api.key = attrName;
   return api;
 })
