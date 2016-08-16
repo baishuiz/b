@@ -63,12 +63,20 @@ describe('repeat', function () {
         }
       }
 
-
       var dom = {
         listB: document.querySelector('view[name=page_repeat_with_b-model]>.listB')
       }
 
-      setTimeout(function(){
+      $scope.a = {
+        b: {
+          list :[
+            {name: 'T1'},
+            {name: 'T2'},
+            {name: 'T3'}
+          ]
+        }
+      }
+      // setTimeout(function(){
         expect(dom.listB.querySelectorAll('input').length).toEqual(3);
         expect(dom.listB.querySelector('input:nth-child(1)').value.trim()).toEqual('T1');
         expect(dom.listB.querySelector('input:nth-child(2)').value.trim()).toEqual('T2');
@@ -76,7 +84,7 @@ describe('repeat', function () {
 
         done();
 
-      }, 500);
+      // }, 500);
     });
   });
 
