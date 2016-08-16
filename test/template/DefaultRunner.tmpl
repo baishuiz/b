@@ -83,6 +83,13 @@ viewport view[active="true"]{display:block}
     </div>
     <div></div>
   </view>
+
+  <view name="page_repeat_with_b-model">
+    <div class='listB' >
+      <input b-repeat="item in a.b.list" type="text" b-model="item.name" />
+    </div>
+    <div></div>
+  </view>
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
       <div class="list2" b-repeat="item2 in list2">

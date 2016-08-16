@@ -557,6 +557,24 @@
      }
   }
 
+  function setScopeData(dataPath, value, scope){
+    var nodeList = dataPath.split('.');
+    var lastNode = nodeList.pop();
+    var prefixPath = nodeList.join('.');
+
+    if(prefixPath){
+      util.getData(prefixPath, scope)[lastNode] = value;
+    } else {
+      scope[lastNode] = value;
+    }
+    var result = {
+      prefixPath : prefixPath ,
+      lastNode : lastNode
+    }　　
+    　return result;
+
+  }
+
 
 
   var api = function(target, scopeStructure, watchData){
@@ -601,8 +619,13 @@
         }
 
 
-        // new Function('$scope','target','$scope.' + dataPath + '= target.value')($scope, target)
-        new Function('$scope','value','$scope.' + dataPath + '= value')($scope, value)
+
+
+
+        // new Function('$scope','value','$scope.' + dataPath + '= value')($scope, value)
+
+        var dataPathInfo = setScopeData(dataPath, value, $scope);
+        // new Function('$scope','value','util.getData('+ dataPathInfo.prefixPath +',$scope)[' + dataPathInfo.lastNode + ']= value')($scope, value)
 
         var removedEvent = e.type === 'input' ? 'change' : 'input';
         beacon(target).off(removedEvent, onInput);

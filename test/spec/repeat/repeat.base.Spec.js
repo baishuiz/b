@@ -50,6 +50,38 @@ describe('repeat', function () {
   });
 
 
+
+  it('repeat with b-model', function (done) {
+    b.run('page_repeat_with_b-model', function(require, $scope){
+      $scope.a = {
+        b: {
+          list :[
+            {name: 'T1'},
+            {name: 'T2'},
+            {name: 'T3'}
+          ]
+        }
+      }
+
+
+      var dom = {
+        listB: document.querySelector('view[name=page_repeat_with_b-model]>.listB')
+      }
+
+      setTimeout(function(){
+        expect(dom.listB.querySelectorAll('input').length).toEqual(3);
+        expect(dom.listB.querySelector('input:nth-child(1)').value.trim()).toEqual('T1');
+        expect(dom.listB.querySelector('input:nth-child(2)').value.trim()).toEqual('T2');
+        expect(dom.listB.querySelector('input:nth-child(3)').value.trim()).toEqual('T3');
+
+        done();
+
+      }, 500);
+    });
+  });
+
+
+
   it('repeat 嵌套', function (done) {
     b.run('page_repeat_in_repeat', function(require, $scope){
       $scope.list1 = [
