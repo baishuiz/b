@@ -88,7 +88,7 @@ describe('model', function () {
   });
 
 
-  it("同名 checkbox 绑定数组", function(){
+  it("同名 checkbox 绑定数组", function(done){
 
     b.views.goTo('page_model_checkboxGroup');
     b.run('page_model_checkboxGroup', function(require, $scope) {
@@ -101,7 +101,8 @@ describe('model', function () {
       // scope 赋值
       $scope.checks = ['2', '4'];
       var dom = {
-        checktest : document.querySelectorAll('view[name=page_model_checkboxGroup] .checktest')
+        checktest : document.querySelectorAll('view[name=page_model_checkboxGroup] .checktest'),
+        checktestB : document.querySelectorAll('view[name=page_model_checkboxGroup] .checktestB')
       }
 
 
@@ -110,21 +111,49 @@ describe('model', function () {
       expect(dom.checktest[2].checked).toEqual(false);
       expect(dom.checktest[3].checked).toEqual(true);
 
-      // it("初始化", function(){
-      //
-      //
-      // })
+      // 更换数组 length 不变
+      $scope.checks = ['1', '3'];
+      expect(dom.checktest[0].checked).toEqual(true);
+      expect(dom.checktest[1].checked).toEqual(false);
+      expect(dom.checktest[2].checked).toEqual(true);
+      expect(dom.checktest[3].checked).toEqual(false);
 
-      // setTimeout(function(){
-      //   dom.checktest.checked = false;
-      //   beacon(dom.checktest).on('change');
-      //   // 等待 view 更新
-      //   setTimeout(function(){
-      //     // 验证
-      //     expect($scope.check).toEqual(false);
-      //     done();
-      //   }, 0);
-      // },0)
+      // 更换数组 length 变长
+      $scope.checks = ['1', '3', '4'];
+      expect(dom.checktest[0].checked).toEqual(true);
+      expect(dom.checktest[1].checked).toEqual(false);
+      expect(dom.checktest[2].checked).toEqual(true);
+      expect(dom.checktest[3].checked).toEqual(true);
+
+      // 更换数组 length 变短
+      $scope.checks = ['2'];
+      expect(dom.checktest[0].checked).toEqual(false);
+      expect(dom.checktest[1].checked).toEqual(true);
+      expect(dom.checktest[2].checked).toEqual(false);
+      expect(dom.checktest[3].checked).toEqual(false);
+      $scope.checks = [];
+      expect(dom.checktest[0].checked).toEqual(false);
+      expect(dom.checktest[1].checked).toEqual(false);
+      expect(dom.checktest[2].checked).toEqual(false);
+      expect(dom.checktest[3].checked).toEqual(false);
+
+      // 通过数组方法变更数据
+      $scope.checksB = [];
+      $scope.checksB.push('a1');
+      $scope.checksB.unshift('a3');
+
+      dom.checktest[0].checked = true;
+      beacon(dom.checktest[0]).on('change');
+
+      setTimeout(function(){
+        expect(dom.checktest[0].checked).toEqual(true);
+        expect(dom.checktestB[0].checked).toEqual(true);
+        expect(dom.checktestB[1].checked).toEqual(false);
+        expect(dom.checktestB[2].checked).toEqual(true);
+        expect(dom.checktestB[3].checked).toEqual(false);
+        done();
+      },0)
+
 
     });
 

@@ -79,7 +79,7 @@ Air.Module('B.directive.model', function(require){
         if(target.value === value){return};
         var result = !util.isEmpty(value) ? value : "";
 
-        if(beacon.utility.isType(result, 'Array')){
+        if(beacon.utility.isType(value, 'Array')){
           var selector = target.nodeName.toLowerCase() + '[name=' + target.getAttribute('name') +']';
           var context = b.views.getActive().getDom();
           var targetIndex = getTargetIndex(result, target, selector, context);

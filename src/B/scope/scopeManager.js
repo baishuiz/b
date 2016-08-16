@@ -296,10 +296,23 @@ Air.Module('B.scope.scopeManager', function(require) {
    **/
   function createDescriptor(value, dataPath, scopeIndex, callBack) {
     var scope = scopeTreeManager.getScope(scopeIndex);
+    var oldLength = 0;
+
     var descriptor = {
       enumerable: true,
       configurable: true,
       get: function() {
+       var isArray = beacon.utility.isType(value, 'Array');
+       if(isArray){
+         // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
+         setTimeout(function() {
+           if (oldLength !== value.length) {
+             callBack && callBack();
+           }
+           oldLength = value.length;
+         }, 0);
+       }
+
         return value;
       },
 
