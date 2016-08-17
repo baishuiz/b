@@ -587,6 +587,9 @@
       var attrNode = target.getAttributeNode(attrName);
       var dataPath = target.getAttribute(attrName)
                      .replace(/{{|}}/ig,'');
+      var value = util.getData(dataPath, $scope);
+                  value &&   modelChangeHandle()
+
 
       function onInput(e){
         var target = this;
@@ -1042,7 +1045,6 @@
           }
 
           beacon.utility.merge(value, val);
-          tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
           isArray && callBack && callBack();
         } else {
           if (value !== val) {

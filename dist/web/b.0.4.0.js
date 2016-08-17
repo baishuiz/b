@@ -468,6 +468,9 @@
       var attrNode = target.getAttributeNode(attrName);
       var dataPath = target.getAttribute(attrName)
                      .replace(/{{|}}/ig,'');
+      var value = util.getData(dataPath, $scope);
+                  value &&   modelChangeHandle()
+
 
       function onInput(e){
         var target = this;
@@ -850,8 +853,8 @@
 
         set: function(val) {
           var hasChanged = value !== val;
-          var isArray = beacon.utility.isType(value, 'Array');
-          var isObject = beacon.utility.isType(value, 'Object');
+          var isArray = beacon.utility.isType(val, 'Array');
+          var isObject = beacon.utility.isType(val, 'Object');
 
           if (hasChanged && isObject) {
             value = value || {};
@@ -1299,7 +1302,6 @@
           }
 
           beacon.utility.merge(value, val);
-          tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
           isArray && callBack && callBack();
         } else {
           if (value !== val) {

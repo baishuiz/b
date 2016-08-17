@@ -49,6 +49,10 @@ Air.Module('B.directive.model', function(require){
       var dataPath = target.getAttribute(attrName)
                      .replace(/{{|}}/ig,'');
 
+      var value = util.getData(dataPath, $scope);
+      value &&   modelChangeHandle(); 
+
+
       function onInput(e){
         var target = this;
         var value;
