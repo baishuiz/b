@@ -1299,7 +1299,8 @@
           }
 
           beacon.utility.merge(value, val);
-          callBack && callBack();
+          tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
+          isArray && callBack && callBack();
         } else {
           if (value !== val) {
             value = val;

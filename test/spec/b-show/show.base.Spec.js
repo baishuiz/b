@@ -3,12 +3,14 @@ describe('b-show', function () {
     p : document.querySelector('view[name=page_b-show] .p1'),
     table : document.querySelector('#page_b-show_table'),
     li : document.querySelector('#page_b-show_list_item'),
-    p2 : document.querySelector('view[name=page_b-show] .p2')
+    p2 : document.querySelector('view[name=page_b-show] .p2'),
+    p3 : document.querySelector('view[name=page_b-show] .p3')
   }
   it('可见状态初始化', function (done) {
     b.views.goTo('page_b-show');
     b.run('page_b-show', function(require, $scope){
       $scope.count = 0;
+      $scope.node={num:1}
       $scope.$event = {
         switchi : function(){
           // if (typeof $scope.logined !== 'boolean') {
@@ -19,9 +21,11 @@ describe('b-show', function () {
       }
 
       expect(window.getComputedStyle(dom.p2)['display']).toEqual('none');
+      expect(window.getComputedStyle(dom.p3)['display']).toEqual('block');
 
       setTimeout(function(){
         $scope.count = 2;
+        $scope.node={num:2}
 
         expect(window.getComputedStyle(dom.p)['display']).toEqual('none');
         expect(window.getComputedStyle(dom.table)['display']).toEqual('none');
@@ -29,6 +33,7 @@ describe('b-show', function () {
 
         setTimeout(function(){
           expect(window.getComputedStyle(dom.p2)['display']).toEqual('block');
+          expect(window.getComputedStyle(dom.p3)['display']).toEqual('none');
           done();
         }, 0);
       }, 0);

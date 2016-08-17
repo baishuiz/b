@@ -332,7 +332,7 @@ Air.Module('B.scope.scopeManager', function(require) {
           }
 
           beacon.utility.merge(value, val);
-          callBack && callBack();
+          isArray && callBack && callBack();
         } else {
           if (value !== val) {
             value = val;
