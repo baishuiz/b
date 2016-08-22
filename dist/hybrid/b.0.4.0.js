@@ -497,41 +497,43 @@
     util = require('B.util.util');
 
   var attribute = 'b-property';
-  var api = function(target, $scope) {
+  var api = function(target, scopeStructure, watchData) {
     var hasPropertyAttr = node(target).hasAttribute(attribute);
-    hasPropertyAttr && setProperty(target, $scope);
+    hasPropertyAttr && setProperty(target, scopeStructure, watchData);
   }
 
-  function setProperty(target, $scope){
+  function setProperty(target, scopeStructure, watchData) {
+    var $scope = scopeStructure.scope;
+    var scopeIndex = scopeStructure.name;
+    var attrNode = target.getAttributeNode(attribute);
+
     var ruleStr = target.getAttribute(attribute);
     var propertyList = getPropertyList(ruleStr);
+
     for (var i = 0; i < propertyList.length; i++) {
       var activeProperty = propertyList[i];
-      bindValue(activeProperty, target, $scope);
+      (function(dataPath, name){
+        var bindPath = '{{' + dataPath + '}}';
+        watchData(bindPath, attrNode, scopeIndex, function() {
+          var value = util.getData(dataPath, $scope);
+          target[name] = value;
+        });
+      })(activeProperty.dataPath, activeProperty.name);
     }
   }
 
-  // TODO
-
-  function bindValue(activeProperty, target, $scope){
-    beacon($scope).on(EVENTS.DATA_CHANGE, function(){
-      var value = util.getData(activeProperty.dataPath, $scope);
-      target[activeProperty.name] = value;
-    });
+  function getPropertyList(ruleStr) {
+    var reg = /(\w+)\s*:\s*([^,}\s]+)/g
+    var result = [];
+    ruleStr.replace(reg, function(matchRule, propertyName, dataPath) {
+      var item = {
+        name: propertyName,
+        dataPath: dataPath
+      }
+      result.push(item);
+    })
+    return result;
   }
-
-   function getPropertyList(ruleStr){
-     var reg = /(\w+)\s*:\s*([^,}\s]+)/g
-     var result = [];
-     ruleStr.replace(reg, function(matchRule, propertyName, dataPath){
-       var item = {
-         name : propertyName,
-         dataPath : dataPath
-       }
-       result.push(item);
-     })
-     return result;
-   }
 
 
 
@@ -587,8 +589,9 @@
       var attrNode = target.getAttributeNode(attrName);
       var dataPath = target.getAttribute(attrName)
                      .replace(/{{|}}/ig,'');
+
       var value = util.getData(dataPath, $scope);
-                  value &&   modelChangeHandle()
+      value &&   modelChangeHandle(); 
 
 
       function onInput(e){
@@ -911,7 +914,7 @@
     eventDirective(node, scope);
     showDirective(node, scopeStructure, watchData);
     styleDirective(node, scopeStructure, watchData);
-    propertyDirective(node, scope);
+    propertyDirective(node, scopeStructure, watchData);
 
     var attributes = [].concat.apply([], node.attributes);
     for (var i = 0; i < attributes.length; i++) {　

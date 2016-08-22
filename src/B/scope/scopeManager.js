@@ -198,7 +198,7 @@ Air.Module('B.scope.scopeManager', function(require) {
     eventDirective(node, scope);
     showDirective(node, scopeStructure, watchData);
     styleDirective(node, scopeStructure, watchData);
-    propertyDirective(node, scope);
+    propertyDirective(node, scopeStructure, watchData);
 
     var attributes = [].concat.apply([], node.attributes);
     for (var i = 0; i < attributes.length; i++) {　
