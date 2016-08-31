@@ -853,6 +853,7 @@
         get: function() {
           // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
           setTimeout(function() {
+            value = value || [];
             if (oldLength !== value.length) {
               var nodes = repeater.updateUI();
               // node && parseTemplate(node, currentScopeIndex);
@@ -871,7 +872,11 @@
           var isArray = beacon.utility.isType(val, 'Array');
           var isObject = beacon.utility.isType(val, 'Object');
 
-          if (hasChanged && isObject) {
+          if (!hasChanged) {
+            return;
+          }
+
+          if (isObject) {
             value = value || {};
 
             for(var aa in value){
@@ -881,7 +886,7 @@
             }
 
             beacon.utility.merge(value, val);
-          } else if (hasChanged && isArray) {
+          } else if (isArray) {
             value = value || [];
             var oldLen = value.length;
             var newLen = val.length;
@@ -898,6 +903,8 @@
               var activeNode = nodes[i];
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
+          } else {
+            value = val;
           }
         }
       }

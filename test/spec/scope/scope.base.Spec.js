@@ -97,4 +97,29 @@ describe('数据绑定', function () {
       });
     });
 
+    it('scope 修改属性', function (done) {
+      b.run('page_scope_change', function(require, $scope){
+        $scope.validateResult = {
+          branch : ['a', 'b']
+        }
+        var dom = {
+          formGroup : document.querySelector('view[name=page_scope_change] .form-group')
+        }
+
+        setTimeout(function(){
+          dom.blocks = document.querySelectorAll('view[name=page_scope_change] .help-block');
+          expect(dom.blocks.length).toEqual(2);
+
+          $scope.validateResult = {};
+
+          setTimeout(function() {
+            dom.blocks = document.querySelectorAll('view[name=page_scope_change] .help-block');
+            expect(dom.blocks.length).toEqual(0);
+            done();
+          }, 50);
+
+        }, 50);
+      });
+    })
+
 });

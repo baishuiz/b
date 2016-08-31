@@ -37,6 +37,13 @@ viewport view[active="true"]{display:block}
     </view>
     <h1>{{parentValue}}</h1>
   </view>
+  <view name="page_scope_change">
+    <div class="form-group col-sm-6">
+      <div class="col-sm-8">
+        <span class="help-block" b-repeat="m in validateResult.branch">{{m}}</span>
+      </div>
+    </div>
+  </view>
   <view name="page_booking"></view>
   <view name="page_order"></view>
   <view name="page_service"></view>
