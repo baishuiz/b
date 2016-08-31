@@ -6,15 +6,19 @@ describe('数据绑定', function () {
         $scope.cityTL = 'tieling'
         $scope.citySH = 'shanghai'
         $scope.attr = 'attr';
+        $scope.obj = {name:'FamilMart', age:'12'};
+        $scope.obj = {name:'FamilMart'};
         var dom = {
           flower : document.querySelector('view[name=page_default] .flower'),
           flower_A : document.querySelector('view[name=page_default] .flower_A'),
-          flower_B : document.querySelector('view[name=page_default] .flower_B')
+          flower_B : document.querySelector('view[name=page_default] .flower_B'),
+          flower_C : document.querySelector('view[name=page_default] .flower_C')
         }
         setTimeout(function(){
           expect(dom.flower.innerText).toEqual('sun - attr');
           expect(dom.flower_A.innerText).toEqual('shanghai');
           expect(dom.flower_B.innerText).toEqual('tie ling');
+          expect(dom.flower_C.innerText).toEqual('FamilMart');
           done();
         }, 0);
       })

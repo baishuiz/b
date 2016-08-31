@@ -184,6 +184,13 @@ Air.Module('B.directive.Repeater', function(require) {
 
           if (hasChanged && isObject) {
             value = value || {};
+
+            for(var aa in value){
+              if(!val[aa]){
+                val[aa] = undefined;
+              }
+            }            
+
             beacon.utility.merge(value, val);
           } else if (hasChanged && isArray) {
             value = value || [];

@@ -24,6 +24,15 @@ Air.Module('B.scope.Scope', function(require) {
         if (hasChanged) {
           if (isPathNode) {
             value = value || {};
+
+            if(isObject){
+              for(var aa in value){
+                if(!val[aa]){
+                  val[aa] = undefined;
+                }
+              }
+            }
+                        
             beacon.utility.merge(value, val);
           } else {
             value = beacon.utility.isType(val, 'Undefined') ? '' : val;

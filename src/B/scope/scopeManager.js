@@ -319,7 +319,8 @@ Air.Module('B.scope.scopeManager', function(require) {
       set: function(val) {
         var hasChanged = value !== val;
         var isArray = beacon.utility.isType(val, 'Array');
-        var isPathNode = isArray || beacon.utility.isType(val, 'Object');
+        var isObject = beacon.utility.isType(val, 'Object');
+        var isPathNode = isArray || isObject;
         if (hasChanged && isPathNode) {
           value = value || [];
           if (isArray) {
@@ -331,7 +332,16 @@ Air.Module('B.scope.scopeManager', function(require) {
             }
           }
 
+          if(isObject){
+            for(var aa in value){
+              if(!val[aa]){
+                val[aa] = undefined;
+              }
+            }
+          }
+
           beacon.utility.merge(value, val);
+          // beacon.utility.blend(value, val, {reset:true});
           isArray && callBack && callBack();
         } else {
           if (value !== val) {
@@ -343,8 +353,6 @@ Air.Module('B.scope.scopeManager', function(require) {
     }
     return descriptor;
   }
-
-
 
 
   return {
