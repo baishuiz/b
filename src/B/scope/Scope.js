@@ -20,10 +20,13 @@ Air.Module('B.scope.Scope', function(require) {
 
       set: function(val) {
         var hasChanged = value !== val;
+        var isArray = beacon.utility.isType(val, 'Array');
+        var isObject = beacon.utility.isType(val, 'Object');
         var isPathNode = beacon.utility.isType(value, 'Array') || beacon.utility.isType(value, 'Object');
         if (hasChanged) {
           if (isPathNode) {
-            value = value || {};
+            // value = value ||  {};
+            value = value || (isArray　? [] : {});
 
             if(isObject){
               for(var aa in value){
@@ -32,7 +35,7 @@ Air.Module('B.scope.Scope', function(require) {
                 }
               }
             }
-                        
+
             beacon.utility.merge(value, val);
           } else {
             value = beacon.utility.isType(val, 'Undefined') ? '' : val;

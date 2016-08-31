@@ -322,7 +322,7 @@ Air.Module('B.scope.scopeManager', function(require) {
         var isObject = beacon.utility.isType(val, 'Object');
         var isPathNode = isArray || isObject;
         if (hasChanged && isPathNode) {
-          value = value || [];
+          value = value || (isArray　? [] : {});
           if (isArray) {
             var oldLen = value.length;
             var newLen = val.length;
