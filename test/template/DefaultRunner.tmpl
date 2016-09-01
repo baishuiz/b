@@ -40,7 +40,10 @@ viewport view[active="true"]{display:block}
   <view name="page_scope_change">
     <div class="form-group col-sm-6">
       <div class="col-sm-8">
-        <span class="help-block" b-repeat="m in validateResult.branch">{{m}}</span>
+        <span class="obj" b-show="validateResult" style="display: none;"></span>
+        <span class="help-block" b-repeat="m in validateResult.branch">
+          {{m.msg}}
+        </span>
       </div>
     </div>
   </view>

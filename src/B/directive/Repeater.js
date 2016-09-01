@@ -164,8 +164,8 @@ Air.Module('B.directive.Repeater', function(require) {
         get: function() {
           // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
           setTimeout(function() {
-            value = value || [];
-            if (oldLength !== value.length) {
+            var length = value && value.length || 0;
+            if (oldLength !== length) {
               var nodes = repeater.updateUI();
               // node && parseTemplate(node, currentScopeIndex);
               for (var i = 0; i < nodes.length; i++) {
@@ -173,13 +173,16 @@ Air.Module('B.directive.Repeater', function(require) {
                 activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
               }
             }
-            oldLength = value.length;
+            oldLength = length;
           }, 0);
           return value;
         },
 
         set: function(val) {
           var hasChanged = value !== val;
+          if (!val) {
+            val = beacon.utility.isType(value, 'Array') ? [] : {};
+          }
           var isArray = beacon.utility.isType(val, 'Array');
           var isObject = beacon.utility.isType(val, 'Object');
 
@@ -190,9 +193,9 @@ Air.Module('B.directive.Repeater', function(require) {
           if (isObject) {
             value = value || {};
 
-            for(var aa in value){
-              if(!val[aa]){
-                val[aa] = undefined;
+            for(var key in value){
+              if(!val[key]){
+                val[key] = undefined;
               }
             }
 
@@ -207,6 +210,14 @@ Air.Module('B.directive.Repeater', function(require) {
               oldLength = newLen;
             }
 
+            for(var key in value){
+              var keyNum = parseInt(key, 10);
+              var isNumKey = beacon.utility.isType(keyNum, 'Number') && !isNaN(keyNum);
+              if(!isNumKey && !val[key]){
+                val[key] = undefined;
+              }
+            }
+
             beacon.utility.merge(value, val);
 
             var nodes = repeater.updateUI();
@@ -214,8 +225,6 @@ Air.Module('B.directive.Repeater', function(require) {
               var activeNode = nodes[i];
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
-          } else {
-            value = val;
           }
         }
       }
