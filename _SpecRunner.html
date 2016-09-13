@@ -46,6 +46,8 @@ viewport view[active="true"]{display:block}
         </span>
       </div>
     </div>
+
+    <span class="address">{{a.b.address}}</span>
   </view>
   <view name="page_booking"></view>
   <view name="page_order"></view>
@@ -70,6 +72,7 @@ viewport view[active="true"]{display:block}
 
   <view name="remote_page_partialTestA">
     <p>{{pageName}}</p>
+    <ul><li b-repeat="item in list">{{item.name}}</li></ul>
     <view b-scope-key="remote_page_partialTestA_partialPage" name="partialPage">
       <a href="javascript:void(0)" class="partialBtn" b-event="click partialViewEventTest('AOK')">{{pageName}}{{eventMsg}}</a>
     </view>
@@ -89,7 +92,7 @@ viewport view[active="true"]{display:block}
         {{ item.name }}
       </li>
     </ul>
-    <div class='listB' >
+    <div class='listB'>
       <span b-repeat="item in a.b.list">{{item.name}}</span>
     </div>
     <div></div>
@@ -175,6 +178,7 @@ viewport view[active="true"]{display:block}
       </div>
     </div>
   </view>
+
   <view name="page_model_bind">
     <input b-model="username" type="text" class="username"></input>
     <input b-model="checked" type="checkbox" class="checkbox"></input>

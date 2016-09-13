@@ -228,6 +228,25 @@ Air.Module('B.scope.scopeManager', function(require) {
     }
     currentScopeIndex = currentScopeIndex || 0;
 
+    var popPoints = function(nextNode, scopeName) {
+      return {
+        nextNode: nextNode,
+        scopeName: scopeName
+      }
+    }
+
+
+    var goOn = function(nextNode, scopeName) {
+      if (!nextNode && isSub) {
+        var lastNode = backtrackingPoints.pop();
+        nextNode = lastNode && lastNode.nextSibling;
+        var targetScopeIndex = isView(lastNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
+        scopeName = isView(lastNode) && targetScopeIndex;
+      }
+
+      return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
+    }
+
     if (isView(node) || needScope) {
       // view scope 压栈
       scopeName = node.getAttribute('b-scope-key') || node.getAttribute('name');
@@ -237,7 +256,8 @@ Air.Module('B.scope.scopeManager', function(require) {
       var nextNode = isSub && node.nextSibling;
       var repeatNode = createRepeatNodes(node, currentScopeIndex);
       if (!repeatNode) {
-        return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
+        // repeat 元素没有下一个节点时退栈，统一放到 goOn 中处理
+        return goOn(nextNode, scopeName);
       } else {
         node = repeatNode;
       }
@@ -260,17 +280,8 @@ Air.Module('B.scope.scopeManager', function(require) {
     }
 
     var nextNode = node.firstChild || (isSub && node.nextSibling);
-    if (!nextNode && isSub) {
-      var lastNode = backtrackingPoints.pop();
-      nextNode = lastNode && lastNode.nextSibling;
-      var targetScopeIndex = isView(lastNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
-      scopeName = isView(lastNode) && targetScopeIndex;
-    }
 
-
-    // 退出当前 scope
-    // var targetScopeIndex = isView(nextNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
-    return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
+    return goOn(nextNode, scopeName);
   }
 
 

@@ -99,19 +99,30 @@ describe('数据绑定', function () {
 
     it('scope 修改属性', function (done) {
       b.run('page_scope_change', function(require, $scope){
-        $scope.validateResult = {
+        $scope.validateResult = { // 验证赋值 undefined
           branch : [{
             msg: 'a'
           }, {
             msg: 'b'
           }]
-        }
+        };
+        $scope.a = {
+          b: {} // TODO !!!!!!!!!!!!!! 如果不赋值 {}，后续修改后 dom 不更新
+        } // 验证修改 a.b
         var dom = {
           formGroup : document.querySelector('view[name=page_scope_change] .form-group'),
-          obj: document.querySelector('view[name=page_scope_change] .obj')
+          obj: document.querySelector('view[name=page_scope_change] .obj'),
+          address: document.querySelector('view[name=page_scope_change] .address')
         }
 
         $scope.p1 = $scope.p2 = {}
+
+        expect(dom.address.innerText.trim()).toEqual('');
+        $scope.a = {
+          b: {
+            address: '上海'
+          }
+        }
 
         setTimeout(function(){
           dom.blocks = document.querySelectorAll('view[name=page_scope_change] .help-block');
@@ -119,6 +130,8 @@ describe('数据绑定', function () {
           expect(dom.blocks.length).toEqual(2);
           expect(dom.blocks[1].innerText.trim()).toEqual('b');
           // expect(dom.obj.style.display).toEqual('inline');
+
+          expect(dom.address.innerText.trim()).toEqual('上海');
 
           $scope.validateResult = undefined;
 

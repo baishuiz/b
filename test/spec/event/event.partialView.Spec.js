@@ -10,6 +10,17 @@ describe('partialViw 事件绑定', function () {
 
     b.run('remote_page_partialTestA', function(require, $scope){
       $scope.pageName = 'testA';
+      $scope.list = [
+        {
+          name: 'item1'
+        },
+        {
+          name: 'item2'
+        },
+        {
+          name: 'item3'
+        }
+      ];
     });
 
     b.run('remote_page_partialTestB', function(require, $scope){
