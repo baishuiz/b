@@ -396,7 +396,10 @@ describe('repeat', function () {
 
 
       $scope.$event = {
-        'clickHandle' : function(e, index){
+        'clickHandle' : function(e, index, index2, index3){
+          expect(index2).toEqual(index);
+          expect(index3).toEqual(index);
+
           $scope.lista[1].name = 'hello';
           $scope.lista[index] = { name: 'good' };
           $scope.lista[3] = { name: 'Name 44'};

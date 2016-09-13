@@ -153,7 +153,7 @@ viewport view[active="true"]{display:block}
   <view name="page_repeat_with_event_inner">
     <ul>
       <li b-repeat="item in lista">
-        <a href="javascript:void(0)" b-event="click clickHandle({{item.$index}})">{{item.name}}</a>
+        <a href="javascript:void(0)" b-event="click clickHandle({{item.$index}}, {{item.$index}}, {{item.$index}})">{{item.name}}</a>
       </li>
     </ul>
   </view>
