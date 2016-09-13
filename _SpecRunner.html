@@ -108,6 +108,13 @@ viewport view[active="true"]{display:block}
       </div>
     </div>
   </view>
+  <view name="page_repeat_in_own_repeat">
+    <div class="list" b-repeat="item in list">
+      <div class="sub-list" b-repeat="subItem in item.subList">
+        {{item.name}} {{subItem.name}}
+      </div>
+    </div>
+  </view>
   <view name="page_repeat_nearby_repeat">
     <ul class="list1">
       <li b-repeat="item1 in list1">{{item1.name}}</li>

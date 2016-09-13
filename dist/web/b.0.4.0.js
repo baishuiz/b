@@ -807,6 +807,8 @@
       return newFirstNode;
     }
 
+    var descriptorList = [];
+
     /**
      *作用：监听 repeat 元素数据源变动
      *参数: <repeater> repeat ui 控制器
@@ -824,7 +826,15 @@
         var activeObj = activePath ? util.getData(activePath, scope) : scope;
         activeObj = activeObj || Air.NS(activePath, scope);
         var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
-        Object.defineProperty(activeObj, nextPathNode, createRepeatDataDescriptor.call(activeObj, repeater, nextObj));
+
+        // 如果之前绑定过，缓存起来，供 descriptor 回调
+        var existDescriptor = Object.getOwnPropertyDescriptor(activeObj, nextPathNode);
+        if (existDescriptor) {
+          descriptorList.push(existDescriptor);
+        };
+
+        var descriptor = createRepeatDataDescriptor.call(activeObj, repeater, nextObj);
+        Object.defineProperty(activeObj, nextPathNode, descriptor);
         activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
       }
     }
@@ -852,13 +862,17 @@
                 var activeNode = nodes[i];
                 activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
               }
+
+              for (var i = 0; i < descriptorList.length; i++) {
+                descriptorList[i] && descriptorList[i].get && descriptorList[i].get();
+              }
             }
             oldLength = length;
           }, 0);
           return value;
         },
 
-        set: function(val) {
+        set: function(val, isSub) {
           var hasChanged = value !== val;
           if (!val) {
             val = beacon.utility.isType(value, 'Array') ? [] : {};
@@ -879,26 +893,33 @@
               }
             }
 
-            beacon.utility.merge(value, val);
+            // 子回调不赋值，只处理 dom
+            if (!isSub) {
+              beacon.utility.merge(value, val);
+            }
           } else if (isArray) {
             value = value || [];
-            var oldLen = value.length;
-            var newLen = val.length;
 
-            if (newLen < oldLen) {
-              value.splice(newLen - oldLen, oldLen - newLen);
-              oldLength = newLen;
-            }
+            // 子回调不赋值，只处理 dom
+            if (!isSub) {
+              var oldLen = value.length;
+              var newLen = val.length;
 
-            for(var key in value){
-              var keyNum = parseInt(key, 10);
-              var isNumKey = beacon.utility.isType(keyNum, 'Number') && !isNaN(keyNum);
-              if(!isNumKey && !val[key]){
-                val[key] = undefined;
+              if (newLen < oldLen) {
+                value.splice(newLen - oldLen, oldLen - newLen);
+                oldLength = newLen;
               }
-            }
 
-            beacon.utility.merge(value, val);
+              for(var key in value){
+                var keyNum = parseInt(key, 10);
+                var isNumKey = beacon.utility.isType(keyNum, 'Number') && !isNaN(keyNum);
+                if(!isNumKey && !val[key]){
+                  val[key] = undefined;
+                }
+              }
+
+              beacon.utility.merge(value, val);
+            }
 
             var nodes = repeater.updateUI();
             for (var i = 0; i < nodes.length; i++) {
@@ -906,6 +927,11 @@
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
           }
+
+          for (var i = 0; i < descriptorList.length; i++) {
+            descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
+          }
+
         }
       }
       return descriptor;

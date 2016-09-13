@@ -82,7 +82,7 @@ describe('repeat', function () {
 
 
 
-  it('repeat 嵌套', function (done) {
+  it('repeat 多list嵌套', function (done) {
     b.run('page_repeat_in_repeat', function(require, $scope){
       $scope.list1 = [
         {
@@ -114,6 +114,75 @@ describe('repeat', function () {
         expect(view.querySelectorAll('.list2').length).toEqual(9);
         expect(view.querySelector('.list1:nth-child(2) .list2:nth-child(2)').innerText.trim()).toEqual('Name 1-2 Name 2-2');
         done();
+      }, 0);
+    });
+  });
+
+  it('repeat 子list嵌套', function (done) {
+    b.run('page_repeat_in_own_repeat', function(require, $scope){
+      $scope.list = [
+        {
+          name: 'Name 1-1',
+          subList: [
+            {
+              name: 'Name 1-1-1'
+            },
+            {
+              name: 'Name 1-1-2'
+            }
+          ]
+        },
+        {
+          name: 'Name 1-2',
+          subList: [
+            {
+              name: 'Name 1-2-1'
+            },
+            {
+              name: 'Name 1-2-2'
+            }
+          ]
+        },
+        {
+          name: 'Name 1-3',
+          subList: [
+            {
+              name: 'Name 1-3-1'
+            },
+            {
+              name: 'Name 1-3-2'
+            }
+          ]
+        }
+      ];
+
+      var view = document.querySelector('view[name=page_repeat_in_own_repeat]');
+
+      setTimeout(function(){
+        expect(view.querySelectorAll('.list').length).toEqual(3);
+        expect(view.querySelectorAll('.sub-list').length).toEqual(6);
+        expect(view.querySelector('.list:nth-child(2) .sub-list:nth-child(2)').innerText.trim()).toEqual('Name 1-2 Name 1-2-2');
+
+        $scope.list.push({
+          name: 'Name 1-4',
+          subList: [
+            {
+              name: 'Name 1-4-1'
+            },
+            {
+              name: 'Name 1-4-2'
+            }
+          ]
+        });
+
+        setTimeout(function() {
+          expect(view.querySelectorAll('.list').length).toEqual(4);
+          expect(view.querySelectorAll('.sub-list').length).toEqual(8);
+          expect(view.querySelector('.list:nth-child(4) .sub-list:nth-child(2)').innerText.trim()).toEqual('Name 1-4 Name 1-4-2');
+
+          done();
+        }, 0);
+
       }, 0);
     });
   });
