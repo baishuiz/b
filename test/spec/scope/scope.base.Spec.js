@@ -120,7 +120,6 @@ describe('数据绑定', function () {
           expect(dom.blocks[1].innerText.trim()).toEqual('b');
           // expect(dom.obj.style.display).toEqual('inline');
 
-debugger;
           $scope.validateResult = undefined;
 
           setTimeout(function() {
@@ -128,7 +127,6 @@ debugger;
             // expect(dom.obj.style.display).toEqual('none');
             expect(dom.blocks.length).toEqual(0);
 
-debugger;
             $scope.validateResult = {
               branch : [{
                 msg: 'a'
@@ -139,7 +137,6 @@ debugger;
 
             setTimeout(function(){
               dom.blocks = document.querySelectorAll('view[name=page_scope_change] .help-block');
-debugger;
 
               expect(dom.blocks.length).toEqual(2);
               expect(dom.blocks[1] && dom.blocks[1].innerText.trim()).toEqual('c');

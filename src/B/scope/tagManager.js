@@ -51,7 +51,7 @@ Air.Module('B.scope.tagManager', function(require) {
       if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
         setTimeout(function(){
           if (ownerElement.parentNode) {
-            ownerElement.parentNode.value = ownerElement.parentNode.defaultValue;
+            ownerElement.parentNode.value = ownerElement.parentNode.initValue;
           }
         },0);
       }

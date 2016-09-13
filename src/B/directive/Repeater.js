@@ -23,7 +23,7 @@ Air.Module('B.directive.Repeater', function(require) {
   function fixSelectElement(placeholder, target) {
     if (target.nodeName.toLowerCase() == 'option') {
       setTimeout(function() {
-        placeholder.parentNode.value = placeholder.parentNode.defaultValue;
+        placeholder.parentNode.value = placeholder.parentNode.initValue;
       }, 0);
     }
   }

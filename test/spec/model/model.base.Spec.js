@@ -160,5 +160,35 @@ describe('model', function () {
   });
 
 
+  it("更改 radio 状态", function(done){
+
+    b.views.goTo('page_model_radio');
+    b.run('page_model_radio', function(require, $scope) {
+
+      // scope 赋值
+      $scope.check = 'off';
+      var dom = {
+        checktest : document.querySelectorAll('view[name=page_model_radio] .checktest')
+      }
+
+      setTimeout(function(){
+        expect(dom.checktest[0].checked).toEqual(false);
+        expect(dom.checktest[1].checked).toEqual(true);
+
+        dom.checktest[0].checked = true;
+        beacon(dom.checktest[0]).on('change');
+        // 等待 view 更新
+        setTimeout(function(){
+          // 验证
+          expect(dom.checktest[0].checked).toEqual(true);
+          expect(dom.checktest[1].checked).toEqual(false);
+          expect($scope.check).toEqual('on');
+          done();
+        }, 0);
+      },0)
+
+    });
+
+  });
 
 });
