@@ -224,8 +224,9 @@ viewport view[active="true"]{display:block}
   </view>
 
   <view name="page_select-option">
-     <select b-model="initNum" name="numSelector" >
-        <option b-repeat="num in nums" value="{{num}}"></option>
+     <select b-model="data.cityId" name="numSelector" >
+        <option value="">请选择</option>
+        <option b-repeat="city in cityList" value="{{city.cityId}}">{{city.cityName}}</option>
      </select>
   </view>
 
@@ -259,7 +260,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.4.0.min.js"></script>
+  <script src="dist/web/b.0.4.1.min.js"></script>
   
 
 

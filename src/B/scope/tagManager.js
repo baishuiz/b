@@ -46,9 +46,10 @@ Air.Module('B.scope.tagManager', function(require) {
       });
 
       // 修正 select 开始
-      // ToDo: 代码外移
-      var ownerElement = activeNode.ownerElement;
+      // ToDo: 代码外移    （这段逻辑好像没什么用？xmf 20160927）
+      var ownerElement = activeNode.element.ownerElement;
       if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
+        console.log(ownerElement);
         setTimeout(function(){
           if (ownerElement.parentNode) {
             ownerElement.parentNode.value = ownerElement.parentNode.initValue;
