@@ -5,15 +5,20 @@ describe('数据绑定', function () {
         $scope.flower = 'sun';
         $scope.cityTL = 'tieling'
         $scope.citySH = 'shanghai'
+        $scope.attr = 'attr';
+        $scope.obj = {name:'FamilMart', age:'12'};
+        $scope.obj = {name:'FamilMart'};
         var dom = {
           flower : document.querySelector('view[name=page_default] .flower'),
           flower_A : document.querySelector('view[name=page_default] .flower_A'),
-          flower_B : document.querySelector('view[name=page_default] .flower_B')
+          flower_B : document.querySelector('view[name=page_default] .flower_B'),
+          flower_C : document.querySelector('view[name=page_default] .flower_C')
         }
         setTimeout(function(){
-          expect(dom.flower.innerText).toEqual('sun');
+          expect(dom.flower.innerText).toEqual('sun - attr');
           expect(dom.flower_A.innerText).toEqual('shanghai');
           expect(dom.flower_B.innerText).toEqual('tie ling');
+          expect(dom.flower_C.innerText).toEqual('FamilMart');
           done();
         }, 0);
       })
@@ -79,15 +84,84 @@ describe('数据绑定', function () {
       b.run('page_detail_subview', function(require, $scope){
         $scope.subValue = 's';
         var dom = {
-          text : document.querySelector('view[name=page_detail_subview] .text')
+          text : document.querySelector('view[name=page_detail_subview] .text'),
+          p    : document.querySelector('view[name=page_detail] h1')
         }
 
         setTimeout(function(){
           expect(dom.text.innerText).toEqual('p - s');
+          expect(dom.p.innerText).toEqual('p');
           expect($scope.$resourceURL).toEqual('/test/page_controller/');
           done();
         }, 0);
       });
     });
+
+    it('scope 修改属性', function (done) {
+      b.run('page_scope_change', function(require, $scope){
+        $scope.validateResult = { // 验证赋值 undefined
+          branch : [{
+            msg: 'a'
+          }, {
+            msg: 'b'
+          }]
+        };
+        $scope.a = {
+          b: {} // TODO !!!!!!!!!!!!!! 如果不赋值 {}，后续修改后 dom 不更新
+        } // 验证修改 a.b
+        var dom = {
+          formGroup : document.querySelector('view[name=page_scope_change] .form-group'),
+          obj: document.querySelector('view[name=page_scope_change] .obj'),
+          address: document.querySelector('view[name=page_scope_change] .address')
+        }
+
+        $scope.p1 = $scope.p2 = {}
+
+        expect(dom.address.innerText.trim()).toEqual('');
+        $scope.a = {
+          b: {
+            address: '上海'
+          }
+        }
+
+        setTimeout(function(){
+          dom.blocks = document.querySelectorAll('view[name=page_scope_change] .help-block');
+
+          expect(dom.blocks.length).toEqual(2);
+          expect(dom.blocks[1].innerText.trim()).toEqual('b');
+          // expect(dom.obj.style.display).toEqual('inline');
+
+          expect(dom.address.innerText.trim()).toEqual('上海');
+
+          $scope.validateResult = undefined;
+
+          setTimeout(function() {
+            dom.blocks = document.querySelectorAll('view[name=page_scope_change] .help-block');
+            // expect(dom.obj.style.display).toEqual('none');
+            expect(dom.blocks.length).toEqual(0);
+
+            $scope.validateResult = {
+              branch : [{
+                msg: 'a'
+              }, {
+                msg: 'c'
+              }]
+            }
+
+            setTimeout(function(){
+              dom.blocks = document.querySelectorAll('view[name=page_scope_change] .help-block');
+
+              expect(dom.blocks.length).toEqual(2);
+              expect(dom.blocks[1] && dom.blocks[1].innerText.trim()).toEqual('c');
+              // expect(dom.obj.style.display).toEqual('inline');
+
+              done();
+            }, 50);
+
+          }, 50);
+
+        }, 50);
+      });
+    })
 
 });

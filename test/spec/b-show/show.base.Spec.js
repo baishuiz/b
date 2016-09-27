@@ -1,14 +1,16 @@
 describe('b-show', function () {
   var dom = {
-    p : document.querySelector('view[name=page_b-show] P'),
+    p : document.querySelector('view[name=page_b-show] .p1'),
     table : document.querySelector('#page_b-show_table'),
-    li : document.querySelector('#page_b-show_list_item')
+    li : document.querySelector('#page_b-show_list_item'),
+    p2 : document.querySelector('view[name=page_b-show] .p2'),
+    p3 : document.querySelector('view[name=page_b-show] .p3')
   }
-  var $$scope;
   it('可见状态初始化', function (done) {
     b.views.goTo('page_b-show');
     b.run('page_b-show', function(require, $scope){
-      $$scope = $scope;
+      $scope.count = 0;
+      $scope.node={num:1}
       $scope.$event = {
         switchi : function(){
           // if (typeof $scope.logined !== 'boolean') {
@@ -18,30 +20,37 @@ describe('b-show', function () {
         }
       }
 
-      function testInit(){
+      expect(window.getComputedStyle(dom.p2)['display']).toEqual('none');
+      expect(window.getComputedStyle(dom.p3)['display']).toEqual('block');
+
+      setTimeout(function(){
+        $scope.count = 2;
+        $scope.node={num:2}
+
         expect(window.getComputedStyle(dom.p)['display']).toEqual('none');
         expect(window.getComputedStyle(dom.table)['display']).toEqual('none');
         expect(window.getComputedStyle(dom.li)['display']).toEqual('none');
-        Object.unobserve($scope, testInit)
-        done();
-      }
 
-      Object.observe($scope, testInit);
+        setTimeout(function(){
+          expect(window.getComputedStyle(dom.p2)['display']).toEqual('block');
+          expect(window.getComputedStyle(dom.p3)['display']).toEqual('none');
+          done();
+        }, 0);
+      }, 0);
+
       $scope.logined = false;
     });
   });
 
   it('切换可见状态', function(done){
 
-    function toShow(){
+    setTimeout(function(){
         expect(window.getComputedStyle(dom.p)['display']).toEqual('block');
         expect(window.getComputedStyle(dom.table)['display']).toEqual('table');
         expect(window.getComputedStyle(dom.li)['display']).toEqual('list-item');
-        Object.unobserve($$scope, toShow);
         done();
-    }
+    }, 1000);
 
-    Object.observe($$scope, toShow);
     beacon(dom.p).on('click');
   })
 
@@ -49,16 +58,12 @@ describe('b-show', function () {
 
   it('切换隐藏状态', function(done){
 
-
-    function toHide(){
+    setTimeout(function(){
       expect(window.getComputedStyle(dom.p)['display']).toEqual('none');
       expect(window.getComputedStyle(dom.table)['display']).toEqual('none');
       expect(window.getComputedStyle(dom.li)['display']).toEqual('none');
-      Object.unobserve($$scope, toHide)
       done();
-    }
-
-    Object.observe($$scope, toHide);
+    }, 1000);
 
     beacon(dom.p).on('click');
   })

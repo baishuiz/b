@@ -4,19 +4,22 @@ Air.Module('B.directive.show', function(require) {
     util = require('B.util.util');
 
   var attribute = 'b-show';
-  var api = function(target, $scope) {
+  var api = function(target, scopeStructure, watchData) {
     var isShowElement = node(target).hasAttribute(attribute);
-    isShowElement && processShowElement(target, $scope);
+    isShowElement && processShowElement(target, scopeStructure, watchData);
   }
+  api.key = attribute;
 
-  function processShowElement(target, $scope) {
-    // beacon($scope).on(EVENTS.DATA_CHANGE, watchElement);
-    var dataPath = target.getAttribute(attribute);
-    $scope.listenDataChange(dataPath, watchElement)
-    function watchElement() {
-      var dataPath = target.getAttribute(attribute);
-      var displayStatus = util.getData(dataPath, $scope);
-      displayStatus = util.isEmpty(displayStatus) ? false : displayStatus;
+  function processShowElement(target, scopeStructure, watchData) {
+    var $scope = scopeStructure.scope;
+    var scopeIndex = scopeStructure.name;
+    var attrNode = target.getAttributeNode(attribute);
+
+    attrNode.nodeValue = '{{' + attrNode.nodeValue + '}}';
+
+    watchData(attrNode.nodeValue, attrNode, scopeIndex, watchElement);
+
+    function watchElement(displayStatus) {
       displayStatus ? showHide(target, true) : showHide(target);
     }
   }

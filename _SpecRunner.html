@@ -19,9 +19,10 @@ viewport view[active="true"]{display:block}
 <viewport main="true">
   <view name="page_default" >
     <p>Hello</p>
-    <span class="flower" attr="{{attr}}">{{flower}}</span>
+    <span class="flower" attr="{{attr}}">{{flower === attr ? '' : flower}} - {{attr}}</span>
     <span class="flower_A" attr="{{attr}}">{{1-1==0 ? citySH : cityTL}}</span>
     <span class="flower_B" attr="{{attr}}">{{true ? 'tie ling' : citySH}}</span>
+    <span class="flower_C" >{{obj.name}}{{obj.age}}</span>
   </view>
   <view name="page_list">
     <p>Hello</p>
@@ -30,10 +31,23 @@ viewport view[active="true"]{display:block}
   <view name="page_url_change_before"></view>
   <view name="page_url_change_after"></view>
   <view name="page_detail">
-    <p>{{parentValue}}</p>
+    <span>{{parentValue}}</span>
     <view name="page_detail_subview">
       <p class="text">{{parentValue}} - {{subValue}}</p>
     </view>
+    <h1>{{parentValue}}</h1>
+  </view>
+  <view name="page_scope_change">
+    <div class="form-group col-sm-6">
+      <div class="col-sm-8">
+        <span class="obj" b-show="validateResult" style="display: none;"></span>
+        <span class="help-block" b-repeat="m in validateResult.branch">
+          {{m.msg}}
+        </span>
+      </div>
+    </div>
+
+    <span class="address">{{a.b.address}}</span>
   </view>
   <view name="page_booking"></view>
   <view name="page_order"></view>
@@ -50,11 +64,27 @@ viewport view[active="true"]{display:block}
     <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello'); test testHandle()">{{helloEvent.event.msg}}</a>
   </view>
   <view name="page_event_param">
-    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello', '{{scopeParam}}')">Hello Event</a>
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('{{hi}}', '{{scopeParam}}')">Hello Event</a>
   </view>
   <view name="page_event_multiple">
     <a href="javascript:void(0)" class="btn" b-event="click clickHandle('click'); focus focusHandle('focus')">Hello Event</a>
   </view>
+
+  <view name="remote_page_partialTestA">
+    <p>{{pageName}}</p>
+    <ul><li b-repeat="item in list">{{item.name}}</li></ul>
+    <view b-scope-key="remote_page_partialTestA_partialPage" name="partialPage">
+      <a href="javascript:void(0)" class="partialBtn" b-event="click partialViewEventTest('AOK')">{{pageName}}{{eventMsg}}</a>
+    </view>
+  </view>
+
+  <view name="remote_page_partialTestB">
+    <p>{{pageName}}</p>
+    <view b-scope-key="remote_page_partialTestB_partialPage" name="partialPage">
+      <a href="javascript:void(0)" class="partialBtn" b-event="click partialViewEventTest('BOK')">{{pageName}}{{eventMsg}}</a>
+    </view>
+  </view>
+
   <view name="page_repeat">
     <p>{{notice}}</p>
     <ul>
@@ -62,14 +92,29 @@ viewport view[active="true"]{display:block}
         {{ item.name }}
       </li>
     </ul>
-    <div class='listB' >
+    <div class='listB'>
       <span b-repeat="item in a.b.list">{{item.name}}</span>
     </div>
+    <div></div>
+  </view>
+
+  <view name="page_repeat_with_b-model">
+    <div class='listB' >
+      <input b-repeat="item in a.b.list" type="text" b-model="item.name" />
+    </div>
+    <div></div>
   </view>
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
       <div class="list2" b-repeat="item2 in list2">
         {{item1.name}}{{item2.name}}
+      </div>
+    </div>
+  </view>
+  <view name="page_repeat_in_own_repeat">
+    <div class="list" b-repeat="item in list">
+      <div class="sub-list" b-repeat="subItem in item.subList">
+        {{item.name}} {{subItem.name}}
       </div>
     </div>
   </view>
@@ -79,6 +124,25 @@ viewport view[active="true"]{display:block}
     </ul>
     <ul class="list2">
       <li b-repeat="item2 in list2">{{item2.name}}</li>
+    </ul>
+  </view>
+  <view name="page_repeat_table">
+    <table>
+      <tr>
+        <th b-repeat="header in headers">
+          {{header.text}}
+        </th>
+      </tr>
+      <tr b-repeat="item in items" class="tr_{{item.text}}">
+        <td b-repeat="td in item.list">
+          {{item.text}}{{td.text}}
+        </td>
+      </tr>
+    </table>
+  </view>
+  <view name="page_repeat_expression_in_repeat">
+    <ul class="list">
+      <li b-repeat="item in list">{{item.count === pager.index ? item.count : 1}}</li>
     </ul>
   </view>
   <view name="page_repeat_with_event_outer">
@@ -92,7 +156,7 @@ viewport view[active="true"]{display:block}
   <view name="page_repeat_with_event_inner">
     <ul>
       <li b-repeat="item in lista">
-        <a href="javascript:void(0)" b-event="click clickHandle()">{{item.name}}</a>
+        <a href="javascript:void(0)" b-event="click clickHandle({{item.$index}}, {{item.$index}}, {{item.$index}})">{{item.name}}</a>
       </li>
     </ul>
   </view>
@@ -100,7 +164,7 @@ viewport view[active="true"]{display:block}
     <p class="title" b-event="click titleClickHandle()">{{notice}}</p>
     <ul>
       <li b-repeat="item in list">
-        <a href="javascript:void(0)" b-event="click itemClickHandle()">{{item.name}}</a>
+        <a href="javascript:void(0)" b-event="click itemClickHandle({{item.$index}})">{{item.name}}</a>
       </li>
     </ul>
   </view>
@@ -109,33 +173,60 @@ viewport view[active="true"]{display:block}
     <div>
       <div class="list1" b-repeat="item1 in list1">
         <div class="list2" b-repeat="item2 in list2">
-          <a href="javascript:void(0)" b-event="click clickHandle()">{{item1.name}}{{item2.name}}</a>
+          <a href="javascript:void(0)" b-event="click clickHandle({{item2.$index}})">{{item1.name}}{{item2.name}}</a>
         </div>
       </div>
     </div>
   </view>
+
   <view name="page_model_bind">
     <input b-model="username" type="text" class="username"></input>
     <input b-model="checked" type="checkbox" class="checkbox"></input>
   </view>
   <view name="page_model_input">
-    <input b-event="input inputHandle()"  b-model="username" type="text" class="username"></input>
+    <input b-event="input inputHandle()" b-model="username" type="text" class="username"></input>
   </view>
   <view name="page_model_checkbox">
     <input b-event="click clickHandle()" b-model="check" type="checkbox" class="checktest"></input>
   </view>
-
+  <view name="page_model_checkboxGroup">
+      <input  b-model="checks" value="1" type="checkbox" name="checktest" class="checktest"></input>
+      <input  b-model="checks" value="2" type="checkbox" name="checktest" class="checktest"></input>
+      <input  b-model="checks" value="3" type="checkbox" name="checktest" class="checktest"></input>
+      <input  b-model="checks" value="4" type="checkbox" name="checktest" class="checktest"></input>
+      <input  b-model="checksB" value="a1" type="checkbox" name="checktestB" class="checktestB"></input>
+      <input  b-model="checksB" value="a2" type="checkbox" name="checktestB" class="checktestB"></input>
+      <input  b-model="checksB" value="a3" type="checkbox" name="checktestB" class="checktestB"></input>
+      <input  b-model="checksB" value="a4" type="checkbox" name="checktestB" class="checktestB"></input>
+  </view>
   <view name="page_model_radio">
     <input  b-model="check" type="radio" class="checktest" name="radioTest" value="on" />
     <input  b-model="check" type="radio" class="checktest" name="radioTest" value="off" />
   </view>
   <view name="page_b-show">
     <style>#page_b-show_table { display: none; }</style>
-    <p b-show="logined" b-event="click switchi()"></p>
+    <p class="p1" b-show="logined" b-event="click switchi()"></p>
     <table b-show="logined" id="page_b-show_table"></table>
     <ul>
       <li b-show="logined" id="page_b-show_list_item"></li>
     </ul>
+    <p class="p2" b-show="count > 1"></p>
+    <p class="p3" b-show="node.num === 1"></p>
+  </view>
+
+  <view name="page_b-style">
+    <style>#page_b-style_table { display: none; }</style>
+    <p b-style="display:{{logined}}" b-event="click switchi()"></p>
+    <table b-style="display:{{logined}}" id="page_b-style_table"></table>
+    <ul>
+      <li b-style="display:{{logined}}" id="page_b-style_list_item"></li>
+    </ul>
+  </view>
+
+  <view name="page_select-option">
+     <select b-model="initNum" name="numSelector" >
+        <option b-repeat="num in nums" value="{{num}}"></option>
+     </select>
   </view>
 
   <view name="page_b-property">
@@ -168,7 +259,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.3.4.min.js"></script>
+  <script src="dist/web/b.0.4.0.min.js"></script>
   
 
 
@@ -229,7 +320,17 @@ viewport view[active="true"]{display:block}
       b.router.set({
         rule : '/page_url_change_after',
         viewName : 'page_url_change_after'
-      })
+      });
+
+      b.router.set({
+        rule : '/remote_page_partialTestA',
+        viewName : 'remote_page_partialTestA'
+      });
+
+      b.router.set({
+        rule : '/remote_page_partialTestB',
+        viewName : 'remote_page_partialTestB'
+      });
 
     }());
 </script>
@@ -246,11 +347,17 @@ viewport view[active="true"]{display:block}
   
   <script src="test/spec/event/event.base.Spec.js"></script>
   
+  <script src="test/spec/event/event.partialView.Spec.js"></script>
+  
   <script src="test/spec/repeat/repeat.base.Spec.js"></script>
   
   <script src="test/spec/model/model.base.Spec.js"></script>
   
   <script src="test/spec/b-show/show.base.Spec.js"></script>
+  
+  <script src="test/spec/b-style/style.base.Spec.js"></script>
+  
+  <script src="test/spec/formElement/select-option.base.Spec.js"></script>
   
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   

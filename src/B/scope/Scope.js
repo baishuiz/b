@@ -1,68 +1,56 @@
 Air.Module('B.scope.Scope', function(require) {
-  var EVENTS =  require('B.event.events');
-  var util =  require('B.util.util');
-  var Scope = function(parent){
-    this.parent = parent
+  var EVENTS = require('B.event.events');
+  var util = require('B.util.util');
+  var Scope = function(parent) {
+    this.parent = parent;
   }
 
-  var proto = {};
+  /**
+   *作用：创建文本节点或属性节点数据源的描述符
+   *参数: <textNode> 文本节点或属性节点.
+   *返回：文本节点或属性节点数据源的描述符
+   **/
+  function createDescriptor(textNode, value, callback, scope, dataPath) {
+    var descriptor = {
+      enumerable: true,
+      configurable: true,
+      get: function() {
+        return value;
+      },
 
-  function listenDataChange (targetT, dataPath, callback) {
-    targetT && beacon.utility.isType(targetT, 'Object') && Object.observe(targetT, function(dataChanges){
-      // TODO 重构
-      for(var i = 0; i < dataChanges.length; i++){
-        var type = dataChanges[i].type;
-        var canCallback = beacon.utility.arrayIndexOf(dataPath.split('.'), dataChanges[i].name) >= 0
-        if(type == 'add' || (type == 'update' && canCallback)){
-          var target = dataChanges[i];
-          var attr = target.object[target.name];
-          listenDataChange (attr, dataPath, callback);
-        }
-        canCallback && callback()
-      }
-    });
-  }
+      set: function(val) {
+        var hasChanged = value !== val;
+        var isArray = beacon.utility.isType(val, 'Array');
+        var isObject = beacon.utility.isType(val, 'Object');
+        var isPathNode = beacon.utility.isType(value, 'Array') || beacon.utility.isType(value, 'Object');
+        if (hasChanged) {
+          if (isPathNode) {
+            // value = value ||  {};
+            value = value || (isArray　? [] : {});
 
-  // TODO: 重构
-  proto.listenDataChange =  function (dataPath, callback){
-      var self = this;
-      var fn = function(){
-        callback();
+            if(isObject){
+              for(var aa in value){
+                if(!val[aa]){
+                  val[aa] = undefined;
+                }
+              }
+            }
 
-        var r = dataPath.split('.');
-        var activeT = ""
-        for(var i = 0; i < r.length-1; i++){
-          if(activeT){
-             activeT = activeT + '.' + r[i];
+            beacon.utility.merge(value, val);
           } else {
-            activeT = r[i]
+            value = beacon.utility.isType(val, 'Undefined') ? '' : val;
+            callback && callback();
           }
-
-          var targetT = util.getData(activeT, self);
-          listenDataChange(targetT, dataPath, callback);
         }
       }
-      if (typeof self.$index === 'number') {
-        setTimeout(fn, 0); // 否则会死循环
-      } else {
-        beacon(self).once(EVENTS.RUN_COMPLETE, fn);
-      }
-
-      Object.observe(self, function(dataChanges){
-        for(var i=0;i<dataChanges.length;i++){
-          if(dataChanges[i].type == 'add'){
-            var target = dataChanges[i];
-            var attr = target.object[target.name];
-            listenDataChange (attr, dataPath, callback);
-          }
-          dataChanges[i].name === dataPath.split('.')[0] && callback()
-        }
-      });
     }
+    return descriptor;
+  }
 
-  var api = function(parent){
-        Scope.prototype = parent || proto;
-        return new Scope(parent);
+  var api = function(parent) {
+    Scope.prototype = parent || {};
+    Scope.prototype.constructor = Scope;
+    return new Scope(parent);
   }
   return api;
 });

@@ -5,7 +5,7 @@ Air.Module("B.controller.run", function(require){
     var viewManager = require("B.view.viewManager");
     var EVENTS = require('B.event.EVENTS');
     var scopeKey = viewManager.getScopeKeyByViewName(controllerName);
-    var scope = scopeManager.getScope(scopeKey || controllerName);
+    var scope = scopeManager.getScopeInstance(scopeKey || controllerName);
 
     if (scopeKey) {
       var controllerMap = memCache.get('controllerMap');

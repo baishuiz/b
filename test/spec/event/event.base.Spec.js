@@ -35,11 +35,11 @@ describe('事件绑定', function () {
           // dispatchEvent(dom.btn, 'click');
           // dispatchEvent(dom.btn, 'test');
           beacon(dom.btn).on('test');
-        }, 1000);
-                
+        }, 0);
+
         // dispatchEvent(dom.btn, 'test');
         // beacon(dom.btn).on('test');
-      }, 1000);
+      }, 0);
 
 
     })
@@ -47,7 +47,8 @@ describe('事件绑定', function () {
 
   it('支持参数、scope标签参数', function (done) {
     b.run('page_event_param', function(require, $scope){
-      $scope.scopeParam = ' World'
+      $scope.scopeParam = ' World';
+      $scope.hi = 'Hello' ;
       var dom ={
         btn: document.querySelector('view[name=page_event_param] .btn')
       }

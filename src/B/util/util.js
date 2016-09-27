@@ -26,18 +26,19 @@ Air.Module('B.util.util', function() {
     },
 
     getData : function(pathString, root){
+      var rootParent = root.parent;
       var nsPath = pathString.split("."),
           ns = root || window || {},
           root = ns;
       // 如果不是最后一个为undefined，则赋值为空数组，避免Observe绑定失败
       for (var i = 0, len = nsPath.length; i < len; i++) {
           if(!ns || (ns[nsPath[i]] === undefined)){
-              return;
+              return  rootParent && util.getData(pathString, rootParent);
           } else {
               ns = ns[nsPath[i]];
           }
       };
-      return ns;
+      return ns ;
     }
   };
   return util;
