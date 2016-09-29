@@ -1,6 +1,7 @@
 describe('b-property', function () {
   var dom = {
-    input : document.querySelector('view[name=page_b-property] input')
+    input : document.querySelector('view[name=page_b-property] input'),
+    ul : document.querySelector('view[name=page_b-property] ul')
   }
   it('特性初始化', function (done) {
     b.views.goTo('page_b-property');
@@ -22,7 +23,34 @@ describe('b-property', function () {
       setTimeout(function(){
         expect(dom.input.hasAttribute('readonly')).toEqual(true);
         expect(dom.input.hasAttribute('disabled')).toEqual(false);
-        done();
+
+        setTimeout(function() {
+          $scope.list = [
+            {
+              status: {
+                readonly: true,
+                disable: true
+              }
+            },
+            {
+              status: {
+                readonly: false,
+                disable: false
+              }
+            }
+          ]
+
+          setTimeout(function() {
+            expect(dom.ul.querySelector('li:nth-child(1) input').readOnly).toEqual(true);
+            expect(dom.ul.querySelector('li:nth-child(1) input').disabled).toEqual(true);
+            expect(dom.ul.querySelector('li:nth-child(2) input').readOnly).toEqual(false);
+            expect(dom.ul.querySelector('li:nth-child(2) input').disabled).toEqual(false);
+
+            done();
+          }, 18);
+
+        }, 50);
+
       }, 18);
     });
   });
