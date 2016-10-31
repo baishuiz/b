@@ -2227,13 +2227,16 @@
     scopeManager.setRoot(env);
     initLocalViewport();
     var URLPath = bridge.isHybrid ? (location.hash.replace(/^#/, '') || '/') : location.pathname;
+    var URLPathAry = URLPath.split('?');
+    URLPath = URLPathAry[0];
+    var query = URLPathAry[1] || '';
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
         replace: true,
         init: true,
         params: activeRouter.params,
-        query: location.search
+        query: query ? '?' + query : ''
       });
     } else {
       throw404();

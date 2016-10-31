@@ -110,120 +110,6 @@
   };
   return util;
 });
-;Air.Module("B.bridge", function() {
-  var PROTOCOL_KEY = 'cjiahybrid';
-
-  /**
-   * 执行 Hybrid 方法
-   * @param {String} fnName 方法名
-   * @param {Object} param  传入参数对象
-   */
-  function run(fnName, param, options) {
-    if (!fnName) {
-      return;
-    }
-    options = options || {};
-
-    var url = generateUrl(fnName, param, options);
-
-    var iframe = document.createElement('iframe');
-    var cont = document.body || document.documentElement;
-
-    iframe.style.display = 'none';
-    iframe.setAttribute('src', url);
-    cont.appendChild(iframe);
-
-    setTimeout(function(){
-      iframe.parentNode.removeChild(iframe);
-      iframe = null;
-    }, 200);
-  }
-
-  /**
-   * 生成访问的Url
-   * @param {String} fnName       方法名
-   * @param {Object} param        传入参数对象
-   * @param {Object} options      选项
-   *   @options {boolean} unified 使用统一回调，默认 true
-   * @return {String} url
-   */
-  function generateUrl(fnName, param, options) {
-    param = param || {};
-    var url = PROTOCOL_KEY + '://' + fnName + '?jsparams=';
-    var unified = typeof options.unified === 'boolean' ? options.unified : true;
-
-    if (unified) {
-      param.success = register(fnName, param.success);
-      param.failed = register(fnName, param.failed);
-    }
-
-    url += encodeURIComponent(JSON.stringify(param));
-
-    return url;
-  }
-
-  /**
-   * 注册全局回调
-   * @param {String} fnName 方法名
-   * @param {Function} fn 回调方法
-   * @return {String} callbackName 方法名（PROTOCOL_KEY + GUID + 毫秒数）
-   */
-  function register(fnName, fn, options) {
-    var callbackName = PROTOCOL_KEY + getGUID() + new Date().getTime();
-    options = options || {};
-    var keepCallback = typeof options.keepCallback === 'boolean' ? options.keepCallback : false;
-    console.log(fnName, callbackName);
-
-    window[callbackName] = function() {
-      if (typeof fn === 'function') {
-        fn.apply(window, arguments);
-      }
-      if (!keepCallback) {
-        destroyCallback(callbackName);
-      }
-    }
-
-    return callbackName;
-  }
-  /**
-   * 销毁全局回调
-   * @param {String} callbackName 方法名
-   */
-  function destroyCallback(callbackName) {
-    delete window[callbackName];
-  }
-
-  /**
-   * 获取不带连接符的GUID
-   * @return {String} guid
-   */
-  function getGUID() {
-    var lut = [];
-    for (var i = 0; i < 256; i++) { lut[i] = (i < 16 ? '0' : '') + (i).toString(16); }
-
-    function generater() {
-      var d0 = Math.random() * 0xffffffff | 0;
-      var d1 = Math.random() * 0xffffffff | 0;
-      var d2 = Math.random() * 0xffffffff | 0;
-      var d3 = Math.random() * 0xffffffff | 0;
-      return lut[d0 & 0xff] + lut[d0 >> 8 & 0xff] + lut[d0 >> 16 & 0xff] + lut[d0 >> 24 & 0xff] +
-        lut[d1 & 0xff] + lut[d1 >> 8 & 0xff] + lut[d1 >> 16 & 0x0f | 0x40] + lut[d1 >> 24 & 0xff] +
-        lut[d2 & 0x3f | 0x80] + lut[d2 >> 8 & 0xff] + lut[d2 >> 16 & 0xff] + lut[d2 >> 24 & 0xff] +
-        lut[d3 & 0xff] + lut[d3 >> 8 & 0xff] + lut[d3 >> 16 & 0xff] + lut[d3 >> 24 & 0xff];
-    }
-
-    return generater();
-  }
-
-  var isHybrid = /^file:/.test(location.protocol);
-
-  return {
-    run: run,
-    register: register,
-    isHybrid: isHybrid,
-    isInApp: true
-  };
-});
 ;Air.Module('B.data.memCache', function(){
   var MEMORY_CACHE = {};
   var EXPIRED_LIST = {};
@@ -262,64 +148,13 @@
   }
 });
 ;Air.Module('B.data.storage', function(require){
-  var bridge = require('B.bridge');
-  var two = function(str) {
-    str = (str || '') + '';
-    if (str.length === 1) {
-      str = '0' + str;
-    }
-    return str;
-  }
+  var memCache = require('B.data.memCache');
 
-  var set = function(key, value, options) {
-    if (!key) {
-      return;
-    }
-    options = options || {};
-    var expiredSecond = typeof options.expiredSecond === 'number' ? options.expiredSecond : 0;
-    var expireTime = 0;
-
-    if (expiredSecond) {
-      expireTime = new Date();
-      expireTime.setSeconds(expireTime.getSeconds() + expiredSecond);
-      expireTime = expireTime.getFullYear() + two(expireTime.getMonth() + 1) + two(expireTime.getDate()) +
-                   two(expireTime.getHours()) + two(expireTime.getMinutes()) + two(expireTime.getSeconds());
-    }
-
-    var param = {
-      key: key,
-      value: JSON.stringify(value)
-    };
-
-    if (expireTime) {
-      param['expireTime'] = expireTime;
-    }
-
-    bridge.run('setdata', param);
-  };
+  var set = memCache.set;
 
   var get = function(key, callback){
-    if (!key) {
-      callback && callback();
-      return;
-    }
-    var param = {
-      key: key,
-      success: function(res) {
-        var result = res && res.result;
-        try {
-          result = JSON.parse(result);
-        } catch (e) {
-          result = null;
-        }
-        callback && callback(result);
-      },
-      failed: function() {
-        callback && callback(null);
-      }
-    };
-
-    bridge.run('getdata', param);
+    var value = memCache.get(key);
+    callback && callback(value);
   }
 
   return {
@@ -2212,7 +2047,6 @@
   var scopeManager = require('B.scope.scopeManager');
   var EVENTS =  require('B.event.events');
   var middleware = require('B.util.middleware');
-  var bridge = require('B.bridge');
   var viewList = [],
       viewportList = [],
       loadingViewList = [], // 记载中的view
@@ -2226,7 +2060,7 @@
   function init(env){
     scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = bridge.isHybrid ? (location.hash.replace(/^#/, '') || '/') : location.pathname;
+    var URLPath = location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
@@ -2239,7 +2073,6 @@
       throw404();
     }
     listenURLChange();
-    listenNativeAppear();
   }
 
   function initLocalViewport(){
@@ -2289,8 +2122,7 @@
 
   function goTo (viewName, options){
     var fnName = 'beforeGoTo';
-    var url = getURL(viewName, options);
-    var paramObj = { viewName: viewName, options: options, url: url };
+    var paramObj = { viewName: viewName };
     var next = function(){
       var hasView = getViewByViewName(viewName);
       if (!viewIsLoading(viewName)) {
@@ -2311,18 +2143,18 @@
   }
 
   function viewIsLoading(viewName) {
-    return loadingViewList.indexOf(viewName) === -1 ? false : true;
+    return beacon.utility.arrayIndexOf(loadingViewList, viewName) === -1 ? false : true;
   }
 
   function addLoadingView(viewName) {
-    var idx = loadingViewList.indexOf(viewName);
+    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
     if (idx === -1) {
       loadingViewList.push(viewName);
     }
   }
 
   function removeLoadingView(viewName) {
-    var idx = loadingViewList.indexOf(viewName);
+    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
     if (idx !== -1) {
       loadingViewList.splice(idx, 1);
     }
@@ -2330,17 +2162,15 @@
 
   function changeURLParams(viewName, options) {
     options = options || {};
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     $scope['$request'] = $scope.$request || {};
     $scope.$request.params = options.params;
   }
 
   function getURL (viewName, options) {
-    options = options || {}
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
-      query: options.query,
-      noOrigin: true
+      query: options.query
     });
 
     return url;
@@ -2403,6 +2233,10 @@
     });
   }
 
+  function back () {
+    window.history.back();
+  }
+
   function show (viewName){
     var view = getViewByViewName(viewName);
     if (view) {
@@ -2413,15 +2247,10 @@
     }
   }
 
-  function hideNativeLoading() {
-    bridge.run('hideloading');
-  }
-
 
   function throw404(){
     var fnName = 'viewNotFound';
     middleware.run(fnName);
-    hideNativeLoading();
   };
 
   function getViewByViewName(viewName){
@@ -2470,7 +2299,6 @@
         show(viewName);
 
         removeLoadingView(viewName);
-        hideNativeLoading();
       });
     }
 
@@ -2501,37 +2329,13 @@
     triggerOnShow(activeView, lastViewName);
   }
 
-  /**
-  * 监听Native appear
-  */
-  function listenNativeAppear() {
-    bridge.run('appear', {
-      callback: bridge.register('appear', viewAppear, { keepCallback: true })
-    }, {
-      unified: false
-    });
-  }
-
-  /**
-  * Native appear 后执行 view onShow
-  */
-  function viewAppear() {
-    var params = {
-      viewName: activeView.getViewName()
-    };
-    runOnAppear(params, function() {
-      activeView.show();
-      triggerOnShow(activeView);
-    });
-  }
-
-  function triggerOnHide(curView, toView, noHide) {
+  function triggerOnHide(curView, toView) {
     var viewName = curView.getViewName();
-    !noHide && curView && curView.hide();
+    curView && curView.hide();
     beacon(curView).on(curView.events.onHide, {
       to: toView
     });
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
@@ -2540,7 +2344,7 @@
     beacon(curView).on(curView.events.onShow, {
       from: lastViewName
     });
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
@@ -2552,44 +2356,9 @@
     return activeView;
   }
 
-  function goToHybrid(viewName, options) {
-    options = options || {};
-    if (options.replace) {
-      goTo(viewName, options);
-    } else {
-      var fnName = 'beforeGoTo';
-      var url = getURL(viewName, options);
-      var paramObj = { viewName: viewName, options: options, url: url };
-      var next = function(paramObj){
-        activeView && triggerOnHide(activeView, null ,true);
-
-        bridge.run('gotopage', {
-          vc: paramObj.vc,
-          url: paramObj.url
-        });
-      }
-
-      // goTo 方法对外支持中间件，中间件参数为 paramObj
-      middleware.run(fnName, paramObj, next);
-    }
-  }
-
-  function back () {
-    activeView && triggerOnHide(activeView, null ,true);
-    bridge.run('goback');
-  }
-
-  /**
-  * show 之前对外提供中间件 onAppear
-  */
-  function runOnAppear(params, next) {
-    var fnName = 'onAppear';
-    middleware.run(fnName, params, next);
-  }
-
   api = {
     init : init,
-    goTo : goToHybrid,
+    goTo : goTo,
     back : back,
     addMiddleware : middleware.add,
     removeMiddleware : middleware.remove,
@@ -2681,8 +2450,7 @@ Air.run(function(require){
       run = require('B.controller.run'),
       serviceFactory = require('B.service.serviceFactory'),
       HTTP = require('B.network.HTTP'),
-      TDK = require('B.TDK.TDK'),
-      bridge = require('B.bridge');
+      TDK = require('B.TDK.TDK');
   void function main(){
     var FRAMEWORK_NAME = "b";
     var api = {
@@ -2707,17 +2475,15 @@ Air.run(function(require){
       run      : run,
       Module   : Air.Module,
       TDK      : TDK,
-      bridge   : bridge,
+      bridge   : {
+        run: function(){},
+        isHybrid: false,
+        isInApp: false
+      },
       ready    : function(callback){
         callback = typeof callback === 'function' ? callback : function(){};
-        var handle = function(res) {
-          res = res || { resultCode: 1 };
-          callback(res);
-        };
-
-        bridge.run('getdeviceinfo', {
-          success: handle,
-          failed: handle
+        Air.domReady(function(){
+          callback();
         });
       }
     };
