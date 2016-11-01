@@ -20,17 +20,23 @@ Air.Module("B.view.viewManager", function(require){
   function init(env){
     scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = bridge.isHybrid ? (location.hash.replace(/^#/, '') || '/') : location.pathname;
-    var URLPathAry = URLPath.split('?');
-    URLPath = URLPathAry[0];
-    var query = URLPathAry[1] || '';
+    var URLPath, query;
+    if (bridge.isHybrid) {
+      URLPath = location.hash.replace(/^#/, '') || '/';
+      var URLPathAry = URLPath.split('?');
+      URLPath = URLPathAry[0];
+      query = URLPathAry[1] ? '?' + URLPathAry[1] : '';
+    } else {
+      URLPath = location.pathname;
+      query = location.search;
+    }
     var activeRouter = router.getMatchedRouter(URLPath);
     if (activeRouter) {
       goTo(activeRouter.viewName, {
         replace: true,
         init: true,
         params: activeRouter.params,
-        query: query ? '?' + query : ''
+        query: query
       });
     } else {
       throw404();
