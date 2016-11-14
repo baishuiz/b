@@ -2237,18 +2237,19 @@
       query = location.search;
     }
     var activeRouter = router.getMatchedRouter(URLPath);
-    if (activeRouter) {
-      goTo(activeRouter.viewName, {
-        replace: true,
-        init: true,
-        params: activeRouter.params,
-        query: query
-      });
-    } else {
-      throw404();
-    }
+    listenNativeAppear(function(){
+      if (activeRouter) {
+          goTo(activeRouter.viewName, {
+            replace: true,
+            init: true,
+            params: activeRouter.params,
+            query: query
+          });
+      } else {
+        throw404();
+      }
+    });
     listenURLChange();
-    listenNativeAppear();
   }
 
   function initLocalViewport(){
@@ -2513,9 +2514,17 @@
   /**
   * 监听Native appear
   */
-  function listenNativeAppear() {
+  var isNativeAppearInit = true;
+  function listenNativeAppear(initCallback) {
     bridge.run('appear', {
-      callback: bridge.register('appear', viewAppear, { keepCallback: true })
+      callback: bridge.register('appear', function(){
+        if (isNativeAppearInit) {
+          isNativeAppearInit = false;
+          initCallback && initCallback();
+        } else {
+          viewAppear();
+        }
+      }, { keepCallback: true })
     }, {
       unified: false
     });
