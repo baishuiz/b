@@ -31,19 +31,18 @@ Air.Module("B.view.viewManager", function(require){
       query = location.search;
     }
     var activeRouter = router.getMatchedRouter(URLPath);
-    listenNativeAppear(function(){
-      if (activeRouter) {
-          goTo(activeRouter.viewName, {
-            replace: true,
-            init: true,
-            params: activeRouter.params,
-            query: query
-          });
-      } else {
-        throw404();
-      }
-    });
+    if (activeRouter) {
+      goTo(activeRouter.viewName, {
+        replace: true,
+        init: true,
+        params: activeRouter.params,
+        query: query
+      });
+    } else {
+      throw404();
+    }
     listenURLChange();
+    listenNativeAppear();
   }
 
   function initLocalViewport(){
@@ -308,17 +307,9 @@ Air.Module("B.view.viewManager", function(require){
   /**
   * 监听Native appear
   */
-  var isNativeAppearInit = true;
-  function listenNativeAppear(initCallback) {
+  function listenNativeAppear() {
     bridge.run('appear', {
-      callback: bridge.register('appear', function(){
-        if (isNativeAppearInit) {
-          isNativeAppearInit = false;
-          initCallback && initCallback();
-        } else {
-          viewAppear();
-        }
-      }, { keepCallback: true })
+      callback: bridge.register('appear', viewAppear, { keepCallback: true })
     }, {
       unified: false
     });
