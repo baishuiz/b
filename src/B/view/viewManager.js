@@ -121,6 +121,8 @@ Air.Module("B.view.viewManager", function(require){
 
   function changeURLParams(viewName, options) {
     options = options || {};
+
+    if(options.isComponent){return;} // 全屏组件不切换 URL，也不需要更新URL参数
     var $scope = scopeManager.getScopeInstance(viewName);
     $scope['$request'] = $scope.$request || {};
     $scope.$request.params = options.params;
@@ -137,6 +139,7 @@ Air.Module("B.view.viewManager", function(require){
 
   function switchURL (viewName, options) {
     options = options || {};
+    if(options.isComponent){return;} // 全屏组件不切换 URL
     var fromUrl = location.href;
     var url = getURL(viewName, options);
 
@@ -222,13 +225,36 @@ Air.Module("B.view.viewManager", function(require){
     return subViewDom && subViewDom.getAttribute('b-scope-key') || '';
   }
 
+  //加载模板信息
+  var templateCache = {};
+  // function getTemplete(viewName, templatePath, successCallBack, errorCallBack){
+  function getTemplete(viewName, options){
+    options = options || {};
+    var env = memCache.get('env');
+    var host = options.host || env.$templatePath;
+    var templatePath = host + '/' + options.templatePath.replace(/\./g, '/') + '.html';
+    var errorCallBack =  options.errorCallBack || function(){};
+    if(templateCache[viewName]) { return templateCache[viewName]};
+    var http = new HTTP();
+    http.get(templatePath, {
+      successCallBack : function(xhr){
+        var responseText = xhr.responseText;
+        templateCache[viewName] = responseText;
+        options.onSuccess && options.onSuccess(responseText);
+      },
+      errorCallBack : errorCallBack
+    });
+  }
+
   function loadView(viewName, options){
+    options = options || {};
     showLoading();
     var env = memCache.get('env');
     var curRouter = router.get(viewName);
     var sign = curRouter.sign || '';
     var extPath = sign ? '_' + sign : '';
-    var templatePath = env.$templatePath + viewName + extPath + '.html';
+    var templateBasePath = options.templatePath || env.$templatePath;
+    var templatePath = templateBasePath + viewName + extPath + '.html';
     var http = new HTTP();
 
     http.get(templatePath, {
@@ -324,7 +350,9 @@ Air.Module("B.view.viewManager", function(require){
     showLoading : showLoading,
     hideLoading : hideLoading,
     getActive : getActive,
-    getScopeKeyByViewName: getScopeKeyByViewName
+    getScopeKeyByViewName: getScopeKeyByViewName,
+    getTemplete : getTemplete
+
   }
 
   return api;

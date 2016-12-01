@@ -2268,14 +2268,20 @@
 
   //加载模板信息
   var templateCache = {};
-  function getTemplete(viewName, templatePath, successCallBack, errorCallBack){
+  // function getTemplete(viewName, templatePath, successCallBack, errorCallBack){
+  function getTemplete(viewName, options){
+    options = options || {};
+    var env = memCache.get('env');
+    var host = options.host || env.$templatePath;
+    var templatePath = host + '/' + options.templatePath.replace(/\./g, '/') + '.html';
+    var errorCallBack =  options.errorCallBack || function(){};
     if(templateCache[viewName]) { return templateCache[viewName]};
     var http = new HTTP();
     http.get(templatePath, {
       successCallBack : function(xhr){
         var responseText = xhr.responseText;
         templateCache[viewName] = responseText;
-        successCallBack(responseText);
+        options.onSuccess && options.onSuccess(responseText);
       },
       errorCallBack : errorCallBack
     });
@@ -2467,6 +2473,7 @@
  */
 Air.run(function(require){
   var viewManager   = require("B.view.viewManager"),
+      scopeManager = require('B.scope.scopeManager'),
       router = require("B.router.router"),
       memCache = require('B.data.memCache'),
       run = require('B.controller.run'),
@@ -2478,6 +2485,7 @@ Air.run(function(require){
     var api = {
       views    : viewManager, // ViewManager
       router   : router, // Router
+      scopeManager　:　scopeManager,
       service  : serviceFactory,
       utility  : {
         HTTP: HTTP
