@@ -2289,8 +2289,7 @@
 
   //加载模板信息
   var templateCache = {};
-  // function getTemplete(viewName, templatePath, successCallBack, errorCallBack){
-  function getTemplete(viewName, options){
+  function getTemplate(viewName, options){
     options = options || {};
     var env = memCache.get('env');
     var host = options.host || env.$templatePath;
@@ -2413,7 +2412,7 @@
     hideLoading : hideLoading,
     getActive : getActive,
     getScopeKeyByViewName: getScopeKeyByViewName,
-    getTemplete : getTemplete
+    getTemplate : getTemplate
 
   }
 

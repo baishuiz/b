@@ -2360,7 +2360,8 @@
 
   function changeURLParams(viewName, options) {
     options = options || {};
-    var $scope = scopeManager.getScope(viewName);
+    if(options.isComponent){return;} // 全屏组件不切换 URL，也不需要更新URL参数
+    var $scope = scopeManager.getScopeInstance(viewName);
     $scope['$request'] = $scope.$request || {};
     $scope.$request.params = options.params;
   }
@@ -2378,6 +2379,7 @@
 
   function switchURL (viewName, options) {
     options = options || {};
+    if(options.isComponent){return;} // 全屏组件不切换 URL
     var fromUrl = location.href;
     var url = getURL(viewName, options);
 
@@ -2464,13 +2466,35 @@
     return subViewDom && subViewDom.getAttribute('b-scope-key') || '';
   }
 
+  //加载模板信息
+  var templateCache = {};
+  function getTemplate(viewName, options){
+    options = options || {};
+    var env = memCache.get('env');
+    var host = options.host || env.$templatePath;
+    var templatePath = host + '/' + options.templatePath.replace(/\./g, '/') + '.html';
+    var errorCallBack =  options.errorCallBack || function(){};
+    if(templateCache[viewName]) { return templateCache[viewName]};
+    var http = new HTTP();
+    http.get(templatePath, {
+      successCallBack : function(xhr){
+        var responseText = xhr.responseText;
+        templateCache[viewName] = responseText;
+        options.onSuccess && options.onSuccess(responseText);
+      },
+      errorCallBack : errorCallBack
+    });
+  }
+
   function loadView(viewName, options){
+    options = options || {};
     showLoading();
     var env = memCache.get('env');
     var curRouter = router.get(viewName);
     var sign = curRouter.sign || '';
     var extPath = sign ? '_' + sign : '';
-    var templatePath = env.$templatePath + viewName + extPath + '.html';
+    var templateBasePath = options.templatePath || env.$templatePath;
+    var templatePath = templateBasePath + viewName + extPath + '.html';
     var http = new HTTP();
 
     http.get(templatePath, {
@@ -2561,7 +2585,7 @@
     beacon(curView).on(curView.events.onHide, {
       to: toView
     });
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
@@ -2570,7 +2594,7 @@
     beacon(curView).on(curView.events.onShow, {
       from: lastViewName
     });
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
@@ -2626,7 +2650,9 @@
     showLoading : showLoading,
     hideLoading : hideLoading,
     getActive : getActive,
-    getScopeKeyByViewName: getScopeKeyByViewName
+    getScopeKeyByViewName: getScopeKeyByViewName,
+    getTemplate : getTemplate
+
   }
 
   return api;
@@ -2706,6 +2732,7 @@
  */
 Air.run(function(require){
   var viewManager   = require("B.view.viewManager"),
+      scopeManager = require('B.scope.scopeManager'),
       router = require("B.router.router"),
       memCache = require('B.data.memCache'),
       run = require('B.controller.run'),
@@ -2718,6 +2745,7 @@ Air.run(function(require){
     var api = {
       views    : viewManager, // ViewManager
       router   : router, // Router
+      scopeManager　:　scopeManager,
       service  : serviceFactory,
       utility  : {
         HTTP: HTTP
