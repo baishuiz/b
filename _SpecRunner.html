@@ -224,13 +224,20 @@ viewport view[active="true"]{display:block}
   </view>
 
   <view name="page_select-option">
-     <select b-model="initNum" name="numSelector" >
-        <option b-repeat="num in nums" value="{{num}}"></option>
+     <select b-model="data.cityId" name="numSelector" >
+        <option value="">请选择</option>
+        <option b-repeat="city in cityList" value="{{city.cityId}}">{{city.cityName}}</option>
      </select>
   </view>
 
   <view name="page_b-property">
     <input b-event="click switchi()" b-property="{readOnly: a.b.readonly, disabled: a.b.disable}" id="page_b-property-input" />
+
+    <ul>
+      <li b-repeat="item in list">
+        <input b-property="{readOnly: item.status.readonly, disabled: item.status.disable}"/>
+      </li>
+    </ul>
   </view>
 
   <view name="page_service_event">

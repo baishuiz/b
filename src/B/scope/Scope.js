@@ -30,7 +30,7 @@ Air.Module('B.scope.Scope', function(require) {
 
             if(isObject){
               for(var aa in value){
-                if(!val[aa]){
+                if(!(aa in val)){
                   val[aa] = undefined;
                 }
               }

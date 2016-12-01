@@ -50,7 +50,7 @@ Air.Module('B.directive.model', function(require) {
       .replace(/{{|}}/ig, '');
 
     var value = util.getData(dataPath, $scope);
-    value && modelChangeHandle();
+    (typeof value !== 'undefined') && modelChangeHandle();
 
 
     function onInput(e) {
@@ -92,6 +92,7 @@ Air.Module('B.directive.model', function(require) {
     function modelChangeHandle() {
       var value = util.getData(dataPath, $scope);
       if (target.value === value && target.type !== "radio") {
+        target.initValue = value;
         return
       };
       var result = !util.isEmpty(value) ? value : "";

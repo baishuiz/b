@@ -20,6 +20,12 @@ Air.Module('B.directive.property', function(require) {
     for (var i = 0; i < propertyList.length; i++) {
       var activeProperty = propertyList[i];
       (function(dataPath, name){
+        // 设置初始值
+        var value = util.getData(dataPath, $scope);
+        if (value !== undefined) {
+          target[name] = value;
+        }
+
         var bindPath = '{{' + dataPath + '}}';
         watchData(bindPath, attrNode, scopeIndex, function() {
           var value = util.getData(dataPath, $scope);

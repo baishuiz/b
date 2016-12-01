@@ -89,8 +89,22 @@ Air.Module('B.directive.Repeater', function(require) {
         newNodeList.push(targetNode)
       }
 
-      // template.parentNode.insertBefore(elementContainer, template);
-      tag.parentNode.insertBefore(elementContainer, tag);
+      // 如果是 select 变动，则将 option 赋值后恢复 select 的选中值
+      var isSelect = containerTagName === 'select';
+      var initValue;
+      var parentNode = tag.parentNode;
+      if (isSelect) {
+        initValue = parentNode.initValue;
+      }
+
+      parentNode.insertBefore(elementContainer, tag);
+
+      if (isSelect) {
+        setTimeout(function(){
+          parentNode.value = initValue;
+        }, 0);
+      }
+
       fixSelectElement(tag, targetNode)
       elementContainer = null;
       docContainer = null;

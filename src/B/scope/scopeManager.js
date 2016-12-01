@@ -60,7 +60,7 @@ Air.Module('B.scope.scopeManager', function(require) {
    *作用：监听文本节点或属性节点的数据源变动
    *参数: <dataPath> 数据源路径（有效 token）
    *参数: <currentScopeIndex> 当前作用域索引值
-   *返回：undefind
+   *返回：undefined
    **/
   function bindObjectData(dataPath, currentScopeIndex, callback) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
@@ -345,7 +345,7 @@ Air.Module('B.scope.scopeManager', function(require) {
 
           if(isObject){
             for(var aa in value){
-              if(!val[aa]){
+              if(!(aa in val)){
                 val[aa] = undefined;
               }
             }
