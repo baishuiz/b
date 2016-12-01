@@ -160,6 +160,11 @@ module.exports = function(grunt){
             }
         }
        ,uglify: {
+          options: {
+            mangle: {
+              except: ['require']
+            }
+          },
           mini: {
             files: {
               './dist/web/<%= output.minFileName %>': ['./dist/web/<%= output.fileName %>'],

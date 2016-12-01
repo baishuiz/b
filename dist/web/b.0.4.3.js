@@ -394,6 +394,12 @@
     for (var i = 0; i < propertyList.length; i++) {
       var activeProperty = propertyList[i];
       (function(dataPath, name){
+        // 设置初始值
+        var value = util.getData(dataPath, $scope);
+        if (value !== undefined) {
+          target[name] = value;
+        }
+
         var bindPath = '{{' + dataPath + '}}';
         watchData(bindPath, attrNode, scopeIndex, function() {
           var value = util.getData(dataPath, $scope);
@@ -472,7 +478,7 @@
       .replace(/{{|}}/ig, '');
 
     var value = util.getData(dataPath, $scope);
-    value && modelChangeHandle();
+    (typeof value !== 'undefined') && modelChangeHandle();
 
 
     function onInput(e) {
@@ -514,6 +520,7 @@
     function modelChangeHandle() {
       var value = util.getData(dataPath, $scope);
       if (target.value === value && target.type !== "radio") {
+        target.initValue = value;
         return
       };
       var result = !util.isEmpty(value) ? value : "";
@@ -574,7 +581,7 @@
 
             if(isObject){
               for(var aa in value){
-                if(!val[aa]){
+                if(!(aa in val)){
                   val[aa] = undefined;
                 }
               }
@@ -769,8 +776,22 @@
         newNodeList.push(targetNode)
       }
 
-      // template.parentNode.insertBefore(elementContainer, template);
-      tag.parentNode.insertBefore(elementContainer, tag);
+      // 如果是 select 变动，则将 option 赋值后恢复 select 的选中值
+      var isSelect = containerTagName === 'select';
+      var initValue;
+      var parentNode = tag.parentNode;
+      if (isSelect) {
+        initValue = parentNode.initValue;
+      }
+
+      parentNode.insertBefore(elementContainer, tag);
+
+      if (isSelect) {
+        setTimeout(function(){
+          parentNode.value = initValue;
+        }, 0);
+      }
+
       fixSelectElement(tag, targetNode)
       elementContainer = null;
       docContainer = null;
@@ -997,8 +1018,8 @@
       });
 
       // 修正 select 开始
-      // ToDo: 代码外移
-      var ownerElement = activeNode.ownerElement;
+      // ToDo: 代码外移    （这段逻辑好像没什么用？xmf 20160927）
+      var ownerElement = activeNode.element.ownerElement;
       if(ownerElement && ownerElement.nodeName.toLowerCase() === 'option' && ownerElement.parentNode){
         setTimeout(function(){
           if (ownerElement.parentNode) {
@@ -1085,7 +1106,7 @@
    *作用：监听文本节点或属性节点的数据源变动
    *参数: <dataPath> 数据源路径（有效 token）
    *参数: <currentScopeIndex> 当前作用域索引值
-   *返回：undefind
+   *返回：undefined
    **/
   function bindObjectData(dataPath, currentScopeIndex, callback) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
@@ -1370,7 +1391,7 @@
 
           if(isObject){
             for(var aa in value){
-              if(!val[aa]){
+              if(!(aa in val)){
                 val[aa] = undefined;
               }
             }
