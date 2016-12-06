@@ -2380,7 +2380,6 @@
   function switchURL (viewName, options) {
     options = options || {};
     if(options.isComponent){return;} // 全屏组件不切换 URL
-    var fromUrl = location.href;
     var url = getURL(viewName, options);
 
     // 不支持pushState则跳转。后续是否考虑锚点方案？
@@ -2399,14 +2398,12 @@
       }
     }
 
+    runURLChangeMiddleWare();
+  }
 
+  function runURLChangeMiddleWare() {
     var fnName = 'afterURLChange';
-    var paramObj = {
-      from: fromUrl,
-      to: url
-    };
-    // switchURL 方法对外支持中间件，中间件参数为 paramObj
-    middleware.run(fnName, paramObj);
+    middleware.run(fnName);
   }
 
   function listenURLChange() {
@@ -2418,6 +2415,7 @@
         if (hasView) {
           changeURLParams(state.viewName, state);
           show(state.viewName);
+          runURLChangeMiddleWare();
         } else {
           var URLPath = location.pathname;
           var activeRouter = router.getMatchedRouter(URLPath);
