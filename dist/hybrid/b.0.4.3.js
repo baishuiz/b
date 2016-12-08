@@ -2469,8 +2469,8 @@
   function getTemplate(viewName, options){
     options = options || {};
     var env = memCache.get('env');
-    var host = options.host || env.$templatePath;
-    var templatePath = host + '/' + options.templatePath.replace(/\./g, '/') + '.html';
+    var path = options.path || env.$templatePath;
+    var templatePath = path + options.templatePath.replace(/\./g, '/') + '.html';
     var errorCallBack =  options.errorCallBack || function(){};
     if(templateCache[viewName]) { return templateCache[viewName]};
     var http = new HTTP();
