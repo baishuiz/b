@@ -133,7 +133,8 @@ Air.Module("B.view.viewManager", function(require){
 
   function changeURLParams(viewName, options) {
     options = options || {};
-    var $scope = scopeManager.getScope(viewName);
+    if(options.isComponent){return;} // 全屏组件不切换 URL，也不需要更新URL参数
+    var $scope = scopeManager.getScopeInstance(viewName);
     $scope['$request'] = $scope.$request || {};
     $scope.$request.params = options.params;
   }
@@ -151,7 +152,7 @@ Air.Module("B.view.viewManager", function(require){
 
   function switchURL (viewName, options) {
     options = options || {};
-    var fromUrl = location.href;
+    if(options.isComponent){return;} // 全屏组件不切换 URL
     var url = getURL(viewName, options);
 
     // 不支持pushState则跳转。后续是否考虑锚点方案？
@@ -170,14 +171,12 @@ Air.Module("B.view.viewManager", function(require){
       }
     }
 
+    runURLChangeMiddleWare();
+  }
 
+  function runURLChangeMiddleWare() {
     var fnName = 'afterURLChange';
-    var paramObj = {
-      from: fromUrl,
-      to: url
-    };
-    // switchURL 方法对外支持中间件，中间件参数为 paramObj
-    middleware.run(fnName, paramObj);
+    middleware.run(fnName);
   }
 
   function listenURLChange() {
@@ -189,6 +188,7 @@ Air.Module("B.view.viewManager", function(require){
         if (hasView) {
           changeURLParams(state.viewName, state);
           show(state.viewName);
+          runURLChangeMiddleWare();
         } else {
           var URLPath = location.pathname;
           var activeRouter = router.getMatchedRouter(URLPath);
@@ -237,13 +237,35 @@ Air.Module("B.view.viewManager", function(require){
     return subViewDom && subViewDom.getAttribute('b-scope-key') || '';
   }
 
+  //加载模板信息
+  var templateCache = {};
+  function getTemplate(viewName, options){
+    options = options || {};
+    var env = memCache.get('env');
+    var path = options.path || env.$templatePath;
+    var templatePath = path + options.templatePath.replace(/\./g, '/') + '.html';
+    var errorCallBack =  options.errorCallBack || function(){};
+    if(templateCache[viewName]) { return templateCache[viewName]};
+    var http = new HTTP();
+    http.get(templatePath, {
+      successCallBack : function(xhr){
+        var responseText = xhr.responseText;
+        templateCache[viewName] = responseText;
+        options.onSuccess && options.onSuccess(responseText);
+      },
+      errorCallBack : errorCallBack
+    });
+  }
+
   function loadView(viewName, options){
+    options = options || {};
     showLoading();
     var env = memCache.get('env');
     var curRouter = router.get(viewName);
     var sign = curRouter.sign || '';
     var extPath = sign ? '_' + sign : '';
-    var templatePath = env.$templatePath + viewName + extPath + '.html';
+    var templateBasePath = options.templatePath || env.$templatePath;
+    var templatePath = templateBasePath + viewName + extPath + '.html';
     var http = new HTTP();
 
     http.get(templatePath, {
@@ -334,7 +356,7 @@ Air.Module("B.view.viewManager", function(require){
     beacon(curView).on(curView.events.onHide, {
       to: toView
     });
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
@@ -343,7 +365,7 @@ Air.Module("B.view.viewManager", function(require){
     beacon(curView).on(curView.events.onShow, {
       from: lastViewName
     });
-    var $scope = scopeManager.getScope(viewName);
+    var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
@@ -399,7 +421,9 @@ Air.Module("B.view.viewManager", function(require){
     showLoading : showLoading,
     hideLoading : hideLoading,
     getActive : getActive,
-    getScopeKeyByViewName: getScopeKeyByViewName
+    getScopeKeyByViewName: getScopeKeyByViewName,
+    getTemplate : getTemplate
+
   }
 
   return api;

@@ -4,6 +4,7 @@
  */
 Air.run(function(require){
   var viewManager   = require("B.view.viewManager"),
+      scopeManager = require('B.scope.scopeManager'),
       router = require("B.router.router"),
       memCache = require('B.data.memCache'),
       run = require('B.controller.run'),
@@ -16,6 +17,7 @@ Air.run(function(require){
     var api = {
       views    : viewManager, // ViewManager
       router   : router, // Router
+      scopeManager　:　scopeManager,
       service  : serviceFactory,
       utility  : {
         HTTP: HTTP

@@ -81,8 +81,7 @@ describe('模板内嵌 view ', function () {
 
         // done 会截断后续 js 的执行，导致无法show page_url_change_after，所以用timeout
         setTimeout(function(){
-          expect(changeObj.from).toEqual('http://' + window.host + '/page_url_change_before');
-          expect(changeObj.to).toEqual('http://' + window.host + '/page_url_change_after');
+          expect(location.href).toEqual('http://' + window.host + '/page_url_change_after');
           done();
         }, 0);
       } else {
