@@ -46,6 +46,9 @@ Air.run(function(require){
         Air.domReady(function(){
           callback();
         });
+      },
+      setModuleURL: function(url) {
+        Air.moduleURL(url);
       }
     };
     window[FRAMEWORK_NAME] = api;
