@@ -90,11 +90,16 @@ Air.Module('B.scope.scopeManager', function(require) {
    *参数: <scopeIndex> 数据标签所在作用域索引值
    *返回：undefind
    **/
-  function watchData(tag, node, scopeIndex, callback){
+  function watchData(tag, node, scopeIndex, callback, callbackNow){
      var scope = scopeTreeManager.getScope(scopeIndex);
      var tokens = getTokens(tag, node, scopeIndex);
      for(var i = 0; i < tokens.length; i++){
        var activeToken = tokens[i];
+
+      //  var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
+      //  var scope = scopeStructure.scope
+       callback && callbackNow && callback(util.getData(activeToken, scope));
+
        tagManager.addNode(scopeIndex, activeToken, node, callback);
        bindObjectData(activeToken, scopeIndex, callback);
      }

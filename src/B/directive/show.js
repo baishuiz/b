@@ -15,9 +15,9 @@ Air.Module('B.directive.show', function(require) {
     var scopeIndex = scopeStructure.name;
     var attrNode = target.getAttributeNode(attribute);
 
-    attrNode.nodeValue = '{{' + attrNode.nodeValue + '}}';
-
-    watchData(attrNode.nodeValue, attrNode, scopeIndex, watchElement);
+    attrNode.nodeValue = '{{(' + attrNode.nodeValue + ')}}';
+    var callbackNow = true;
+    watchData(attrNode.nodeValue, attrNode, scopeIndex, watchElement, callbackNow);
 
     function watchElement(displayStatus) {
       displayStatus ? showHide(target, true) : showHide(target);
