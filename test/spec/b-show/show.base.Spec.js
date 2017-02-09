@@ -4,7 +4,8 @@ describe('b-show', function () {
     table : document.querySelector('#page_b-show_table'),
     li : document.querySelector('#page_b-show_list_item'),
     p2 : document.querySelector('view[name=page_b-show] .p2'),
-    p3 : document.querySelector('view[name=page_b-show] .p3')
+    p3 : document.querySelector('view[name=page_b-show] .p3'),
+    p4 : document.querySelector('view[name=page_b-show] .p4')
   }
   it('可见状态初始化', function (done) {
     b.views.goTo('page_b-show');
@@ -20,8 +21,10 @@ describe('b-show', function () {
         }
       }
 
+
       expect(window.getComputedStyle(dom.p2)['display']).toEqual('none');
       expect(window.getComputedStyle(dom.p3)['display']).toEqual('block');
+      expect(window.getComputedStyle(dom.p4)['display']).toEqual('none');
 
       setTimeout(function(){
         $scope.count = 2;
