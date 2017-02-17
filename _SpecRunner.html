@@ -104,6 +104,12 @@ viewport view[active="true"]{display:block}
     </div>
     <div></div>
   </view>
+  <view name="page_repeat_with_b-show">
+    <div class='listB' >
+      <input b-repeat="item in a.b.list" b-show="item.status" type="text" b-model="item.name" />
+    </div>
+    <div></div>
+  </view>
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
       <div class="list2" b-repeat="item2 in list2">
@@ -267,7 +273,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.4.5.min.js"></script>
+  <script src="dist/web/b.0.4.6.min.js"></script>
   
 
 

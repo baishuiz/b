@@ -1309,13 +1309,14 @@
 
       //  var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
       //  var scope = scopeStructure.scope
-       callback && callbackNow && callback(util.getData(activeToken, scope));
+       callback && callbackNow && callback(util.getData(activeToken, scope.scope));
 
        tagManager.addNode(scopeIndex, activeToken, node, callback);
        bindObjectData(activeToken, scopeIndex, callback);
      }
 
   }
+
 
   /**
    *作用：获得有效 token 列表
