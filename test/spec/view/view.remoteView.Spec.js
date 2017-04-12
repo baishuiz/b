@@ -99,9 +99,12 @@ describe('远程模板', function () {
 
 
   it('beforeGoTo 中间件', function(done) {
+    var goToMiddewareParamResult;
+
     // 中间件1
     b.views.addMiddleware('beforeGoTo', function(paramObj, next) {
       if (paramObj.viewName === 'remote_page_view_middleware_1') {
+        goToMiddewareParamResult = paramObj.options.toLocation;
         b.views.goTo('remote_page_view_middleware_2');
       } else {
         next();
@@ -116,7 +119,7 @@ describe('远程模板', function () {
       }
     });
 
-    b.views.goTo('remote_page_view_middleware_1');
+    b.views.goTo('remote_page_view_middleware_1', {toLocation:'123'});
 
     // 1：监听 remote_page_map 的 onHide
     var activeView = b.views.getActive();
@@ -124,6 +127,7 @@ describe('远程模板', function () {
       var activeView = b.views.getActive();
       // 2: 中间件 1 将 middlerware_1 拦截，跳转到了 middleware_2
       expect(activeView.getViewName()).toEqual('remote_page_view_middleware_2');
+      expect(goToMiddewareParamResult).toEqual('123');
 
       // 3: 监听 middleware_2 的 onHide
       beacon(activeView).once(activeView.events.onHide, function(e) {

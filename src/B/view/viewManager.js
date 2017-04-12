@@ -81,7 +81,7 @@ Air.Module("B.view.viewManager", function(require){
 
   function goTo (viewName, options){
     var fnName = 'beforeGoTo';
-    var paramObj = { viewName: viewName };
+    var paramObj = { viewName: viewName, options: options };
     var next = function(){
       var hasView = getViewByViewName(viewName);
       if (!viewIsLoading(viewName)) {
