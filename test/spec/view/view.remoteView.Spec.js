@@ -1,5 +1,17 @@
 describe('远程模板', function () {
 
+  var loadingstate;
+   var loadingTest = {
+     show : function(){
+       loadingstate = "active"
+     },
+
+     hide : function(){
+       loadingstate = "hide"
+     }
+   }
+    b.views.loading.setLoading(loadingTest);
+
   it('初始化', function (done) {
     // 模板 HTML 元素选择器
     var activeView = b.views.getActive();
@@ -15,6 +27,8 @@ describe('远程模板', function () {
         var img = activeView.querySelector('img');
         expect(activeViewContent.innerText).toEqual('hello remote page');
         expect(img.src).toEqual('http://image.cjia.com/roommodel%2F4x3%2F801.jpg');
+        expect(loadingstate).toEqual('active');
+
         done();
       });
     });
@@ -22,9 +36,14 @@ describe('远程模板', function () {
     b.views.goTo('remote_page_map');
   }); // view 初始化完成
 
-  it('前进', function (done) {
-    // 切换至列表页
 
+
+  it('前进', function (done) {
+
+
+
+
+    // 切换至列表页
     b.service.setConfig('default', {
       host: window.host + '/test/service/',
       method: 'GET',
@@ -82,6 +101,7 @@ describe('远程模板', function () {
   });// 切换 完成
 
   it('后退', function (done) {
+
     b.views.back();
 
     var activeView = b.views.getActive();
@@ -92,6 +112,7 @@ describe('远程模板', function () {
         var activeView = b.views.getActive();
         var activeViewName = activeView.getViewName();
         expect(activeViewName).toEqual('remote_page_map');
+        expect(loadingstate).toEqual('hide');
         done();
       });
     });

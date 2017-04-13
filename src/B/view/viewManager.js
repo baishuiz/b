@@ -245,7 +245,7 @@ Air.Module("B.view.viewManager", function(require){
 
   function loadView(viewName, options){
     options = options || {};
-    showLoading();
+    loading.showLoading();
     var env = memCache.get('env');
     var curRouter = router.get(viewName);
     var sign = curRouter.sign || '';
@@ -264,7 +264,7 @@ Air.Module("B.view.viewManager", function(require){
       // 2
       var view = new View(viewName, responseText, {
         initCallback: function(){
-          hideLoading();
+          // loading.hideLoading();
         }
       });
       var scope = scopeManager.parseScope(viewName, view.getDom());
@@ -281,6 +281,7 @@ Air.Module("B.view.viewManager", function(require){
         show(viewName);
 
         removeLoadingView(viewName);
+
       });
     }
 
@@ -309,6 +310,7 @@ Air.Module("B.view.viewManager", function(require){
 
     activeView.show();
     triggerOnShow(activeView, lastViewName);
+    loading.hideLoading();
   }
 
   function triggerOnHide(curView, toView) {
@@ -323,29 +325,48 @@ Air.Module("B.view.viewManager", function(require){
 
   function triggerOnShow(curView, lastViewName) {
     var viewName = curView.getViewName();
+    // loading.showLoading();
     beacon(curView).on(curView.events.onShow, {
       from: lastViewName
     });
+
     var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
-
-  function showLoading(){}
-
-  function hideLoading(){}
 
   function getActive(){
     return activeView;
   }
 
-  api = {
+  var loading = {
+    loadingHandle : null, // handle 须实现接口【Iloading】 show() & hide()
+
+    showLoading : function (){
+                    loading.loadingHandle && loading.loadingHandle.show();
+                  },
+
+    hideLoading :function (){
+                   loading.loadingHandle && loading.loadingHandle.hide();
+                  },
+
+    setLoading : function(handle){
+                   loading.loadingHandle = handle
+                 },
+
+    unsetLoading : function(){
+                  loading.loadingHandle = null
+                }
+  }
+
+  var api = {
     init : init,
     goTo : goTo,
     back : back,
     addMiddleware : middleware.add,
     removeMiddleware : middleware.remove,
-    showLoading : showLoading,
-    hideLoading : hideLoading,
+    // showLoading : loading.showLoading,
+    // hideLoading : loading.hideLoading,
+    loading : loading,
     getActive : getActive,
     getScopeKeyByViewName: getScopeKeyByViewName,
     getTemplate : getTemplate

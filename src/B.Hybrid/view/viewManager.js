@@ -259,7 +259,7 @@ Air.Module("B.view.viewManager", function(require){
 
   function loadView(viewName, options){
     options = options || {};
-    showLoading();
+    loading.showLoading();
     var env = memCache.get('env');
     var curRouter = router.get(viewName);
     var sign = curRouter.sign || '';
@@ -278,7 +278,7 @@ Air.Module("B.view.viewManager", function(require){
       // 2
       var view = new View(viewName, responseText, {
         initCallback: function(){
-          hideLoading();
+          // hideLoading();
         }
       });
       var scope = scopeManager.parseScope(viewName, view.getDom());
@@ -295,7 +295,7 @@ Air.Module("B.view.viewManager", function(require){
         show(viewName);
 
         removeLoadingView(viewName);
-        hideNativeLoading();
+        // hideNativeLoading();
       });
     }
 
@@ -324,6 +324,7 @@ Air.Module("B.view.viewManager", function(require){
 
     activeView.show();
     triggerOnShow(activeView, lastViewName);
+    hideNativeLoading();
   }
 
   /**
@@ -356,6 +357,7 @@ Air.Module("B.view.viewManager", function(require){
     beacon(curView).on(curView.events.onHide, {
       to: toView
     });
+
     var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
@@ -368,10 +370,6 @@ Air.Module("B.view.viewManager", function(require){
     var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
-
-  function showLoading(){}
-
-  function hideLoading(){}
 
   function getActive(){
     return activeView;
@@ -412,14 +410,35 @@ Air.Module("B.view.viewManager", function(require){
     middleware.run(fnName, params, next);
   }
 
+  var loading = {
+    loadingHandle : null, // handle 须实现接口【Iloading】 show() & hide()
+
+    showLoading : function (){
+                    loading.loadingHandle && loading.loadingHandle.show();
+                  },
+
+    hideLoading :function (){
+                   loading.loadingHandle && loading.loadingHandle.hide();
+                  },
+
+    setLoading : function(handle){
+                   loading.loadingHandle = handle
+                 },
+
+    unsetLoading : function(){
+                  loading.loadingHandle = null
+                }
+  }
+
   api = {
     init : init,
     goTo : goToHybrid,
     back : back,
     addMiddleware : middleware.add,
     removeMiddleware : middleware.remove,
-    showLoading : showLoading,
-    hideLoading : hideLoading,
+    // showLoading : loading.showLoading,
+    // hideLoading : loading.hideLoading,
+    loading : loading,
     getActive : getActive,
     getScopeKeyByViewName: getScopeKeyByViewName,
     getTemplate : getTemplate
