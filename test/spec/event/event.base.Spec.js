@@ -53,8 +53,9 @@ describe('事件绑定', function () {
         btn: document.querySelector('view[name=page_event_param] .btn')
       }
       $scope.$event = {
-        clickHandle: function(e, param1, param2) {
+        clickHandle: function(e, param1, param2, param3) {
           expect(param1 + param2).toEqual('Hello World');
+          expect(param3).toEqual('Hello(World)');
           done();
         }
       };
