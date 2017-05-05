@@ -2575,6 +2575,10 @@
   * Native appear 后执行 view onShow
   */
   function viewAppear() {
+    if(!activeView){
+      runOnAppear();
+      return;
+    }
     var params = {
       viewName: activeView.getViewName()
     };
