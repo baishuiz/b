@@ -178,11 +178,15 @@ module.exports = function(grunt){
           eqeqeq: true,
           eqnull: true,
           browser: true,
+          asi: true,
+          sub:true,
+          expr:true,
           globals: {
             jQuery: true
           },
         },
-        uses_defaults: ['./dist/web/<%= output.fileName %>', './dist/hybrid/<%= output.fileName %>']//,
+        uses_defaults: ['./test/**/*.js']//,
+        // uses_defaults: ['./dist/web/<%= output.fileName %>', './dist/hybrid/<%= output.fileName %>']//,
         // with_overrides: {
         //   options: {
         //     curly: false,
@@ -203,5 +207,5 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.registerTask('default', ['connect',  'concat', 'uglify', 'jasmine:mini']);
     grunt.registerTask('package', [ 'concat', 'uglify']);
-    grunt.registerTask('debug', [ 'connect', 'concat', 'jasmine:pivotal']);
+    grunt.registerTask('debug', [ 'connect', 'concat', 'jasmine:pivotal', 'jshint']);
 };
