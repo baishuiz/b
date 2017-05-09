@@ -64,7 +64,7 @@ viewport view[active="true"]{display:block}
     <a href="javascript:void(0)" class="btn" b-event="click clickHandle('Hello'); test testHandle()">{{helloEvent.event.msg}}</a>
   </view>
   <view name="page_event_param">
-    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('{{hi}}', '{{scopeParam}}')">Hello Event</a>
+    <a href="javascript:void(0)" class="btn" b-event="click clickHandle('{{hi}}', '{{scopeParam}}', 'Hello(World)')">Hello Event</a>
   </view>
   <view name="page_event_multiple">
     <a href="javascript:void(0)" class="btn" b-event="click clickHandle('click'); focus focusHandle('focus')">Hello Event</a>
@@ -272,8 +272,8 @@ viewport view[active="true"]{display:block}
   <script src=".grunt/grunt-contrib-jasmine/boot.js"></script>
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
-  
-  <script src="dist/web/b.0.4.7.js"></script>
+
+  <script src="dist/web/b.0.4.8.js"></script>
   
 
 

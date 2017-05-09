@@ -3,7 +3,8 @@ Air.Module('B.directive.event', function(require){
       EVENTS    = require('B.event.events');
 
   var attribute = 'b-event';
-  var reg = /(\((.*?)\))/;
+  // var reg = /(\((.*?)\))/;
+  var reg = /\((.*)\)/;
   var api = function(target, $scope){
     if(!node(target).hasAttribute(attribute)){
       return;
@@ -31,7 +32,7 @@ Air.Module('B.directive.event', function(require){
         var cmdList = cmd.split(";")
         var handleStr = cmdList[eventIndex].replace(eventName,'')
         var eventHandleName = handleStr.replace(reg,'').replace(/\s/g,'');
-        var eventParam = handleStr.match(reg)[2]
+        var eventParam = handleStr.match(reg)[1]
         var params = eval("["+eventParam+"]");
         params.unshift(e);
         this.$index = $scope.$index;
