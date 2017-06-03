@@ -165,7 +165,7 @@ Air.Module('B.directive.Repeater', function(require) {
         var existDescriptor = Object.getOwnPropertyDescriptor(activeObj, nextPathNode);
         if (existDescriptor) {
           descriptorList.push(existDescriptor);
-        };
+        }
 
         var descriptor = createRepeatDataDescriptor.call(activeObj, repeater, nextObj);
         Object.defineProperty(activeObj, nextPathNode, descriptor);
