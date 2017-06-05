@@ -50,9 +50,9 @@ describe('repeat', function () {
   });
 
   it('repeat unshift', function (done) {
-    b.run('page_repeat', function(require, $scope){
+    b.run('page_repeat_change_by_unshift', function(require, $scope){
       $scope.notice = ", welcome";
-      $scope.list = [
+      var list = [
         {
           name: 'Name 1'
         },
@@ -64,6 +64,7 @@ describe('repeat', function () {
         }
       ];
 
+      $scope.list = list;
       $scope.list.unshift({
         name: 'Name 0'
       });
@@ -79,8 +80,8 @@ describe('repeat', function () {
       }
 
       var dom = {
-        list : document.querySelector('view[name=page_repeat]>ul'),
-        listB: document.querySelector('view[name=page_repeat]>.listB')
+        list : document.querySelector('view[name=page_repeat_change_by_unshift]>ul'),
+        listB: document.querySelector('view[name=page_repeat_change_by_unshift]>.listB')
       }
 
       setTimeout(function(){

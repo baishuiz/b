@@ -6,3 +6,6 @@
 ## 0.4.7 ##
 - add goTo paramObj in middleware of views.
 - add loading api of views.
+
+## 0.4.9 ##
+- 修正 repeat 数据进行 unshift 操作导致的错误

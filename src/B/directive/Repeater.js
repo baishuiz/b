@@ -173,6 +173,18 @@ Air.Module('B.directive.Repeater', function(require) {
       }
     }
 
+
+    function fixUnshift(val, value, descriptor){
+      val.unshift =  function(item){
+           var lastValue = value.slice(0);
+           var result = [].concat(item, lastValue)
+         descriptor.set( [] );
+         descriptor.set( [].concat(result));
+         return result
+       }
+
+    }
+
     /**
      *作用：创建 repeat 数据源的描述符
      *参数: <repeater> 模板 UI 控制器.
@@ -233,6 +245,7 @@ Air.Module('B.directive.Repeater', function(require) {
             }
           } else if (isArray) {
             value = value || [];
+            fixUnshift(val, value, descriptor);
 
             // 子回调不赋值，只处理 dom
             if (!isSub) {

@@ -98,6 +98,19 @@ viewport view[active="true"]{display:block}
     <div></div>
   </view>
 
+  <view name="page_repeat_change_by_unshift">
+    <p>{{notice}}</p>
+    <ul>
+      <li b-repeat="item in list" name="{{item.name}}{{notice}}">
+        {{ item.name }}
+      </li>
+    </ul>
+    <div class='listB'>
+      <span b-repeat="item in a.b.list">{{item.name}}</span>
+    </div>
+    <div></div>
+  </view>
+
   <view name="page_repeat_with_b-model">
     <div class='listB' >
       <input b-repeat="item in a.b.list" type="text" b-model="item.name" />

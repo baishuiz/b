@@ -1018,12 +1018,24 @@
         var existDescriptor = Object.getOwnPropertyDescriptor(activeObj, nextPathNode);
         if (existDescriptor) {
           descriptorList.push(existDescriptor);
-        };
+        }
 
         var descriptor = createRepeatDataDescriptor.call(activeObj, repeater, nextObj);
         Object.defineProperty(activeObj, nextPathNode, descriptor);
         activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
       }
+    }
+
+
+    function fixUnshift(val, value, descriptor){
+      val.unshift =  function(item){
+           var lastValue = value.slice(0);
+           var result = [].concat(item, lastValue)
+         descriptor.set( [] );
+         descriptor.set( [].concat(result));
+         return result
+       }
+      
     }
 
     /**
@@ -1086,6 +1098,9 @@
             }
           } else if (isArray) {
             value = value || [];
+
+            fixUnshift(val, value, descriptor);
+
 
             // 子回调不赋值，只处理 dom
             if (!isSub) {
