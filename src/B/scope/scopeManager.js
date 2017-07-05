@@ -18,7 +18,7 @@ Air.Module('B.scope.scopeManager', function(require) {
   var trim = function(str) {
     str = str || ''
     return str.trim ? str.trim() : str.replace(/^\s+|\s+^/, '');
-  }
+  };
 
   function parseScope(scopeName, dom, needScope) {
     var scopeStructure = scopeTreeManager.getScopeByName(scopeName);
@@ -161,18 +161,18 @@ Air.Module('B.scope.scopeManager', function(require) {
     }
   }
 
-  function tryGenerateSubViewScope(node, scopeStructure, currentScopeIndex) {
+  function tryGenerateSubViewScope(node, scopeStructure) {
     if (node.tagName.toLowerCase() === 'view') {
       var scopeKey = node.getAttribute('b-scope-key');
       var viewName = node.getAttribute('name');
       var subScopeName = scopeKey || viewName;
-      var subScope = scopeTreeManager.getScopeByName(subScopeName);
+      // var subScope = scopeTreeManager.getScopeByName(subScopeName);
+      var subScope = scopeStructure.scope;
+      var currentScopeIndex = scopeStructure.index;
       if (!subScope) {
         var subScopeIndex = scopeTreeManager.addScope(currentScopeIndex, subScopeName);
         subScope = scopeTreeManager.getScope(subScopeIndex);
       }
-
-      scopeStructure = subScope;
 
       if (scopeKey) {
         var controllerMap = memCache.get('controllerMap') || {};
@@ -197,7 +197,7 @@ Air.Module('B.scope.scopeManager', function(require) {
    **/
   function parseHTML(node, currentScopeIndex) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
-    scopeStructure = tryGenerateSubViewScope(node, scopeStructure, currentScopeIndex);
+    tryGenerateSubViewScope(node, scopeStructure);
     var scope = scopeStructure.scope;
 
     initModel(node, scopeStructure, watchData);
@@ -220,10 +220,10 @@ Air.Module('B.scope.scopeManager', function(require) {
   /**
    *作用：模板解析
    *参数: <node> 模板引用.
-   *参数: [currentScopeIndex] 模板当前所处作用域索引值.
+   *参数: [currentScopeIndex] 模板当前所处作用域索引值. 默认值 = 0 
    *返回：undefind
    **/
-  function parseTemplate(node, scopeName, currentScopeIndex, isSub, needScope) {
+  function parseTemplateRAW(node, scopeName, currentScopeIndex, isSub, needScope) {
 
     if (!node) {
       return
@@ -289,6 +289,31 @@ Air.Module('B.scope.scopeManager', function(require) {
 
     return goOn(nextNode, scopeName);
   }
+
+
+  function parseTemplateProxy(f) {
+    var value;
+    var active = false;
+    var accumulated = [];
+
+    return function accumulator() {
+        accumulated.push(arguments);
+
+        if (!active) {
+            active = true;
+
+            while (accumulated.length) {
+                value = f.apply(this, accumulated.shift());
+            }
+
+            active = false;
+
+            return value;
+        }
+    }
+}
+
+var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
 
   /**

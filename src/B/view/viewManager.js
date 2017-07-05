@@ -34,6 +34,7 @@ Air.Module("B.view.viewManager", function(require){
     listenURLChange();
   }
 
+  // TODO : 支持多Viewport
   function initLocalViewport(){
     var viewports = document.querySelectorAll('viewport');
     var viewportIndex = 0;
@@ -70,7 +71,7 @@ Air.Module("B.view.viewManager", function(require){
 
       if (activeView.tagName.toLowerCase() === 'view') {
         var activeViewName = activeView.getAttribute('name');
-        var view = new View(activeViewName, activeView)
+        var view = new View(activeViewName, activeView);
         viewContainer['views'][activeViewName] = view;
         scopeManager.parseScope(activeViewName, view.getDom());
       }
