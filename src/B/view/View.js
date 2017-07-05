@@ -2,6 +2,10 @@ Air.Module("B.view.View", function(require){
   var scopeManager = require('B.scope.scopeManager');
   var EVENTS =  require('B.event.events');
 
+  window.statsEvents || (window.statsEvents = {});
+  statsEvents.PAGE_SHOW = EVENTS.PAGE_SHOW;
+  statsEvents.PAGE_HIDE = EVENTS.PAGE_HIDE;
+
   function createDomByString(templateString){
     var div = document.createElement('div');
     if(typeof DOMParser === 'undefined'){
@@ -97,6 +101,13 @@ Air.Module("B.view.View", function(require){
           onShow: beacon.createEvent('view onShow'),
           onHide: beacon.createEvent('view onHide')
         };
+
+    beacon(this).on(events.onShow, function () {
+      beacon.on(statsEvents.PAGE_SHOW, [location.href, viewName]);
+    });
+    beacon(this).on(events.onHide, function () {
+      beacon.on(statsEvents.PAGE_HIDE, [location.href, viewName]);
+    });
 
     this.show = function (){
       dom.setAttribute('active','true');

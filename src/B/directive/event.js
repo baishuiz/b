@@ -2,6 +2,9 @@ Air.Module('B.directive.event', function(require){
   var node      = require('B.util.node'),
       EVENTS    = require('B.event.events');
 
+  window.statsEvents || (window.statsEvents = {});
+  statsEvents.USER_ACTION = EVENTS.USER_ACTION;
+
   var attribute = 'b-event';
   // var reg = /(\((.*?)\))/;
   var reg = /\((.*)\)/;
@@ -42,10 +45,24 @@ Air.Module('B.directive.event', function(require){
                           (scope.$event && scope.$event[eventHandleName]);
         eventHandle && eventHandle.apply(this, params);
         beacon(scope).on(EVENTS.DATA_CHANGE, scope);
+
+        // 触发采集埋点数据事件
+        var viewName = getViewName(target);
+        beacon.on(statsEvents.USER_ACTION, [location.href, eventName, viewName]);
       });
     }
 
-  }
+    function getViewName(target) {
+      if (!target.parentElement) {
+        return '';
+      } else if (target.parentElement.nodeName === 'VIEW'){
+        return target.parentElement.getAttribute('name');
+      } else {
+        return getViewName(target.parentElement);
+      }
+    }
+
+  };
 
   return api;
 })
