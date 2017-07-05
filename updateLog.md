@@ -9,3 +9,8 @@
 
 ## 0.4.9 ##
 - 修正 repeat 数据进行 unshift 操作导致的错误
+
+
+## 0.4.11 ##
+- 支持采集埋点数据，在 B/event/events 中增加新事件，在 B/directive/event 、 B/view/view 中增加触发事件
+
