@@ -389,7 +389,7 @@
 
         // 触发采集埋点数据事件
         var viewName = getViewName(target);
-        beacon.on(statsEvents.USER_ACTION, [location.href, eventName, viewName]);
+        beacon.on(statsEvents.USER_ACTION, [location.href, eventHandleName, viewName]);
       });
     }
 
