@@ -80,6 +80,7 @@ Air.Module("B.router.router", function(){
     options = options || {};
     var params = options.params || {};
     var query  = options.query || "";
+    query = options.hash ? query + options.hash : query;
     var router = routers[viewName];
     var rule = router && router.rule || "";
     var url = getURLByRule(rule, params, query, options.noOrigin);

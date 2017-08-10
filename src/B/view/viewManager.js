@@ -26,7 +26,8 @@ Air.Module("B.view.viewManager", function(require){
         replace: true,
         init: true,
         params: activeRouter.params,
-        query: location.search
+        query: location.search,
+        hash: location.hash
       });
     } else {
       throw404();
@@ -131,7 +132,8 @@ Air.Module("B.view.viewManager", function(require){
   function getURL (viewName, options) {
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
-      query: options.query
+      query: options.query,
+      hash: options.hash
     });
 
     return url;
@@ -148,7 +150,8 @@ Air.Module("B.view.viewManager", function(require){
       var changeURLState = isReplace ? history.replaceState : history.pushState;
       changeURLState && changeURLState.call(history, {
         viewName: viewName,
-        params: options.params
+        params: options.params,
+        hash: options.hash
       }, viewName, url);
     } else {
       if (isReplace) { // 初始化不进行跳转，否则会循环跳转
@@ -183,7 +186,8 @@ Air.Module("B.view.viewManager", function(require){
             goTo(activeRouter.viewName, {
               replace: true,
               params: activeRouter.params,
-              query: location.search
+              query: location.search,
+              hash: location.hash
             });
           } else {
             throw404();
