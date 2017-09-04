@@ -2680,6 +2680,39 @@
     }
   }
 
+  function jump (options) {
+    var url = options.url || '';
+    var projectPath = options.project || '';
+    var urlPath = options.urlPath || '';
+    var query = options.query || '';
+    var title = options.title || '';
+    projectPath = projectPath.replace(/^\//, '');
+    var reg = new RegExp('^(\/)?(' + projectPath + '[\/|$])?');
+    urlPath = urlPath.replace(reg, '');
+    if (!url) {
+      url = getHybridPageUrl(projectPath, urlPath, query);
+    }
+    bridge.run('gotopage', {
+      vc: 'CjiaHybrid',
+      url: url,
+      data: {
+        title: title
+      }
+    });
+  }
+
+  function getHybridPageUrl(projectPath, urlPath, query) {
+    return (projectPath || '') + '/index.html#/' + (projectPath || '') + '/' + (urlPath || '') + (query || '');
+  }
+
+  function goToNative(key, data) {
+    key = key || 'CjiaHybrid';
+    bridge.run('gotopage', {
+      vc: key,
+      data: data
+    })
+  }
+
   function back () {
     activeView && triggerOnHide(activeView, null ,true);
     bridge.run('goback');
@@ -2716,6 +2749,8 @@
   api = {
     init : init,
     goTo : goToHybrid,
+    jump : jump,
+    goToNative : goToNative,
     back : back,
     addMiddleware : middleware.add,
     removeMiddleware : middleware.remove,

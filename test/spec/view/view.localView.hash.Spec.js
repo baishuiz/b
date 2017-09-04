@@ -5,6 +5,10 @@ describe('模板内嵌 view ', function () {
     // 修改url为主页
     history.replaceState(null, 'index', '/index/hello#hash');
 
+    beacon(window).on('hashchange', function(e){
+      expect(location.hash).toEqual('#hash');
+    })
+
     b.ready(function(){
       // 模板 HTML 元素选择器
       var selector = {

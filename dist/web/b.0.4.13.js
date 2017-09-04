@@ -2135,14 +2135,27 @@
     initLocalViewport();
     var URLPath = location.pathname;
     var activeRouter = router.getMatchedRouter(URLPath);
+    var hash = location.hash;
     if (activeRouter) {
       goTo(activeRouter.viewName, {
         replace: true,
         init: true,
         params: activeRouter.params,
         query: location.search,
-        hash: location.hash
+        hash: hash
       });
+
+      // if (hash) {
+      //   // 为了触发 hashchange
+      //   switchURL(activeRouter.viewName, {
+      //     replace: true,
+      //     init: true,
+      //     params: activeRouter.params,
+      //     query: location.search
+      //   });
+      //   location.hash = hash;
+      // }
+
     } else {
       throw404();
     }
@@ -2309,6 +2322,22 @@
         }
       }
     });
+  }
+
+  function jump (options) {
+    var url = options.url || '';
+    var projectPath = options.project || '';
+    var urlPath = options.urlPath || '';
+    var query = options.query || '';
+    projectPath = projectPath.replace(/^\//, '');
+    var reg = new RegExp('^(\/)?(' + projectPath + '[\/|$])?');
+    urlPath = urlPath.replace(reg, '');
+
+    if (url) {
+      location.href = url;
+    } else {
+      location.href = '/' + (projectPath || '') + '/' + (urlPath || '') + (query || '')
+    }
   }
 
   function back () {
@@ -2479,6 +2508,7 @@
   var api = {
     init : init,
     goTo : goTo,
+    jump : jump,
     back : back,
     addMiddleware : middleware.add,
     removeMiddleware : middleware.remove,

@@ -36,7 +36,6 @@ describe('模板内嵌 view ', function () {
     expect(activeViewName).toEqual('page_list');
   });// 切换 完成
 
-
   it('后退', function (done) {
     b.views.goTo('page_list');
     b.views.goTo('page_detail');
