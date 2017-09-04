@@ -10,14 +10,14 @@ Air.Module('B.scope.ScopeTreeManager', function(require) {
   function ScopeTreeManager(rootScope) {
     var scopeTree = []; // scope 栈
     var scopeMap = {};
-    var structure = function() {
+    var getStructure = function() {
       return {
         scope: null,
         // mScope : null,
-        pn: null,
+        pn: null, // parent scope index
         name: null
-      }
-    }
+      };
+    };
 
     var getScope = function(index) {
       return scopeTree[index] || null;
@@ -29,7 +29,7 @@ Air.Module('B.scope.ScopeTreeManager', function(require) {
      *返回：undefind
      **/
     var setRootScope = function(scope) {
-      var rootScope = scopeTree[0] || structure();
+      var rootScope = scopeTree[0] || getStructure();
       rootScope.scope = rootScope.scope || {};
       beacon.utility.merge(rootScope.scope, scope);
       scopeTree[0] = rootScope;
@@ -42,15 +42,15 @@ Air.Module('B.scope.ScopeTreeManager', function(require) {
      **/
     var addScope = function(parentIndex, scopeName) {
       var parentScopeStructure = getScope(parentIndex);
-      var newScope = structure();
-      // var scopeIndex = scopeTree.push(newScope) - 1;
-      scopeTree[scopeName] = newScope
+      var newScope = getStructure();
+      scopeTree[scopeName] = newScope;
       var scopeIndex = scopeTree.push(newScope) - 1;
       newScope.scope = new Scope(parentScopeStructure.scope);
       newScope.pn = parentIndex;
       newScope.name = scopeName;
+      newScope.index = scopeIndex;
       scopeMap[scopeName] = newScope;
-      return scopeName;
+      return scopeIndex;
     }
 
     var getScopeByName = function(scopeName) {

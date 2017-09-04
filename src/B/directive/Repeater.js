@@ -273,6 +273,7 @@ Air.Module('B.directive.Repeater', function(require) {
               var activeNode = nodes[i];
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
+            
           }
 
           for (var i = 0; i < descriptorList.length; i++) {

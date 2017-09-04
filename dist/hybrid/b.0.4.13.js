@@ -533,7 +533,7 @@
 
   function processStyleElement(target, scopeStructure, watchData) {
     var $scope = scopeStructure.scope;
-    var scopeIndex = scopeStructure.name;
+    var scopeIndex = scopeStructure.index;
     var attrNode = target.getAttributeNode(attribute);
 
     // attrNode.nodeValue = '{{' + attrNode.nodeValue + '}}';
@@ -803,14 +803,14 @@
   function ScopeTreeManager(rootScope) {
     var scopeTree = []; // scope 栈
     var scopeMap = {};
-    var structure = function() {
+    var getStructure = function() {
       return {
         scope: null,
         // mScope : null,
-        pn: null,
+        pn: null, // parent scope index
         name: null
-      }
-    }
+      };
+    };
 
     var getScope = function(index) {
       return scopeTree[index] || null;
@@ -822,7 +822,7 @@
      *返回：undefind
      **/
     var setRootScope = function(scope) {
-      var rootScope = scopeTree[0] || structure();
+      var rootScope = scopeTree[0] || getStructure();
       rootScope.scope = rootScope.scope || {};
       beacon.utility.merge(rootScope.scope, scope);
       scopeTree[0] = rootScope;
@@ -835,15 +835,15 @@
      **/
     var addScope = function(parentIndex, scopeName) {
       var parentScopeStructure = getScope(parentIndex);
-      var newScope = structure();
-      // var scopeIndex = scopeTree.push(newScope) - 1;
-      scopeTree[scopeName] = newScope
+      var newScope = getStructure();
+      scopeTree[scopeName] = newScope;
       var scopeIndex = scopeTree.push(newScope) - 1;
       newScope.scope = new Scope(parentScopeStructure.scope);
       newScope.pn = parentIndex;
       newScope.name = scopeName;
+      newScope.index = scopeIndex;
       scopeMap[scopeName] = newScope;
-      return scopeName;
+      return scopeIndex;
     }
 
     var getScopeByName = function(scopeName) {
@@ -1146,6 +1146,7 @@
               var activeNode = nodes[i];
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
+            
           }
 
           for (var i = 0; i < descriptorList.length; i++) {
@@ -1263,7 +1264,7 @@
   var trim = function(str) {
     str = str || ''
     return str.trim ? str.trim() : str.replace(/^\s+|\s+^/, '');
-  }
+  };
 
   function parseScope(scopeName, dom, needScope) {
     var scopeStructure = scopeTreeManager.getScopeByName(scopeName);
@@ -1406,18 +1407,18 @@
     }
   }
 
-  function tryGenerateSubViewScope(node, scopeStructure, currentScopeIndex) {
+  function tryGenerateSubViewScope(node, scopeStructure) {
     if (node.tagName.toLowerCase() === 'view') {
       var scopeKey = node.getAttribute('b-scope-key');
       var viewName = node.getAttribute('name');
       var subScopeName = scopeKey || viewName;
-      var subScope = scopeTreeManager.getScopeByName(subScopeName);
+      // var subScope = scopeTreeManager.getScopeByName(subScopeName);
+      var subScope = scopeStructure.scope;
+      var currentScopeIndex = scopeStructure.index;
       if (!subScope) {
         var subScopeIndex = scopeTreeManager.addScope(currentScopeIndex, subScopeName);
         subScope = scopeTreeManager.getScope(subScopeIndex);
       }
-
-      scopeStructure = subScope;
 
       if (scopeKey) {
         var controllerMap = memCache.get('controllerMap') || {};
@@ -1442,7 +1443,7 @@
    **/
   function parseHTML(node, currentScopeIndex) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
-    scopeStructure = tryGenerateSubViewScope(node, scopeStructure, currentScopeIndex);
+    tryGenerateSubViewScope(node, scopeStructure);
     var scope = scopeStructure.scope;
 
     initModel(node, scopeStructure, watchData);
@@ -1465,10 +1466,10 @@
   /**
    *作用：模板解析
    *参数: <node> 模板引用.
-   *参数: [currentScopeIndex] 模板当前所处作用域索引值.
+   *参数: [currentScopeIndex] 模板当前所处作用域索引值. 默认值 = 0 
    *返回：undefind
    **/
-  function parseTemplate(node, scopeName, currentScopeIndex, isSub, needScope) {
+  function parseTemplateRAW(node, scopeName, currentScopeIndex, isSub, needScope) {
 
     if (!node) {
       return
@@ -1534,6 +1535,31 @@
 
     return goOn(nextNode, scopeName);
   }
+
+
+  function parseTemplateProxy(f) {
+    var value;
+    var active = false;
+    var accumulated = [];
+
+    return function accumulator() {
+        accumulated.push(arguments);
+
+        if (!active) {
+            active = true;
+
+            while (accumulated.length) {
+                value = f.apply(this, accumulated.shift());
+            }
+
+            active = false;
+
+            return value;
+        }
+    }
+}
+
+var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
 
   /**
@@ -2245,19 +2271,19 @@
           dom.style.borderBottom = 'none';
         }, 0);
       }
-    },
+    };
 
     this.hide = function(){
       dom.removeAttribute('active');
-    },
+    };
 
     this.getDom = function (){
       return dom;
-    }
+    };
 
     this.getViewName = function (){
       return viewName;
-    }
+    };
 
     this.events = events;
 

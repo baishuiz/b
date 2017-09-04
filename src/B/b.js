@@ -28,7 +28,7 @@ Air.run(function(require){
        * @return void
        */
       init     : function(env){
-        env = env || {};
+        env = env || {}; //root scope
         memCache.set('env', env);
         Air.moduleURL(env.$moduleURL);
         viewManager.init(env);
@@ -52,5 +52,5 @@ Air.run(function(require){
       }
     };
     window[FRAMEWORK_NAME] = api;
-  }()
+  }();
 });

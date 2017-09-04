@@ -119,19 +119,19 @@ Air.Module("B.view.View", function(require){
           dom.style.borderBottom = 'none';
         }, 0);
       }
-    },
+    };
 
     this.hide = function(){
       dom.removeAttribute('active');
-    },
+    };
 
     this.getDom = function (){
       return dom;
-    }
+    };
 
     this.getViewName = function (){
       return viewName;
-    }
+    };
 
     this.events = events;
 

@@ -11,7 +11,7 @@ Air.Module('B.directive.style', function(require) {
 
   function processStyleElement(target, scopeStructure, watchData) {
     var $scope = scopeStructure.scope;
-    var scopeIndex = scopeStructure.name;
+    var scopeIndex = scopeStructure.index;
     var attrNode = target.getAttributeNode(attribute);
 
     // attrNode.nodeValue = '{{' + attrNode.nodeValue + '}}';

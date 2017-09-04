@@ -110,6 +110,120 @@
   };
   return util;
 });
+;Air.Module("B.bridge", function() {
+  var PROTOCOL_KEY = 'cjiahybrid';
+
+  /**
+   * 执行 Hybrid 方法
+   * @param {String} fnName 方法名
+   * @param {Object} param  传入参数对象
+   */
+  function run(fnName, param, options) {
+    if (!fnName) {
+      return;
+    }
+    options = options || {};
+
+    var url = generateUrl(fnName, param, options);
+
+    var iframe = document.createElement('iframe');
+    var cont = document.body || document.documentElement;
+
+    iframe.style.display = 'none';
+    iframe.setAttribute('src', url);
+    cont.appendChild(iframe);
+
+    setTimeout(function(){
+      iframe.parentNode.removeChild(iframe);
+      iframe = null;
+    }, 200);
+  }
+
+  /**
+   * 生成访问的Url
+   * @param {String} fnName       方法名
+   * @param {Object} param        传入参数对象
+   * @param {Object} options      选项
+   *   @options {boolean} unified 使用统一回调，默认 true
+   * @return {String} url
+   */
+  function generateUrl(fnName, param, options) {
+    param = param || {};
+    var url = PROTOCOL_KEY + '://' + fnName + '?jsparams=';
+    var unified = typeof options.unified === 'boolean' ? options.unified : true;
+
+    if (unified) {
+      param.success = register(fnName, param.success);
+      param.failed = register(fnName, param.failed);
+    }
+
+    url += encodeURIComponent(JSON.stringify(param));
+
+    return url;
+  }
+
+  /**
+   * 注册全局回调
+   * @param {String} fnName 方法名
+   * @param {Function} fn 回调方法
+   * @return {String} callbackName 方法名（PROTOCOL_KEY + GUID + 毫秒数）
+   */
+  function register(fnName, fn, options) {
+    var callbackName = PROTOCOL_KEY + getGUID() + new Date().getTime();
+    options = options || {};
+    var keepCallback = typeof options.keepCallback === 'boolean' ? options.keepCallback : false;
+    console.log(fnName, callbackName);
+
+    window[callbackName] = function() {
+      if (typeof fn === 'function') {
+        fn.apply(window, arguments);
+      }
+      if (!keepCallback) {
+        destroyCallback(callbackName);
+      }
+    }
+
+    return callbackName;
+  }
+  /**
+   * 销毁全局回调
+   * @param {String} callbackName 方法名
+   */
+  function destroyCallback(callbackName) {
+    delete window[callbackName];
+  }
+
+  /**
+   * 获取不带连接符的GUID
+   * @return {String} guid
+   */
+  function getGUID() {
+    var lut = [];
+    for (var i = 0; i < 256; i++) { lut[i] = (i < 16 ? '0' : '') + (i).toString(16); }
+
+    function generater() {
+      var d0 = Math.random() * 0xffffffff | 0;
+      var d1 = Math.random() * 0xffffffff | 0;
+      var d2 = Math.random() * 0xffffffff | 0;
+      var d3 = Math.random() * 0xffffffff | 0;
+      return lut[d0 & 0xff] + lut[d0 >> 8 & 0xff] + lut[d0 >> 16 & 0xff] + lut[d0 >> 24 & 0xff] +
+        lut[d1 & 0xff] + lut[d1 >> 8 & 0xff] + lut[d1 >> 16 & 0x0f | 0x40] + lut[d1 >> 24 & 0xff] +
+        lut[d2 & 0x3f | 0x80] + lut[d2 >> 8 & 0xff] + lut[d2 >> 16 & 0xff] + lut[d2 >> 24 & 0xff] +
+        lut[d3 & 0xff] + lut[d3 >> 8 & 0xff] + lut[d3 >> 16 & 0xff] + lut[d3 >> 24 & 0xff];
+    }
+
+    return generater();
+  }
+
+  var isHybrid = /^file:/.test(location.protocol);
+
+  return {
+    run: run,
+    register: register,
+    isHybrid: isHybrid,
+    isInApp: true
+  };
+});
 ;Air.Module('B.data.memCache', function(){
   var MEMORY_CACHE = {};
   var EXPIRED_LIST = {};
@@ -148,13 +262,64 @@
   }
 });
 ;Air.Module('B.data.storage', function(require){
-  var memCache = require('B.data.memCache');
+  var bridge = require('B.bridge');
+  var two = function(str) {
+    str = (str || '') + '';
+    if (str.length === 1) {
+      str = '0' + str;
+    }
+    return str;
+  }
 
-  var set = memCache.set;
+  var set = function(key, value, options) {
+    if (!key) {
+      return;
+    }
+    options = options || {};
+    var expiredSecond = typeof options.expiredSecond === 'number' ? options.expiredSecond : 0;
+    var expireTime = 0;
+
+    if (expiredSecond) {
+      expireTime = new Date();
+      expireTime.setSeconds(expireTime.getSeconds() + expiredSecond);
+      expireTime = expireTime.getFullYear() + two(expireTime.getMonth() + 1) + two(expireTime.getDate()) +
+                   two(expireTime.getHours()) + two(expireTime.getMinutes()) + two(expireTime.getSeconds());
+    }
+
+    var param = {
+      key: key,
+      value: JSON.stringify(value)
+    };
+
+    if (expireTime) {
+      param['expireTime'] = expireTime;
+    }
+
+    bridge.run('setdata', param);
+  };
 
   var get = function(key, callback){
-    var value = memCache.get(key);
-    callback && callback(value);
+    if (!key) {
+      callback && callback();
+      return;
+    }
+    var param = {
+      key: key,
+      success: function(res) {
+        var result = res && res.result;
+        try {
+          result = JSON.parse(result);
+        } catch (e) {
+          result = null;
+        }
+        callback && callback(result);
+      },
+      failed: function() {
+        callback && callback(null);
+      }
+    };
+
+    bridge.run('getdata', param);
   }
 
   return {
@@ -1966,7 +2131,6 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
     options = options || {};
     var params = options.params || {};
     var query  = options.query || "";
-    query = options.hash ? query + options.hash : query;
     var router = routers[viewName];
     var rule = router && router.rule || "";
     var url = getURLByRule(rule, params, query, options.noOrigin);
@@ -2146,6 +2310,7 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
   var scopeManager = require('B.scope.scopeManager');
   var EVENTS =  require('B.event.events');
   var middleware = require('B.util.middleware');
+  var bridge = require('B.bridge');
   var viewList = [],
       viewportList = [],
       loadingViewList = [], // 记载中的view
@@ -2159,36 +2324,31 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
   function init(env){
     scopeManager.setRoot(env);
     initLocalViewport();
-    var URLPath = location.pathname;
+    var URLPath, query;
+    if (bridge.isHybrid) {
+      URLPath = location.hash.replace(/^#/, '') || '/';
+      var URLPathAry = URLPath.split('?');
+      URLPath = URLPathAry[0];
+      query = URLPathAry[1] ? '?' + URLPathAry[1] : '';
+    } else {
+      URLPath = location.pathname;
+      query = location.search;
+    }
     var activeRouter = router.getMatchedRouter(URLPath);
-    var hash = location.hash;
     if (activeRouter) {
       goTo(activeRouter.viewName, {
         replace: true,
         init: true,
         params: activeRouter.params,
-        query: location.search,
-        hash: hash
+        query: query
       });
-
-      // if (hash) {
-      //   // 为了触发 hashchange
-      //   switchURL(activeRouter.viewName, {
-      //     replace: true,
-      //     init: true,
-      //     params: activeRouter.params,
-      //     query: location.search
-      //   });
-      //   location.hash = hash;
-      // }
-
     } else {
       throw404();
     }
     listenURLChange();
+    listenNativeAppear();
   }
 
-  // TODO : 支持多Viewport
   function initLocalViewport(){
     var viewports = document.querySelectorAll('viewport');
     var viewportIndex = 0;
@@ -2225,7 +2385,7 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
       if (activeView.tagName.toLowerCase() === 'view') {
         var activeViewName = activeView.getAttribute('name');
-        var view = new View(activeViewName, activeView);
+        var view = new View(activeViewName, activeView)
         viewContainer['views'][activeViewName] = view;
         scopeManager.parseScope(activeViewName, view.getDom());
       }
@@ -2236,7 +2396,8 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
   function goTo (viewName, options){
     var fnName = 'beforeGoTo';
-    var paramObj = { viewName: viewName, options: options };
+    var url = getURL(viewName, options);
+    var paramObj = { viewName: viewName, options: options, url: url };
     var next = function(){
       var hasView = getViewByViewName(viewName);
       if (!viewIsLoading(viewName)) {
@@ -2257,18 +2418,18 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
   }
 
   function viewIsLoading(viewName) {
-    return beacon.utility.arrayIndexOf(loadingViewList, viewName) === -1 ? false : true;
+    return loadingViewList.indexOf(viewName) === -1 ? false : true;
   }
 
   function addLoadingView(viewName) {
-    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
+    var idx = loadingViewList.indexOf(viewName);
     if (idx === -1) {
       loadingViewList.push(viewName);
     }
   }
 
   function removeLoadingView(viewName) {
-    var idx = beacon.utility.arrayIndexOf(loadingViewList, viewName);
+    var idx = loadingViewList.indexOf(viewName);
     if (idx !== -1) {
       loadingViewList.splice(idx, 1);
     }
@@ -2276,7 +2437,6 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
   function changeURLParams(viewName, options) {
     options = options || {};
-
     if(options.isComponent){return;} // 全屏组件不切换 URL，也不需要更新URL参数
     var $scope = scopeManager.getScopeInstance(viewName);
     $scope['$request'] = $scope.$request || {};
@@ -2284,10 +2444,11 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
   }
 
   function getURL (viewName, options) {
+    options = options || {}
     var url = router.getURLPathByViewName(viewName, {
       params: options.params,
       query: options.query,
-      hash: options.hash
+      noOrigin: true
     });
 
     return url;
@@ -2304,8 +2465,7 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
       var changeURLState = isReplace ? history.replaceState : history.pushState;
       changeURLState && changeURLState.call(history, {
         viewName: viewName,
-        params: options.params,
-        hash: options.hash
+        params: options.params
       }, viewName, url);
     } else {
       if (isReplace) { // 初始化不进行跳转，否则会循环跳转
@@ -2340,8 +2500,7 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
             goTo(activeRouter.viewName, {
               replace: true,
               params: activeRouter.params,
-              query: location.search,
-              hash: location.hash
+              query: location.search
             });
           } else {
             throw404();
@@ -2349,26 +2508,6 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
         }
       }
     });
-  }
-
-  function jump (options) {
-    var url = options.url || '';
-    var projectPath = options.project || '';
-    var urlPath = options.urlPath || '';
-    var query = options.query || '';
-    projectPath = projectPath.replace(/^\//, '');
-    var reg = new RegExp('^(\/)?(' + projectPath + '[\/|$])?');
-    urlPath = urlPath.replace(reg, '');
-
-    if (url) {
-      location.href = url;
-    } else {
-      location.href = '/' + (projectPath || '') + '/' + (urlPath || '') + (query || '')
-    }
-  }
-
-  function back () {
-    window.history.back();
   }
 
   function show (viewName){
@@ -2381,10 +2520,15 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
     }
   }
 
+  function hideNativeLoading() {
+    bridge.run('hideloading');
+  }
+
 
   function throw404(){
     var fnName = 'viewNotFound';
     middleware.run(fnName);
+    hideNativeLoading();
   };
 
   function getViewByViewName(viewName){
@@ -2438,7 +2582,7 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
       // 2
       var view = new View(viewName, responseText, {
         initCallback: function(){
-          // loading.hideLoading();
+          // hideLoading();
         }
       });
       var scope = scopeManager.parseScope(viewName, view.getDom());
@@ -2455,7 +2599,7 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
         show(viewName);
 
         removeLoadingView(viewName);
-
+        // hideNativeLoading();
       });
     }
 
@@ -2484,32 +2628,94 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
     activeView.show();
     triggerOnShow(activeView, lastViewName);
-    loading.hideLoading();
+    hideNativeLoading();
   }
 
-  function triggerOnHide(curView, toView) {
+  /**
+  * 监听Native appear
+  */
+  function listenNativeAppear() {
+    bridge.run('appear', {
+      callback: bridge.register('appear', viewAppear, { keepCallback: true })
+    }, {
+      unified: false
+    });
+  }
+
+  /**
+  * Native appear 后执行 view onShow
+  */
+  function viewAppear() {
+    if(!activeView){
+      runOnAppear();
+      return;
+    }
+    var params = {
+      viewName: activeView.getViewName()
+    };
+    runOnAppear(params, function() {
+      activeView.show();
+      triggerOnShow(activeView);
+    });
+  }
+
+  function triggerOnHide(curView, toView, noHide) {
     var viewName = curView.getViewName();
-    curView && curView.hide();
+    !noHide && curView && curView.hide();
     beacon(curView).on(curView.events.onHide, {
       to: toView
     });
+
     var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
   function triggerOnShow(curView, lastViewName) {
     var viewName = curView.getViewName();
-    // loading.showLoading();
     beacon(curView).on(curView.events.onShow, {
       from: lastViewName
     });
-
     var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
 
   function getActive(){
     return activeView;
+  }
+
+  function goToHybrid(viewName, options) {
+    options = options || {};
+    if (options.replace) {
+      goTo(viewName, options);
+    } else {
+      var fnName = 'beforeGoTo';
+      var url = getURL(viewName, options);
+      var paramObj = { viewName: viewName, options: options, url: url };
+      var next = function(paramObj){
+        activeView && triggerOnHide(activeView, null ,true);
+
+        bridge.run('gotopage', {
+          vc: paramObj.vc,
+          url: paramObj.url
+        });
+      }
+
+      // goTo 方法对外支持中间件，中间件参数为 paramObj
+      middleware.run(fnName, paramObj, next);
+    }
+  }
+
+  function back () {
+    activeView && triggerOnHide(activeView, null ,true);
+    bridge.run('goback');
+  }
+
+  /**
+  * show 之前对外提供中间件 onAppear
+  */
+  function runOnAppear(params, next) {
+    var fnName = 'onAppear';
+    middleware.run(fnName, params, next);
   }
 
   var loading = {
@@ -2532,10 +2738,9 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
                 }
   }
 
-  var api = {
+  api = {
     init : init,
-    goTo : goTo,
-    jump : jump,
+    goTo : goToHybrid,
     back : back,
     addMiddleware : middleware.add,
     removeMiddleware : middleware.remove,
@@ -2631,7 +2836,8 @@ Air.run(function(require){
       run = require('B.controller.run'),
       serviceFactory = require('B.service.serviceFactory'),
       HTTP = require('B.network.HTTP'),
-      TDK = require('B.TDK.TDK');
+      TDK = require('B.TDK.TDK'),
+      bridge = require('B.bridge');
   void function main(){
     var FRAMEWORK_NAME = "b";
     var api = {
@@ -2649,7 +2855,7 @@ Air.run(function(require){
        * @return void
        */
       init     : function(env){
-        env = env || {}; //root scope
+        env = env || {};
         memCache.set('env', env);
         Air.moduleURL(env.$moduleURL);
         viewManager.init(env);
@@ -2657,15 +2863,17 @@ Air.run(function(require){
       run      : run,
       Module   : Air.Module,
       TDK      : TDK,
-      bridge   : {
-        run: function(){},
-        isHybrid: false,
-        isInApp: false
-      },
+      bridge   : bridge,
       ready    : function(callback){
         callback = typeof callback === 'function' ? callback : function(){};
-        Air.domReady(function(){
-          callback();
+        var handle = function(res) {
+          res = res || { resultCode: 1 };
+          callback(res);
+        };
+
+        bridge.run('getdeviceinfo', {
+          success: handle,
+          failed: handle
         });
       },
       setModuleURL: function(url) {
@@ -2673,5 +2881,5 @@ Air.run(function(require){
       }
     };
     window[FRAMEWORK_NAME] = api;
-  }();
+  }()
 });
