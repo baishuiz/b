@@ -7,7 +7,7 @@ Air.Module('B.directive.exist', function(require) {
   var api = function(target, scopeStructure, watchData) {
     var isShowElement = node(target).hasAttribute(attribute);
     isShowElement && processShowElement(target, scopeStructure, watchData);
-    return isShowElement
+    // return isShowElement
   }
   api.key = attribute;
 
@@ -62,44 +62,44 @@ Air.Module('B.directive.exist', function(require) {
   // }
 
 
-  // function showHide(target, show) {
-  //   var display, hidden, olddisplay;
-  //
-  //   if (!target || !target.style) {
-  //     return;
-  //   }
-  //
-  //   olddisplay = getData(target, 'olddisplay');
-  //   display = target.style.display;
-  //
-  //   // if (show) {
-  //   //
-  //   //   // Reset the inline display of this element to learn if it is
-  //   //   // being hidden by cascaded rules or not
-  //   //   if (!olddisplay && display === 'none') {
-  //   //     target.style.display = '';
-  //   //     display = '';
-  //   //   }
-  //   //
-  //   //   // Set elements which have been overridden with display: none
-  //   //   // in a stylesheet to whatever the default browser style is
-  //   //   // for such an element
-  //   //   if (display === '') {
-  //   //     olddisplay = setData(target, 'olddisplay', defaultDisplay(target.nodeName));
-  //   //   }
-  //   // } else {
-  //   //   if (display && display !== 'none') {
-  //   //     setData(target, 'olddisplay', display);
-  //   //   }
-  //   // }
-  //   //
-  //   // // Set the display of most of the elements in a second loop
-  //   // // to avoid the constant reflow
-  //   // if (!show || display === 'none' || display === '') {
-  //   //   target.style.display = show ? olddisplay || '' : 'none';
-  //   // }
-  //
-  // }
+  function showHide(target, show) {
+    var display, hidden, olddisplay;
+  
+    if (!target) {
+      return;
+    }
+  
+    olddisplay = getData(target, 'olddisplay');
+    display = target.style.display;
+  
+    // if (show) {
+    
+    //   // Reset the inline display of this element to learn if it is
+    //   // being hidden by cascaded rules or not
+    //   if (!olddisplay && display === 'none') {
+    //     target.style.display = '';
+    //     display = '';
+    //   }
+    
+    //   // Set elements which have been overridden with display: none
+    //   // in a stylesheet to whatever the default browser style is
+    //   // for such an element
+    //   if (display === '') {
+    //     olddisplay = setData(target, 'olddisplay', defaultDisplay(target.nodeName));
+    //   }
+    // } else {
+    //   if (display && display !== 'none') {
+    //     setData(target, 'olddisplay', display);
+    //   }
+    // }
+    
+    // // Set the display of most of the elements in a second loop
+    // // to avoid the constant reflow
+    // if (!show || display === 'none' || display === '') {
+    //   target.style.display = show ? olddisplay || '' : 'none';
+    // }
+  
+  }
 
   function removeDom(target) {
     if (!target) {

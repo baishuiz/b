@@ -50,7 +50,8 @@ Air.Module('B.scope.ScopeTreeManager', function(require) {
       newScope.name = scopeName;
       newScope.index = scopeIndex;
       scopeMap[scopeName] = newScope;
-      return scopeIndex;
+      // return scopeIndex;
+      return scopeName;
     }
 
     var getScopeByName = function(scopeName) {

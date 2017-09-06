@@ -200,8 +200,8 @@ Air.Module('B.scope.scopeManager', function(require) {
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
     tryGenerateSubViewScope(node, scopeStructure);
     var scope = scopeStructure.scope;
-
-    if (existDirective(node, scopeStructure, watchData)) {
+    existDirective(node, scopeStructure, watchData)
+    if (!node.parentElement) {
       return;
     }
     initModel(node, scopeStructure, watchData);
@@ -389,7 +389,10 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
           beacon.utility.merge(value, val);
           // beacon.utility.blend(value, val, {reset:true});
-          isArray && callBack && callBack();
+           isArray && callBack && callBack();
+          //  (isObject) && callBack && callBack(util.getData(dataPath, scope.scope));
+          
+          // callBack && callBack();
         } else {
           if (value !== val) {
             value = val;

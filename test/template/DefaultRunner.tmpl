@@ -129,6 +129,20 @@ viewport view[active="true"]{display:block}
     </div>
     <div></div>
   </view>
+
+    <view name="page_repeat_with_b-exist">
+    <div class='listB' >
+      <input b-repeat="item in a.b.list" b-exist="item.status" type="text" b-model="item.name" />
+    </div>
+    <div></div>
+  </view>
+  <view name="page_repeat_subElement_with_b-exist">
+    <div class='listB' b-repeat="item in a.b.list" >
+      <input  b-exist="item.status" type="text" b-model="item.name" />
+    </div>
+    <div></div>
+  </view>
+
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
       <div class="list2" b-repeat="item2 in list2">
@@ -247,7 +261,7 @@ viewport view[active="true"]{display:block}
         <li b-exist="logined" id="page_b-exist_list_item"></li>
       </ul>
       <p class="p2" b-exist="count > 1"></p>
-      <p class="p3" b-exist="node.num === 1"></p>
+      <p class="p3" b-exist="node.num"></p>
       <p class="p4" b-exist="node.ppp"></p>
     </view>
 

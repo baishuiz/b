@@ -529,7 +529,7 @@
   var api = function(target, scopeStructure, watchData) {
     var isShowElement = node(target).hasAttribute(attribute);
     isShowElement && processShowElement(target, scopeStructure, watchData);
-    return isShowElement
+    // return isShowElement
   }
   api.key = attribute;
 
@@ -584,44 +584,44 @@
   // }
 
 
-  // function showHide(target, show) {
-  //   var display, hidden, olddisplay;
-  //
-  //   if (!target || !target.style) {
-  //     return;
-  //   }
-  //
-  //   olddisplay = getData(target, 'olddisplay');
-  //   display = target.style.display;
-  //
-  //   // if (show) {
-  //   //
-  //   //   // Reset the inline display of this element to learn if it is
-  //   //   // being hidden by cascaded rules or not
-  //   //   if (!olddisplay && display === 'none') {
-  //   //     target.style.display = '';
-  //   //     display = '';
-  //   //   }
-  //   //
-  //   //   // Set elements which have been overridden with display: none
-  //   //   // in a stylesheet to whatever the default browser style is
-  //   //   // for such an element
-  //   //   if (display === '') {
-  //   //     olddisplay = setData(target, 'olddisplay', defaultDisplay(target.nodeName));
-  //   //   }
-  //   // } else {
-  //   //   if (display && display !== 'none') {
-  //   //     setData(target, 'olddisplay', display);
-  //   //   }
-  //   // }
-  //   //
-  //   // // Set the display of most of the elements in a second loop
-  //   // // to avoid the constant reflow
-  //   // if (!show || display === 'none' || display === '') {
-  //   //   target.style.display = show ? olddisplay || '' : 'none';
-  //   // }
-  //
-  // }
+  function showHide(target, show) {
+    var display, hidden, olddisplay;
+  
+    if (!target) {
+      return;
+    }
+  
+    olddisplay = getData(target, 'olddisplay');
+    display = target.style.display;
+  
+    // if (show) {
+    
+    //   // Reset the inline display of this element to learn if it is
+    //   // being hidden by cascaded rules or not
+    //   if (!olddisplay && display === 'none') {
+    //     target.style.display = '';
+    //     display = '';
+    //   }
+    
+    //   // Set elements which have been overridden with display: none
+    //   // in a stylesheet to whatever the default browser style is
+    //   // for such an element
+    //   if (display === '') {
+    //     olddisplay = setData(target, 'olddisplay', defaultDisplay(target.nodeName));
+    //   }
+    // } else {
+    //   if (display && display !== 'none') {
+    //     setData(target, 'olddisplay', display);
+    //   }
+    // }
+    
+    // // Set the display of most of the elements in a second loop
+    // // to avoid the constant reflow
+    // if (!show || display === 'none' || display === '') {
+    //   target.style.display = show ? olddisplay || '' : 'none';
+    // }
+  
+  }
 
   function removeDom(target) {
     if (!target) {
@@ -647,7 +647,7 @@
 
   function processStyleElement(target, scopeStructure, watchData) {
     var $scope = scopeStructure.scope;
-    var scopeIndex = scopeStructure.index;
+    var scopeIndex = scopeStructure.name;
     var attrNode = target.getAttributeNode(attribute);
 
     // attrNode.nodeValue = '{{' + attrNode.nodeValue + '}}';
@@ -957,7 +957,8 @@
       newScope.name = scopeName;
       newScope.index = scopeIndex;
       scopeMap[scopeName] = newScope;
-      return scopeIndex;
+      // return scopeIndex;
+      return scopeName;
     }
 
     var getScopeByName = function(scopeName) {
@@ -996,7 +997,7 @@
     var repeatIndexREG = new RegExp('\\b' + dataPath + '\\.\\d+\\.\\$index\\b', 'g');
     var repeatIndexREG2 = new RegExp('{{\\b' + dataPath + '\\.\\d+\\.\\$index\\b}}', 'g');
 
-    var result = str.replace(/\{\{.*?\}\}|b-show\s*=\s*"[^"]*?"|b-model\s*=\s*"[^"]*?"|b-property\s*=\s*"[^"]*"|b-repeat\s*=\s*"[^"]*"/g, function(tag) {
+    var result = str.replace(/\{\{.*?\}\}|b-show\s*=\s*"[^"]*?"|b-exist\s*=\s*"[^"]*?"|b-model\s*=\s*"[^"]*?"|b-property\s*=\s*"[^"]*"|b-repeat\s*=\s*"[^"]*"/g, function(tag) {
       // return tag.replace(reg, dataPath + '[' + idx + ']');
       return tag.replace(reg, dataPath + '.' + idx);
     });
@@ -1560,8 +1561,8 @@
     var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
     tryGenerateSubViewScope(node, scopeStructure);
     var scope = scopeStructure.scope;
-
-    if (existDirective(node, scopeStructure, watchData)) {
+    existDirective(node, scopeStructure, watchData)
+    if (!node.parentElement) {
       return;
     }
     initModel(node, scopeStructure, watchData);
@@ -1749,7 +1750,10 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
           beacon.utility.merge(value, val);
           // beacon.utility.blend(value, val, {reset:true});
-          isArray && callBack && callBack();
+           isArray && callBack && callBack();
+          //  (isObject) && callBack && callBack(util.getData(dataPath, scope.scope));
+          
+          // callBack && callBack();
         } else {
           if (value !== val) {
             value = val;

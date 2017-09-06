@@ -7,14 +7,14 @@ describe('b-exist', function () {
       $scope.count = 0;
       $scope.node={num:1}
 
-      $scope.$event = {
-        switchi : function(){
-          // if (typeof $scope.logined !== 'boolean') {
-          //   $scope.logined = false;
-          // }
-          $scope.logined = !$scope.logined;
-        }
-      }
+      // $scope.$event = {
+      //   switchi : function(){
+      //     // if (typeof $scope.logined !== 'boolean') {
+      //     //   $scope.logined = false;
+      //     // }
+      //     $scope.logined = !$scope.logined;
+      //   }
+      // }
 
       var dom = {
         p : document.querySelector('view[name=page_b-exist] .p1'),
