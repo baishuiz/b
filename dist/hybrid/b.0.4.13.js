@@ -520,6 +520,120 @@
 
   return api;
 });
+;Air.Module('B.directive.exist', function(require) {
+  var node = require('B.util.node'),
+    EVENTS = require('B.event.events'),
+    util = require('B.util.util');
+
+  var attribute = 'b-exist';
+  var api = function(target, scopeStructure, watchData) {
+    var isShowElement = node(target).hasAttribute(attribute);
+    isShowElement && processShowElement(target, scopeStructure, watchData);
+    return isShowElement
+  }
+  api.key = attribute;
+
+  function processShowElement(target, scopeStructure, watchData) {
+    var $scope = scopeStructure.scope;
+    var scopeIndex = scopeStructure.name;
+    var attrNode = target.getAttributeNode(attribute);
+
+    attrNode.nodeValue = '{{(' + attrNode.nodeValue + ')}}';
+    var callbackNow = true;
+    watchData(attrNode.nodeValue, attrNode, scopeIndex, watchElement, callbackNow);
+
+    function watchElement(displayStatus) {
+      // displayStatus ? showHide(target, true) : showHide(target);
+      displayStatus && removeDom(target);
+    }
+  }
+
+  // function getCSS(target, name) {
+  //   var display = target.style.display;
+  //
+  //   if (!display) {
+  //     display = window.getComputedStyle ? window.getComputedStyle(target, null)[name] : target.currentStyle[name];
+  //   }
+  //
+  //   return display;
+  // }
+
+  // var elemdisplay = {};
+
+  // Called only from within defaultDisplay
+  // function actualDisplay(name) {
+  //   var target = document.body.appendChild(document.createElement(name));
+  //   var display = getCSS(target, 'display');
+  //
+  //   document.body.removeChild(target);
+  //
+  //   return display;
+  // }
+
+  // function defaultDisplay(nodeName) {
+  //   var document = document,
+  //     display = elemdisplay[nodeName];
+  //
+  //   if (!display) {
+  //     display = actualDisplay(nodeName);
+  //
+  //     elemdisplay[nodeName] = display;
+  //   }
+  //
+  //   return display;
+  // }
+
+
+  // function showHide(target, show) {
+  //   var display, hidden, olddisplay;
+  //
+  //   if (!target || !target.style) {
+  //     return;
+  //   }
+  //
+  //   olddisplay = getData(target, 'olddisplay');
+  //   display = target.style.display;
+  //
+  //   // if (show) {
+  //   //
+  //   //   // Reset the inline display of this element to learn if it is
+  //   //   // being hidden by cascaded rules or not
+  //   //   if (!olddisplay && display === 'none') {
+  //   //     target.style.display = '';
+  //   //     display = '';
+  //   //   }
+  //   //
+  //   //   // Set elements which have been overridden with display: none
+  //   //   // in a stylesheet to whatever the default browser style is
+  //   //   // for such an element
+  //   //   if (display === '') {
+  //   //     olddisplay = setData(target, 'olddisplay', defaultDisplay(target.nodeName));
+  //   //   }
+  //   // } else {
+  //   //   if (display && display !== 'none') {
+  //   //     setData(target, 'olddisplay', display);
+  //   //   }
+  //   // }
+  //   //
+  //   // // Set the display of most of the elements in a second loop
+  //   // // to avoid the constant reflow
+  //   // if (!show || display === 'none' || display === '') {
+  //   //   target.style.display = show ? olddisplay || '' : 'none';
+  //   // }
+  //
+  // }
+
+  function removeDom(target) {
+    if (!target) {
+      return;
+    }
+
+    var parent = target.parentElement;
+    parent && parent.removeChild(target);
+  }
+
+  return api;
+});
 ;Air.Module('B.directive.style', function(require) {
   var node = require('B.util.node'),
     EVENTS = require('B.event.events'),
@@ -1250,6 +1364,7 @@
   var initModel = require('B.directive.model');
   var eventDirective = require('B.directive.event');
   var showDirective = require('B.directive.show');
+  var existDirective = require('B.directive.exist');
   var styleDirective = require('B.directive.style');
   var propertyDirective = require('B.directive.property');
   var Repeater = require('B.directive.Repeater');
@@ -1446,6 +1561,9 @@
     tryGenerateSubViewScope(node, scopeStructure);
     var scope = scopeStructure.scope;
 
+    if (existDirective(node, scopeStructure, watchData)) {
+      return;
+    }
     initModel(node, scopeStructure, watchData);
     eventDirective(node, scope);
     showDirective(node, scopeStructure, watchData);
@@ -1520,6 +1638,7 @@
     // 回溯点压栈
     if (isSub && node.nextSibling && node.firstChild) { backtrackingPoints.push(node) };
 
+    var nextSibling = node.nextSibling;
     switch (node.nodeType) {
       case nodeUtil.type.HTML:
         parseHTML(node, currentScopeIndex);
@@ -1531,7 +1650,7 @@
       default:
     }
 
-    var nextNode = node.firstChild || (isSub && node.nextSibling);
+    var nextNode = node.firstChild || (isSub && nextSibling);
 
     return goOn(nextNode, scopeName);
   }

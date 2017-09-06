@@ -4,6 +4,7 @@ Air.Module('B.scope.scopeManager', function(require) {
   var initModel = require('B.directive.model');
   var eventDirective = require('B.directive.event');
   var showDirective = require('B.directive.show');
+  var existDirective = require('B.directive.exist');
   var styleDirective = require('B.directive.style');
   var propertyDirective = require('B.directive.property');
   var Repeater = require('B.directive.Repeater');
@@ -200,6 +201,9 @@ Air.Module('B.scope.scopeManager', function(require) {
     tryGenerateSubViewScope(node, scopeStructure);
     var scope = scopeStructure.scope;
 
+    if (existDirective(node, scopeStructure, watchData)) {
+      return;
+    }
     initModel(node, scopeStructure, watchData);
     eventDirective(node, scope);
     showDirective(node, scopeStructure, watchData);
@@ -274,6 +278,7 @@ Air.Module('B.scope.scopeManager', function(require) {
     // 回溯点压栈
     if (isSub && node.nextSibling && node.firstChild) { backtrackingPoints.push(node) };
 
+    var nextSibling = node.nextSibling;
     switch (node.nodeType) {
       case nodeUtil.type.HTML:
         parseHTML(node, currentScopeIndex);
@@ -285,7 +290,7 @@ Air.Module('B.scope.scopeManager', function(require) {
       default:
     }
 
-    var nextNode = node.firstChild || (isSub && node.nextSibling);
+    var nextNode = node.firstChild || (isSub && nextSibling);
 
     return goOn(nextNode, scopeName);
   }

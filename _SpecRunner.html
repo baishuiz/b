@@ -233,6 +233,17 @@ viewport view[active="true"]{display:block}
     <p class="p3" b-show="node.num === 1"></p>
     <p class="p4" b-show="node.ppp"></p>
   </view>
+  <view name="page_b-exist">
+      <style>#page_b-exist_table { display: none; }</style>
+      <p class="p1" b-exist="logined" b-event="click switchi()"></p>
+      <table b-exist="logined" id="page_b-exist_table"></table>
+      <ul>
+        <li b-exist="logined" id="page_b-exist_list_item"></li>
+      </ul>
+      <p class="p2" b-exist="count > 1"></p>
+      <p class="p3" b-exist="node.num === 1"></p>
+      <p class="p4" b-exist="node.ppp"></p>
+    </view>
 
   <view name="page_b-style">
     <style>#page_b-style_table { display: none; }</style>
@@ -286,7 +297,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.4.13.min.js"></script>
+  <script src="dist/web/b.0.4.13.js"></script>
   
 
 
@@ -384,6 +395,8 @@ viewport view[active="true"]{display:block}
   
   <script src="test/spec/b-show/show.base.Spec.js"></script>
   
+  <script src="test/spec/b-exist/exist.base.Spec.js"></script>
+  
   <script src="test/spec/b-style/style.base.Spec.js"></script>
   
   <script src="test/spec/formElement/select-option.base.Spec.js"></script>
@@ -391,6 +404,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   
   <script src="test/spec/TDK/TDK.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   
