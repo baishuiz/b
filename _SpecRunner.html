@@ -239,6 +239,17 @@ viewport view[active="true"]{display:block}
     <p class="p3" b-show="node.num === 1"></p>
     <p class="p4" b-show="node.ppp"></p>
   </view>
+  <view name="page_b-exist">
+      <style>#page_b-exist_table { display: none; }</style>
+      <p class="p1" b-exist="logined" b-event="click switchi()"></p>
+      <table b-exist="logined" id="page_b-exist_table"></table>
+      <ul>
+        <li b-exist="logined" id="page_b-exist_list_item"></li>
+      </ul>
+      <p class="p2" b-exist="count > 1"></p>
+      <p class="p3" b-exist="node.num === 1"></p>
+      <p class="p4" b-exist="node.ppp"></p>
+    </view>
 
   <view name="page_b-style">
     <style>#page_b-style_table { display: none; }</style>
@@ -391,6 +402,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/model/model.base.Spec.js"></script>
   
   <script src="test/spec/b-show/show.base.Spec.js"></script>
+  
+  <script src="test/spec/b-exist/exist.base.Spec.js"></script>
   
   <script src="test/spec/b-style/style.base.Spec.js"></script>
   
