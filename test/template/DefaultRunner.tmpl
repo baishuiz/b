@@ -123,6 +123,12 @@ viewport view[active="true"]{display:block}
     </div>
     <div></div>
   </view>
+  <view name="page_repeat_subElement_with_b-show">
+    <div class='listB' b-repeat="item in a.b.list" >
+      <input  b-show="item.status" type="text" b-model="item.name" />
+    </div>
+    <div></div>
+  </view>
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
       <div class="list2" b-repeat="item2 in list2">

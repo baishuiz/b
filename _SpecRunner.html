@@ -123,6 +123,12 @@ viewport view[active="true"]{display:block}
     </div>
     <div></div>
   </view>
+  <view name="page_repeat_subElement_with_b-show">
+    <div class='listB' b-repeat="item in a.b.list" >
+      <input  b-show="item.status" type="text" b-model="item.name" />
+    </div>
+    <div></div>
+  </view>
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
       <div class="list2" b-repeat="item2 in list2">
@@ -286,7 +292,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.4.13.min.js"></script>
+  <script src="dist/web/b.0.4.13.js"></script>
   
 
 
@@ -380,6 +386,8 @@ viewport view[active="true"]{display:block}
   
   <script src="test/spec/repeat/repeat.base.Spec.js"></script>
   
+  <script src="test/spec/repeat/repeat.with.B-show.Spec.js"></script>
+  
   <script src="test/spec/model/model.base.Spec.js"></script>
   
   <script src="test/spec/b-show/show.base.Spec.js"></script>
@@ -391,6 +399,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   
   <script src="test/spec/TDK/TDK.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   
