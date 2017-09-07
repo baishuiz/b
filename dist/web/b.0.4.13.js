@@ -986,7 +986,7 @@
 
         // 如果之前绑定过，缓存起来，供 descriptor 回调
         var existDescriptor = Object.getOwnPropertyDescriptor(activeObj, nextPathNode);
-        if (existDescriptor) {
+        if (existDescriptor && (descriptorList.indexOf(existDescriptor)<0)) {
           descriptorList.push(existDescriptor);
         }
 
@@ -1099,25 +1099,25 @@
             
           }
 
-          // for (var i = 0; i < descriptorList.length; i++) {
-          //   descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
-          // }
+          for (var i = 0; i < descriptorList.length; i++) {
+            descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
+          }
 
           //test start
-          fn();
-          function fn(){
-            var index = 0;
-            var step = 10;
-            setTimeout(fnProxy,30);
+          // fn();
+          // function fn(){
+          //   var index = 0;
+          //   var step = 10;
+          //   setTimeout(fnProxy,30);
 
-            function fnProxy(){
-              index += step;
-              for (var i = 0; i < index; i++) {
-                descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
-              }
-              setTimeout(fnProxy,30);
-            }
-          }
+          //   function fnProxy(){
+          //     index += step;
+          //     for (var i = 0; i < index; i++) {
+          //       descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
+          //     }
+          //     setTimeout(fnProxy,30);
+          //   }
+          // }
 
           
           //test end
