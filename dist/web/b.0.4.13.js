@@ -1486,7 +1486,16 @@
       default:
     }
 
-    var nextNode = node.firstChild || (isSub && nextSibling);
+    var nextNode;
+    if (!node.parentElement) {
+      if (isSub && node.firstChild) {
+        backtrackingPoints.pop();
+      }
+
+      nextNode = (isSub && nextSibling);
+    } else {
+      nextNode = node.firstChild || (isSub && nextSibling);
+    }
 
     return goOn(nextNode, scopeName);
   }

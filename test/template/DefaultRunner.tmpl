@@ -136,12 +136,59 @@ viewport view[active="true"]{display:block}
     </div>
     <div></div>
   </view>
+
+
+
+
+
+
   <view name="page_repeat_subElement_with_b-exist">
     <div class='listB' b-repeat="item in a.b.list" >
       <input  b-exist="item.status" type="text" b-model="item.name" />
     </div>
     <div></div>
   </view>
+
+
+<view name="page_repeat_subElement_with_b-repeat">
+    <div class='listC' b-repeat="item in list" >
+        <div class='spanParent' b-exist="item.showStatus_1">
+            <span class='span'>{{item.name}}</span>
+            <div class='btnsParent'>
+                <div class='btns' b-repeat="div1 in item.div1" b-exist="div1.status">
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <button>{{div1.name}}</button>
+                </div>
+            </div>
+        </div>
+
+        <div class='spanParent' b-exist="item.showStatus_2">
+            <span class='span'>{{item.name}}</span>
+            <div class='btnsParent'>
+                <div class='btns' b-repeat="div1 in item.div1" b-exist="div1.status">
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <button>{{div1.name}}</button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div></div>
+  </view>
+
+
+
+
+
+
+
 
   <view name="page_repeat_in_repeat">
     <div class="list1" b-repeat="item1 in list1">
