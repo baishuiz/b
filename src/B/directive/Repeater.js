@@ -2,6 +2,20 @@ Air.Module('B.directive.Repeater', function(require) {
   var attrName = 'b-repeat';
   var util = require('B.util.util');
 
+ Array.prototype.unshift = function(_unshift){
+   return function(item){
+     var lastValue = JSON.stringify(this[this.length-1]);
+     this[this.lenght] = {};
+     var result = _unshift.call(this,item);
+
+    // // this.splice(0,0,item)
+     if (lastValue){
+       this[this.length -1] = JSON.parse(lastValue);
+     }
+     
+     return this.length;
+   }
+ }(Array.prototype.unshift)
 
   function getTemplateStr(str, idx, dataPath, dataPrefix) {
     var reg = new RegExp("\\b\(" + dataPrefix + "\)\\b", 'g');
@@ -175,11 +189,13 @@ Air.Module('B.directive.Repeater', function(require) {
 
 
     function fixUnshift(val, value, descriptor){
-      val.unshift =  function(item){
-           var lastValue = value.slice(0);
-           var result = [].concat(item, lastValue)
+      value.unshift =  function(item){
+          //  var lastValue = value.slice(0);
+           var result = [].concat(item, this)
          descriptor.set( [] );
          descriptor.set( [].concat(result));
+         console.log(result,"**************************")
+        // descriptor.set(result);
          return result
        }
 
@@ -198,6 +214,8 @@ Air.Module('B.directive.Repeater', function(require) {
         enumerable: true,
         configurable: true,
         get: function() {
+          
+
           // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
           setTimeout(function() {
             var length = value && value.length || 0;
@@ -245,6 +263,7 @@ Air.Module('B.directive.Repeater', function(require) {
             }
           } else if (isArray) {
             value = value || [];
+            // console.log(this,"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             fixUnshift(val, value, descriptor);
 
             // 子回调不赋值，只处理 dom
@@ -264,8 +283,11 @@ Air.Module('B.directive.Repeater', function(require) {
                   val[key] = undefined;
                 }
               }
-
-              beacon.utility.merge(value, val);
+              value = val;
+              beacon(scope).on('updateRepeatData',{
+                dataPath : dataPath
+              })
+              // beacon.utility.merge(value, val);
             }
 
             var nodes = repeater.updateUI();
@@ -276,9 +298,11 @@ Air.Module('B.directive.Repeater', function(require) {
             
           }
 
-          for (var i = 0; i < descriptorList.length; i++) {
-            descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
-          }
+
+
+          // for (var i = 0; i < descriptorList.length; i++) {
+          //   descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
+          // }
 
           //test start
           // fn();
@@ -309,6 +333,10 @@ Air.Module('B.directive.Repeater', function(require) {
       getDataPrefix: getDataPrefix
     }
 
+
+    beacon(scope).on('updateRepeatData', function(){
+      bindRepeatData(api, dataPath)  
+    })
     bindRepeatData(api, dataPath);
 
     return api;
