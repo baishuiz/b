@@ -79,29 +79,4 @@ describe('模板内嵌 view ', function () {
 
   }); // 路由参数 完成
 
-  it('afterURLChange 中间件', function(done) {
-    var changeSwitch = true;
-    b.views.goTo('page_url_change_before');
-    var changeCallback = function(changeObj, next){
-      if (changeSwitch) {
-        changeSwitch = false
-        b.views.removeMiddleware('afterURLChange', changeCallback);
-        next();
-
-        // done 会截断后续 js 的执行，导致无法show page_url_change_after，所以用timeout
-        setTimeout(function(){
-          expect(location.href).toEqual('http://' + window.host + '/page_url_change_after');
-          done();
-        }, 0);
-      } else {
-        next();
-      }
-    }
-    b.views.addMiddleware('afterURLChange', changeCallback);
-
-    b.views.goTo('page_url_change_after');
-    changeSwitch = false;
-
-  });
-
 }); // 模板内嵌 view over

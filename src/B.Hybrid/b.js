@@ -10,6 +10,7 @@ Air.run(function(require){
       run = require('B.controller.run'),
       serviceFactory = require('B.service.serviceFactory'),
       HTTP = require('B.network.HTTP'),
+      storage = require('B.data.storage'),
       TDK = require('B.TDK.TDK'),
       bridge = require('B.bridge');
   void function main(){
@@ -20,6 +21,7 @@ Air.run(function(require){
       scopeManager　:　scopeManager,
       service  : serviceFactory,
       utility  : {
+        storage  : storage,
         HTTP: HTTP
       },
 
