@@ -368,9 +368,12 @@ Air.Module("B.view.viewManager", function(require){
 
   function triggerOnShow(curView, lastViewName) {
     var viewName = curView.getViewName();
-    beacon(curView).on(curView.events.onShow, {
-      from: lastViewName
-    });
+    if (viewName !== lastViewName) {
+      beacon(curView).on(curView.events.onShow, {
+        from: lastViewName
+      });
+    }
+
     var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }

@@ -49,6 +49,40 @@ describe('repeat', function () {
     });
   });
 
+  it('多层repeat 清空', function (done) {
+    b.run('page_repeat_clear', function(require, $scope){
+      $scope.notice = ", welcome";
+      $scope.list = [
+        {
+          innerList: [{name: 'Name 1'}]
+        },
+        {
+          innerList: [{name: 'Name 2'}]
+        },
+        {
+          innerList: [{name: 'Name 3'}]
+        }
+      ];
+
+      var dom;
+      setTimeout(function () {
+
+        $scope.list.splice(0);
+        dom = {
+          list : document.querySelector('view[name=page_repeat_clear]>ul')
+        }
+      }, 100);
+
+
+
+      setTimeout(function(){
+        expect(dom.list.querySelectorAll('li').length).toEqual(0);
+        done();
+
+      }, 500);
+    });
+  });
+
   it('repeat unshift', function (done) {
     b.run('page_repeat_change_by_unshift', function(require, $scope){
       $scope.notice = ", welcome";
@@ -133,9 +167,6 @@ describe('repeat', function () {
       }, 500);
     });
   });
-
-
-
 
 
   it('repeat 多list嵌套', function (done) {

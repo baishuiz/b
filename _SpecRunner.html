@@ -28,6 +28,7 @@ viewport view[active="true"]{display:block}
     <p>Hello</p>
     <span class="flower" attr="{{attr}}">{{flower}}</span>
   </view>
+
   <view name="page_url_change_before"></view>
   <view name="page_url_change_after"></view>
   <view name="page_detail">
@@ -37,6 +38,15 @@ viewport view[active="true"]{display:block}
     </view>
     <h1>{{parentValue}}</h1>
   </view>
+
+  <view name="page_list_hash">
+    <p>Hello</p>
+    <span class="flower" attr="{{attr}}">{{flower}}</span>
+  </view>
+  <view name="page_detail_hash">
+    <p>Hello page_detail_hash</p>
+  </view>
+
   <view name="page_scope_change">
     <div class="form-group col-sm-6">
       <div class="col-sm-8">
@@ -89,14 +99,25 @@ viewport view[active="true"]{display:block}
     <p>{{notice}}</p>
     <ul>
       <li b-repeat="item in list" name="{{item.name}}{{notice}}">
-        {{ item.name }}
-      </li>
+                {{ item.name }}
+              </li>
     </ul>
     <div class='listB'>
       <span b-repeat="item in a.b.list">{{item.name}}</span>
     </div>
     <div></div>
   </view>
+
+
+  <view name="page_repeat_clear">
+      <p>{{notice}}</p>
+      <ul>
+         <li b-repeat="item in list">
+              <button b-repeat="innerItem in item.innerList">{{ innerItem.name }}{{notice}}</button>
+         </li>
+      </ul>
+      <div></div>
+    </view>
 
   <view name="page_repeat_change_by_unshift">
     <p>{{notice}}</p>
@@ -364,7 +385,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.4.13.min.js"></script>
+  <script src="dist/web/b.0.4.13.js"></script>
   
 
 
@@ -385,6 +406,16 @@ viewport view[active="true"]{display:block}
       b.router.set({
         rule : '/detail/:roomid',
         viewName : 'page_detail'
+      })
+
+      b.router.set({
+         rule : '/listHash/:city',
+         viewName : 'page_list_hash'
+      })
+
+      b.router.set({
+         rule : '/detailHash/:roomid',
+         viewName : 'page_detail_hash'
       })
 
       b.router.set({
@@ -466,6 +497,8 @@ viewport view[active="true"]{display:block}
   
   <script src="test/spec/b-show/show.base.Spec.js"></script>
   
+  <script src="test/spec/b-exist/exist.base.Spec.js"></script>
+  
   <script src="test/spec/b-style/style.base.Spec.js"></script>
   
   <script src="test/spec/formElement/select-option.base.Spec.js"></script>
@@ -473,6 +506,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   
   <script src="test/spec/TDK/TDK.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   

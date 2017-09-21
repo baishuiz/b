@@ -283,6 +283,12 @@ Air.Module('B.directive.Repeater', function(require) {
                   val[key] = undefined;
                 }
               }
+              // if (val.length === 0) {
+              //   value.splice(0);
+              // } else {
+              //
+              // }
+
               value = val;
               beacon(scope).on('updateRepeatData',{
                 dataPath : dataPath

@@ -3,11 +3,7 @@ describe('模板内嵌 view ', function () {
 
   it('包含hash值的初始化', function (done) {
     // 修改url为主页
-    history.replaceState(null, 'index', '/index/hello#hash');
-
-    beacon(window).on('hashchange', function(e){
-      expect(location.hash).toEqual('#hash');
-    })
+    history.replaceState(null, 'index', '/index/hello#hash1');
 
     b.ready(function(){
       // 模板 HTML 元素选择器
@@ -25,7 +21,7 @@ describe('模板内嵌 view ', function () {
 
       // 模板 HTML元素引用
       expect(location.pathname).toEqual('/index/hello');
-      expect(location.hash).toEqual('#hash');
+      expect(location.hash).toEqual('#hash1');
       done();
     });
 
@@ -33,50 +29,61 @@ describe('模板内嵌 view ', function () {
 
   it('前进', function () {
     // 切换至列表页
-    b.views.goTo('page_list', {
-      hash: '#234'
+    b.views.goTo('page_list_hash', {
+      hash: '#hash2'
     });
     var activeView = b.views.getActive();
     var activeViewName = activeView.getViewName();
-    expect(activeViewName).toEqual('page_list');
-    expect(location.hash).toEqual('#234');
+
+    expect(activeViewName).toEqual('page_list_hash');
+    expect(location.hash).toEqual('#hash2');
   });// 切换 完成
 
 
   it('后退', function (done) {
-    b.views.goTo('page_list');
-    b.views.goTo('page_detail');
-    b.views.back();
 
+    var onShowTriggeredNum = 0;
     var activeView = b.views.getActive();
     beacon(activeView).once(activeView.events.onHide, function(e, data) {
-      var toView = data.to;
-      beacon(toView).once(toView.events.onShow, function(e) {
-        // 模板 HTML元素引用
-        var activeView = b.views.getActive();
-        var activeViewName = activeView.getViewName();
-        expect(activeViewName).toEqual('page_list');
 
-        done();
+      beacon(window).on('hashchange', function () {
+        if (location.hash === '#hash3') {
+          history.back();
+        } else {
+          setTimeout(function () {
+            done();
+          }, 0);
+        }
+      });
+
+      var toView = data.to;
+      beacon(toView).on(toView.events.onShow, function(e) {
+        onShowTriggeredNum++;
+        if (onShowTriggeredNum <= 1) {
+          location.hash = 'hash3';
+        }
+        expect(onShowTriggeredNum).toEqual(1);
       });
     });
+    b.views.goTo('page_detail_hash');
+
   }); // 后退 完成
 
-  it('路由参数', function(done) {
-    b.views.goTo('page_list', {
-      params: {
-        city: 104
-      },
-      query: '?a=1&b=2',
-      hash: '#234'
-    });
-    expect(location.pathname + location.search + location.hash).toEqual('/list/104?a=1&b=2#234');
-    b.run('page_list', function(require, $scope){
-      expect($scope.$request.params['city']).toEqual(104);
-      expect(location.hash).toEqual('#234');
-      done();
-    });
+  // it('路由参数', function(done) {
+  //   b.views.goTo('page_list_hash', {
+  //     params: {
+  //       city: 104
+  //     },
+  //     query: '?a=1&b=2',
+  //     hash: '#hash4'
+  //   });
+  //   expect(location.pathname + location.search + location.hash).toEqual('/list/104?a=1&b=2#hash4');
+  //   b.run('page_list_hash', function(require, $scope){
+  //     expect($scope.$request.params['city']).toEqual(104);
+  //     expect(location.hash).toEqual('#hash4');
+  //     done();
+  //   });
 
-  }); // 路由参数 完成
+  // }); // 路由参数 完成
 
 }); // 模板内嵌 view over

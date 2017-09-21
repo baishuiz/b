@@ -1271,6 +1271,12 @@
                   val[key] = undefined;
                 }
               }
+              // if (val.length === 0) {
+              //   value.splice(0);
+              // } else {
+              //
+              // }
+
               value = val;
               beacon(scope).on('updateRepeatData',{
                 dataPath : dataPath
@@ -2852,9 +2858,12 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 
   function triggerOnShow(curView, lastViewName) {
     var viewName = curView.getViewName();
-    beacon(curView).on(curView.events.onShow, {
-      from: lastViewName
-    });
+    if (viewName !== lastViewName) {
+      beacon(curView).on(curView.events.onShow, {
+        from: lastViewName
+      });
+    }
+
     var $scope = scopeManager.getScopeInstance(viewName);
     beacon($scope).on(EVENTS.DATA_CHANGE);
   }
