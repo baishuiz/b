@@ -59,6 +59,7 @@ Air.Module('B.directive.Repeater', function(require) {
     var dataPrefix = expression[1];
     var templateStr = template.outerHTML;
     var parentNode = template.parentNode;
+    var childsTemplate = template.innerHTML;
     var containerTagName = parentNode.tagName.toLowerCase();
     parentNode.removeChild(template);
 
@@ -282,16 +283,22 @@ Air.Module('B.directive.Repeater', function(require) {
                 if(!isNumKey && !val[key]){
                   val[key] = undefined;
                 }
+                else {
+                  value[key] = val[key];
+                }
               }
-              // if (val.length === 0) {
-              //   value.splice(0);
-              // } else {
-              //
-              // }
 
               value = val;
               beacon(scope).on('updateRepeatData',{
-                dataPath : dataPath
+                dataPath : dataPath,
+                callback : function () {
+                  // beacon(scope).on('updateObjectData',{
+                  //   dataPath : dataPath,
+                  //   callback : function () {
+                  //
+                  //   }
+                  // })
+                }
               })
               // beacon.utility.merge(value, val);
             }
@@ -340,8 +347,9 @@ Air.Module('B.directive.Repeater', function(require) {
     }
 
 
-    beacon(scope).on('updateRepeatData', function(){
-      bindRepeatData(api, dataPath)  
+    beacon(scope).on('updateRepeatData', function(e, args){
+      bindRepeatData(api, args.dataPath);
+      args.callback && args.callback();
     })
     bindRepeatData(api, dataPath);
 

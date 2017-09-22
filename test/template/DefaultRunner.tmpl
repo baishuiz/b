@@ -125,7 +125,7 @@ viewport view[active="true"]{display:block}
             <li b-repeat="item in list">
                  <button>{{ item.attr }}{{notice}},{{ item.attr }}</button>
                  <button>{{ item.obj.name }}{{notice}},{{ item.obj.name }}</button>
-                 <button b-repeat="innerItem in item.innerList">{{ innerItem.name }}{{notice}},{{ innerItem.name }}</button>
+                 <button b-repeat="innerItem in item.innerList">{{ innerItem.a.b.name }}{{notice}},{{ innerItem.a.b.name }}</button>
             </li>
          </ul>
          <div></div>

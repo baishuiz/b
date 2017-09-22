@@ -882,6 +882,7 @@
     var dataPrefix = expression[1];
     var templateStr = template.outerHTML;
     var parentNode = template.parentNode;
+    var childsTemplate = template.innerHTML;
     var containerTagName = parentNode.tagName.toLowerCase();
     parentNode.removeChild(template);
 
@@ -1105,16 +1106,22 @@
                 if(!isNumKey && !val[key]){
                   val[key] = undefined;
                 }
+                else {
+                  value[key] = val[key];
+                }
               }
-              // if (val.length === 0) {
-              //   value.splice(0);
-              // } else {
-              //
-              // }
 
               value = val;
               beacon(scope).on('updateRepeatData',{
-                dataPath : dataPath
+                dataPath : dataPath,
+                callback : function () {
+                  // beacon(scope).on('updateObjectData',{
+                  //   dataPath : dataPath,
+                  //   callback : function () {
+                  //
+                  //   }
+                  // })
+                }
               })
               // beacon.utility.merge(value, val);
             }
@@ -1163,8 +1170,9 @@
     }
 
 
-    beacon(scope).on('updateRepeatData', function(){
-      bindRepeatData(api, dataPath)  
+    beacon(scope).on('updateRepeatData', function(e, args){
+      bindRepeatData(api, args.dataPath);
+      args.callback && args.callback();
     })
     bindRepeatData(api, dataPath);
 
@@ -1325,7 +1333,7 @@
       activeObj = activeObj || Air.NS(activePath, scope);
       var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
 
-      nextPathNode && (!Object.getOwnPropertyDescriptor(activeObj, nextPathNode) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
+      nextPathNode && (!(Object.getOwnPropertyDescriptor(activeObj, nextPathNode) && Object.getOwnPropertyDescriptor(activeObj, nextPathNode).set) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
         Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }

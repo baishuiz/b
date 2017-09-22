@@ -90,17 +90,17 @@ describe('repeat', function () {
         {
           attr: 'attr name1',
           obj: {name: 'obj name1'},
-          innerList: [{name: 'Name 1'}]
+          innerList: [{a:{b:{name: 'Name 1'}}}]
         },
         {
           attr: 'attr name2',
           obj: {name: 'obj name2'},
-          innerList: [{name: 'Name 2'}]
+          innerList: [{a:{b:{name: 'Name 2'}}}]
         },
         {
           attr: 'attr name3',
           obj: {name: 'obj name3'},
-          innerList: [{name: 'Name 3'}]
+          innerList: [{a:{b:{name: 'Name 3'}}}]
         }
       ];
 
@@ -111,30 +111,37 @@ describe('repeat', function () {
           {
             attr: 'attr name11',
             obj: {name: 'obj name11'},
-            innerList: [{name: 'Name 11'}]
+            innerList: [{a:{b:{name: 'Name 11'}}}]
           },
           {
             attr: 'attr name22',
             obj: {name: 'obj name22'},
-            innerList: [{name: 'Name 22'}]
+            innerList: [{a:{b:{name: 'Name 22'}}}]
           },
           {
             attr: 'attr name33',
             obj: {name: 'obj name33'},
-            innerList: [{name: 'Name 33'}]
+            innerList: [{a:{b:{name: 'Name 33'}}}]
+          },
+          {
+            attr: 'attr name44',
+            obj: {name: 'obj name44'},
+            innerList: [{a:{b:{name: 'Name 44'}}}]
           }
         ];
-        dom = {
-          list : document.querySelector('view[name=page_repeat_changeData]>ul')
-        }
+
       }, 100);
 
 
 
       setTimeout(function(){
+        dom = {
+          list : document.querySelector('view[name=page_repeat_changeData]>ul')
+        }
         expect(dom.list.querySelectorAll('li')[2].querySelectorAll('button')[0].innerText).toEqual('attr name33, welcome,attr name33');
         expect(dom.list.querySelectorAll('li')[2].querySelectorAll('button')[1].innerText).toEqual('obj name33, welcome,obj name33');
         expect(dom.list.querySelectorAll('li')[2].querySelectorAll('button')[2].innerText).toEqual('Name 33, welcome,Name 33');
+        // expect(dom.list.querySelectorAll('li')[2].querySelectorAll('button')[3].innerText).toEqual('Name 44, welcome,Name 44');
         done();
 
       }, 500);
