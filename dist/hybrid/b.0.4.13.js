@@ -1260,33 +1260,40 @@
               var oldLen = value.length;
               var newLen = val.length;
 
-              if (newLen < oldLen) {
-                value.splice(newLen - oldLen, oldLen - newLen);
-                oldLength = newLen;
-              }
-
               for(var key in value){
                 var keyNum = parseInt(key, 10);
                 var isNumKey = beacon.utility.isType(keyNum, 'Number') && !isNaN(keyNum);
                 if(!isNumKey && !val[key]){
                   val[key] = undefined;
                 }
-                else {
+                else if (+keyNum < Math.min(oldLen, newLen)) {
                   value[key] = val[key];
+                  beacon.on('updateObjectData',{
+                    currentScopeIndex: currentScopeIndex,
+                    dataPath : dataPath
+                  })
                 }
               }
 
-              value = val;
-              beacon(scope).on('updateRepeatData',{
-                dataPath : dataPath,
-                callback : function () {
-                  // beacon(scope).on('updateObjectData',{
-                  //   dataPath : dataPath,
-                  //   callback : function () {
-                  //
-                  //   }
+              if (newLen < oldLen) {
+                value.splice(newLen - oldLen, oldLen - newLen);
+              }
+
+              if (newLen > oldLen) {
+                for (var i = oldLen; i < newLen; i++) {
+                  value.push(val[i]);
+                  // beacon.on('updateObjectData',{
+                  //   currentScopeIndex: currentScopeIndex,
+                  //   dataPath : dataPath + key
                   // })
                 }
+              }
+
+              oldLength = newLen;
+
+              value = val;
+              beacon(scope).on('updateRepeatData',{
+                dataPath : dataPath
               })
               // beacon.utility.merge(value, val);
             }
@@ -1503,6 +1510,7 @@
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }
   }
+
 
 
 
@@ -1834,7 +1842,10 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
     }
     return descriptor;
   }
-
+  beacon.on('updateObjectData', function(e, args){
+    bindObjectData(args.dataPath, args.currentScopeIndex);
+    // args.callback && args.callback();
+  })
 
   return {
     parseScope: parseScope,

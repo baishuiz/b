@@ -84,6 +84,7 @@ Air.Module('B.scope.scopeManager', function(require) {
 
 
 
+
   /**
    *作用：监听文本节点|属性节点的数据变化
    *参数: <tag>  数据标签
@@ -412,7 +413,10 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
     }
     return descriptor;
   }
-
+  beacon.on('updateObjectData', function(e, args){
+    bindObjectData(args.dataPath, args.currentScopeIndex);
+    // args.callback && args.callback();
+  })
 
   return {
     parseScope: parseScope,
