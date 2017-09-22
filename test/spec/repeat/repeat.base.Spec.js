@@ -83,6 +83,64 @@ describe('repeat', function () {
     });
   });
 
+  it('多层repeat 改变属性值', function (done) {
+    b.run('page_repeat_changeData', function(require, $scope){
+      $scope.notice = ", welcome";
+      $scope.list = [
+        {
+          attr: 'attr name1',
+          obj: {name: 'obj name1'},
+          innerList: [{name: 'Name 1'}]
+        },
+        {
+          attr: 'attr name2',
+          obj: {name: 'obj name2'},
+          innerList: [{name: 'Name 2'}]
+        },
+        {
+          attr: 'attr name3',
+          obj: {name: 'obj name3'},
+          innerList: [{name: 'Name 3'}]
+        }
+      ];
+
+      var dom;
+      setTimeout(function () {
+
+        $scope.list = [
+          {
+            attr: 'attr name11',
+            obj: {name: 'obj name11'},
+            innerList: [{name: 'Name 11'}]
+          },
+          {
+            attr: 'attr name22',
+            obj: {name: 'obj name22'},
+            innerList: [{name: 'Name 22'}]
+          },
+          {
+            attr: 'attr name33',
+            obj: {name: 'obj name33'},
+            innerList: [{name: 'Name 33'}]
+          }
+        ];
+        dom = {
+          list : document.querySelector('view[name=page_repeat_changeData]>ul')
+        }
+      }, 100);
+
+
+
+      setTimeout(function(){
+        expect(dom.list.querySelectorAll('li')[2].querySelectorAll('button')[0].innerText).toEqual('attr name33, welcome,attr name33');
+        expect(dom.list.querySelectorAll('li')[2].querySelectorAll('button')[1].innerText).toEqual('obj name33, welcome,obj name33');
+        expect(dom.list.querySelectorAll('li')[2].querySelectorAll('button')[2].innerText).toEqual('Name 33, welcome,Name 33');
+        done();
+
+      }, 500);
+    });
+  });
+
   it('repeat unshift', function (done) {
     b.run('page_repeat_change_by_unshift', function(require, $scope){
       $scope.notice = ", welcome";

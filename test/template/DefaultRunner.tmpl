@@ -109,7 +109,7 @@ viewport view[active="true"]{display:block}
   </view>
 
 
-  <view name="page_repeat_clear">
+    <view name="page_repeat_clear">
       <p>{{notice}}</p>
       <ul>
          <li b-repeat="item in list">
@@ -118,6 +118,18 @@ viewport view[active="true"]{display:block}
       </ul>
       <div></div>
     </view>
+
+     <view name="page_repeat_changeData">
+         <p>{{notice}}</p>
+         <ul>
+            <li b-repeat="item in list">
+                 <button>{{ item.attr }}{{notice}},{{ item.attr }}</button>
+                 <button>{{ item.obj.name }}{{notice}},{{ item.obj.name }}</button>
+                 <button b-repeat="innerItem in item.innerList">{{ innerItem.name }}{{notice}},{{ innerItem.name }}</button>
+            </li>
+         </ul>
+         <div></div>
+      </view>
 
   <view name="page_repeat_change_by_unshift">
     <p>{{notice}}</p>
