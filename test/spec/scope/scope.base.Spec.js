@@ -133,7 +133,7 @@ describe('数据绑定', function () {
 
           expect(dom.address.innerText.trim()).toEqual('上海');
 
-          $scope.validateResult = undefined;
+          $scope.validateResult = {};
 
           setTimeout(function() {
             dom.blocks = document.querySelectorAll('view[name=page_scope_change] .help-block');

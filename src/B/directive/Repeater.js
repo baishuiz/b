@@ -62,6 +62,7 @@ Air.Module('B.directive.Repeater', function(require) {
     var childsTemplate = template.innerHTML;
     var containerTagName = parentNode.tagName.toLowerCase();
     parentNode.removeChild(template);
+    var obj = {};
 
     function generatePlaceholder(target) {
       if (target.placeholder) {
@@ -73,8 +74,8 @@ Air.Module('B.directive.Repeater', function(require) {
       return placeholder;
     }
 
-    var getCount = function() {
-      var data = util.getData(dataPath, scope) || [];
+    var getCount = function(path) {
+      var data = util.getData(path || dataPath, scope) || [];
       var count = data.length || 0;
       return count;
     }
@@ -146,8 +147,8 @@ Air.Module('B.directive.Repeater', function(require) {
       uiElementCount -= num;
     }
 
-    var updateUI = function() {
-      var repeatCount = getCount();
+    var updateUI = function(path) {
+      var repeatCount = getCount(path);
       var num = repeatCount - uiElementCount;
       var isRemove = num < 0;
       var isAdd = num > 0;
@@ -164,7 +165,7 @@ Air.Module('B.directive.Repeater', function(require) {
      *参数: <dataPath> 数据源路径
      *返回：undefind
      **/
-    function bindRepeatData(repeater, dataPath) {
+    function bindRepeatData(repeater, dataPath, isinit) {
       var activePath = '';
       var pathNodes = dataPath.split('.') || [];
       // (template, currentScopeIndex, scopeStructure, parseTemplate)
@@ -178,12 +179,19 @@ Air.Module('B.directive.Repeater', function(require) {
 
         // 如果之前绑定过，缓存起来，供 descriptor 回调
         var existDescriptor = Object.getOwnPropertyDescriptor(activeObj, nextPathNode);
-        if (existDescriptor && (descriptorList.indexOf(existDescriptor)<0)) {
+        if (existDescriptor && existDescriptor.get && (descriptorList.indexOf(existDescriptor)<0)) {
           descriptorList.push(existDescriptor);
         }
 
-        var descriptor = createRepeatDataDescriptor.call(activeObj, repeater, nextObj);
-        Object.defineProperty(activeObj, nextPathNode, descriptor);
+        if (isinit) {
+          beacon(scope).on('updateRepeatData' + (pathNodes.slice(0, i + 1).join('')), function(e, args){
+            bindRepeatData(api, args.dataPath);
+            args.callback && args.callback();
+          })
+        }
+
+        var descriptor = createRepeatDataDescriptor.call(activeObj, repeater, nextObj, pathNodes.slice(0, i + 1).join('.'));
+        (typeof activeObj === 'object' && !(i !== pathNodes.length - 1 && existDescriptor && existDescriptor.get)) && Object.defineProperty(activeObj, nextPathNode, descriptor);
         activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
       }
     }
@@ -208,14 +216,14 @@ Air.Module('B.directive.Repeater', function(require) {
      *参数: <scope> 模板当前所处作用域.
      *返回：repeat 数据源的描述符
      **/
-    function createRepeatDataDescriptor(repeater, value) {
+    function createRepeatDataDescriptor(repeater, value, dataPath) {
       var oldLength = 0;
       value = value || [];
       var descriptor = {
         enumerable: true,
         configurable: true,
         get: function() {
-          
+
 
           // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
           setTimeout(function() {
@@ -239,9 +247,11 @@ Air.Module('B.directive.Repeater', function(require) {
 
         set: function(val, isSub) {
           var hasChanged = value !== val;
+
           if (!val) {
             val = beacon.utility.isType(value, 'Array') ? [] : {};
           }
+
           var isArray = beacon.utility.isType(val, 'Array');
           var isObject = beacon.utility.isType(val, 'Object');
 
@@ -252,11 +262,29 @@ Air.Module('B.directive.Repeater', function(require) {
           if (isObject) {
             value = value || {};
 
+
             for(var key in value){
               if(!val[key]){
                 val[key] = undefined;
               }
             }
+
+            for (var key in value) {
+              var existDescriptor = Object.getOwnPropertyDescriptor(value, key);
+              if (!(existDescriptor && existDescriptor.get)) {
+                // var descriptor = createRepeatDataDescriptor.call(activeObj, repeater, nextObj, pathNodes.slice(0, i + 1).join('.'));
+                // Object.defineProperty(activeObj, nextPathNode, descriptor);
+                if (beacon.utility.isType(value[key], 'Array')) {
+                  bindRepeatData(repeater, dataPath + '.' + key, true);
+                } else if (beacon.utility.isType(value[key], 'Object')) {
+                  beacon.on('updateObjectData',{
+                    currentScopeIndex: currentScopeIndex,
+                    dataPath : dataPath + '.' + key
+                  })
+                }
+              }
+            }
+
 
             // 子回调不赋值，只处理 dom
             if (!isSub) {
@@ -264,6 +292,26 @@ Air.Module('B.directive.Repeater', function(require) {
             }
           } else if (isArray) {
             value = value || [];
+
+            // if (val.length === 0) {
+            //   var tmp = util.getData(dataPath, scope);
+            //   tmp.splice(0);
+            //   // value = val;
+            //
+            //   var nodes = repeater.updateUI(dataPath);
+            //   for (var i = 0; i < nodes.length; i++) {
+            //     var activeNode = nodes[i];
+            //     activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
+            //   }
+            //
+            //
+            //   return;
+            //   // val = [undefined];
+            //   // setTimeout(function () {
+            //   //   value.splice(0);
+            //   // }, 0);
+            //   // return;
+            // }
             // console.log(this,"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             fixUnshift(val, value, descriptor);
 
@@ -271,43 +319,53 @@ Air.Module('B.directive.Repeater', function(require) {
             if (!isSub) {
               var oldLen = value.length;
               var newLen = val.length;
+              if (val.length===0){
+                value.splice(0);
+              }else{
 
-              for(var key in value){
-                var keyNum = parseInt(key, 10);
-                var isNumKey = beacon.utility.isType(keyNum, 'Number') && !isNaN(keyNum);
-                if(!isNumKey && !val[key]){
-                  val[key] = undefined;
-                }
-                else if (+keyNum < Math.min(oldLen, newLen)) {
-                  value[key] = val[key];
-                  beacon.on('updateObjectData',{
-                    currentScopeIndex: currentScopeIndex,
-                    dataPath : dataPath
-                  })
+
+                for(var key in value){
+                  var keyNum = parseInt(key, 10);
+                  var isNumKey = beacon.utility.isType(keyNum, 'Number') && !isNaN(keyNum);
+                  if(!isNumKey && !val[key]){
+                    val[key] = undefined;
+                  }
+                  // else if (isNumKey && +key <= Math.min(oldLen, newLen)) {
+                  //   value[key] = val[key];
+                  //   if (beacon.utility.isType(val[key], 'Object')) {
+                  //     beacon.on('updateObjectData',{
+                  //       currentScopeIndex: currentScopeIndex,
+                  //       dataPath : dataPath
+                  //     })
+                  //   }
+                  // }
+
                 }
               }
-
               if (newLen < oldLen) {
                 value.splice(newLen - oldLen, oldLen - newLen);
               }
 
-              if (newLen > oldLen) {
-                for (var i = oldLen; i < newLen; i++) {
-                  value.push(val[i]);
-                  // beacon.on('updateObjectData',{
-                  //   currentScopeIndex: currentScopeIndex,
-                  //   dataPath : dataPath + key
-                  // })
-                }
-              }
+              // if (newLen > oldLen) {
+              //   for (var i = oldLen; i < newLen; i++) {
+              //     // if (beacon.utility.isType(val[key], 'Object')) {
+              //     //   beacon.on('updateObjectData',{
+              //     //     currentScopeIndex: currentScopeIndex,
+              //     //     dataPath : dataPath
+              //     //   })
+              //     // }
+              //     value[value.length] = val[i];
+              //     // value.push(val[i]);
+              //   }
+              // }
 
               oldLength = newLen;
 
-              value = val;
-              beacon(scope).on('updateRepeatData',{
-                dataPath : dataPath
-              })
-              // beacon.utility.merge(value, val);
+              // value = val;
+              // beacon.on('updateRepeatData' + (dataPath && dataPath.split('.').join('') || ''),{
+              //   dataPath : dataPath
+              // })
+              beacon.utility.merge(value, val);
             }
 
             var nodes = repeater.updateUI();
@@ -315,7 +373,9 @@ Air.Module('B.directive.Repeater', function(require) {
               var activeNode = nodes[i];
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
-            
+
+          } else {
+            value = val;
           }
 
 
@@ -340,7 +400,7 @@ Air.Module('B.directive.Repeater', function(require) {
           //   }
           // }
 
-          
+
           //test end
 
         }
@@ -354,11 +414,7 @@ Air.Module('B.directive.Repeater', function(require) {
     }
 
 
-    beacon(scope).on('updateRepeatData', function(e, args){
-      bindRepeatData(api, args.dataPath);
-      args.callback && args.callback();
-    })
-    bindRepeatData(api, dataPath);
+    bindRepeatData(api, dataPath, true);
 
     return api;
   }
