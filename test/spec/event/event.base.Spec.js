@@ -47,13 +47,13 @@ describe('事件绑定', function () {
 
   it('支持参数、scope标签参数', function (done) {
     b.run('page_event_param', function(require, $scope){
-      $scope.scopeParam = ' World'
+      $scope.scopeParam = '(World)'
       var dom ={
         btn: document.querySelector('view[name=page_event_param] .btn')
       }
       $scope.$event = {
         clickHandle: function(e, param1, param2) {
-          expect(param1 + param2).toEqual('Hello World');
+          expect(param1 + param2).toEqual('Hello(World)');
           done();
         }
       };
