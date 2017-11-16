@@ -155,6 +155,25 @@ viewport view[active="true"]{display:block}
        <div></div>
     </view>
 
+    <view name="page_repeat_multiple_call">
+           <p>{{notice}}</p>
+           <ul>
+              <li b-repeat="item in list">
+                   <button>{{ item.attr }}{{notice}},{{ item.attr }}</button>
+                   <button>{{ item.obj.name }}{{notice}},{{ item.obj.name }}</button>
+                   <button b-repeat="innerItem in item.innerList">{{ innerItem.a.b.name }}{{notice}},{{ innerItem.a.b.name }}</button>
+              </li>
+           </ul>
+           <ul>
+             <li b-repeat="item in list">
+                  <button>{{ item.attr }}{{notice}},{{ item.attr }}</button>
+                  <button>{{ item.obj.name }}{{notice}},{{ item.obj.name }}</button>
+                  <button b-repeat="innerItem in item.innerList">{{ innerItem.a.b.name }}{{notice}},{{ innerItem.a.b.name }}</button>
+             </li>
+          </ul>
+           <div></div>
+        </view>
+
   <view name="page_repeat_change_by_unshift">
     <p>{{notice}}</p>
     <ul>
@@ -380,7 +399,7 @@ viewport view[active="true"]{display:block}
 
   <view name="page_select-option">
      <select b-model="data.cityId" name="numSelector" >
-        <option value="">请选择</option>
+        <option value="">?????????</option>
         <option b-repeat="city in cityList" value="{{city.cityId}}">{{city.cityName}}</option>
      </select>
   </view>
