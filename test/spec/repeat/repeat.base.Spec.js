@@ -323,65 +323,6 @@ describe('repeat', function () {
     });
   });
 
-  it('一个list, 多个repeat使用', function (done) {
-        b.run('page_repeat_multiple_call', function(require, $scope){
-            $scope.notice = ", welcome";
-            $scope.list = [
-                {
-                    attr: 'attr name1',
-                    obj: {name: 'obj name1'},
-                    innerList: [{a:{b:{name: 'Name 1'}}}]
-                },
-                {
-                    attr: 'attr name2',
-                    obj: {name: 'obj name2'},
-                    innerList: [{a:{b:{name: 'Name 2'}}}]
-                },
-                {
-                    attr: 'attr name3',
-                    obj: {name: 'obj name3'},
-                    innerList: [{a:{b:{name: 'Name 3'}}}]
-                }
-            ];
-
-            setTimeout(function(){
-                var dom = {
-                    list : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul'),
-                    ul1  : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul')[0],
-                    ul2  : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul')[1]
-                }
-                console.log(dom.ul1);
-                expect(dom.list.length).toEqual(2);
-
-                expect(dom.ul1.querySelectorAll("li").length).toEqual(3);
-                expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[0].innerText).toEqual('attr name1, welcome,attr name1');
-                expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[1].innerText).toEqual('obj name1, welcome,obj name1');
-                expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[2].innerText).toEqual('Name 1, welcome,Name 1');
-                expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[0].innerText).toEqual('attr name2, welcome,attr name2');
-                expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[1].innerText).toEqual('obj name2, welcome,obj name2');
-                expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[2].innerText).toEqual('Name 2, welcome,Name 2');
-                expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[0].innerText).toEqual('attr name3, welcome,attr name3');
-                expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[1].innerText).toEqual('obj name3, welcome,obj name3');
-                expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[2].innerText).toEqual('Name 3, welcome,Name 3');
-
-
-                expect(dom.ul2.querySelectorAll("li").length).toEqual(3);
-                expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[0].innerText).toEqual('attr name1, welcome,attr name1');
-                expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[1].innerText).toEqual('obj name1, welcome,obj name1');
-                expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[2].innerText).toEqual('Name 1, welcome,Name 1');
-                expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[0].innerText).toEqual('attr name2, welcome,attr name2');
-                expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[1].innerText).toEqual('obj name2, welcome,obj name2');
-                expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[2].innerText).toEqual('Name 2, welcome,Name 2');
-                expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[0].innerText).toEqual('attr name3, welcome,attr name3');
-                expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[1].innerText).toEqual('obj name3, welcome,obj name3');
-                expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[2].innerText).toEqual('Name 3, welcome,Name 3');
-
-                done();
-
-            }, 500);
-        });
-    });
-
   it('repeat unshift', function (done) {
     b.run('page_repeat_change_by_unshift', function(require, $scope){
       $scope.notice = ", welcome";
