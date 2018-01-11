@@ -76,7 +76,7 @@ Air.Module('B.scope.scopeManager', function(require) {
       activeObj = activeObj || Air.NS(activePath, scope);
       var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
 
-      nextPathNode && (!(Object.getOwnPropertyDescriptor(activeObj, nextPathNode) && Object.getOwnPropertyDescriptor(activeObj, nextPathNode).set) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
+      nextPathNode && (!(Object.getOwnPropertyDescriptor(activeObj, nextPathNode) && Object.getOwnPropertyDescriptor(activeObj, nextPathNode).set) || (i === pathNodes.length - 1)) &&
         Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }
@@ -328,7 +328,8 @@ Air.Module('B.scope.scopeManager', function(require) {
     }
 }
 
-var parseTemplate = parseTemplateProxy(parseTemplateRAW);
+// var parseTemplate = parseTemplateProxy(parseTemplateRAW);
+var parseTemplate = parseTemplateRAW;
 
 
   /**

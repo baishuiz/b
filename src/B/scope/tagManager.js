@@ -19,6 +19,18 @@ Air.Module('B.scope.tagManager', function(require) {
     });
   }
 
+  function removeNode(scopeIndex, token) {
+      token = token.replace(/\./g, '\\.');
+      var reg = new RegExp('^'+token + '.+','ig');
+      for (var key in nodeMap[scopeIndex]) {
+          if (key.match(reg) !== null) {
+              nodeMap[scopeIndex] = nodeMap[scopeIndex] || {};
+              nodeMap[scopeIndex][key] = [];
+              // updateNodeValue(scopeIndex, scope.scope, key);
+          }
+      }
+  }
+
   /**
    *作用：获取 token 相关文本节点|属性节点
    *参数: <scopeIndex> token 所在作用域编号
@@ -62,13 +74,24 @@ Air.Module('B.scope.tagManager', function(require) {
     }
   }
 
+  function updateAll(scopeIndex, scope,  token) {
+    token = token.replace(/\./g, '\\.');
+    var reg = new RegExp('^'+token + '\\.\\d\\..+','ig');
+    for (var key in nodeMap[scopeIndex]) {
+        if (key.match(reg) !== null) {
+            updateNodeValue(scopeIndex, scope.scope, key);
+        }
+    }
+  }
 
 
 
   var api = {
         addNode : addNode,
+        removeNode : removeNode,
         getNodes : getNodes,
-        updateNodeValue : updateNodeValue
+        updateNodeValue : updateNodeValue,
+        updateAll: updateAll
   };
   return api;
 });

@@ -77,7 +77,6 @@ describe('repeat', function () {
         item.showStatus_2 = !(item.status === 0 && item.div1[0].status);
       });
 
-      $scope.list = [];
       $scope.list = list;
 
       setTimeout(function(){
