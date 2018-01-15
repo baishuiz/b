@@ -1161,7 +1161,7 @@
       var isAdd = num > 0;
       isRemove && removeUI(num, path);
 
-      updateOldUI(uiElementCount);
+      (uiElementCount > 0) && updateOldUI(uiElementCount);
       var newFirstNode = isAdd && addUI(num);
       return newFirstNode;
     }
@@ -1228,7 +1228,6 @@
            var result = [].concat(item, this)
          descriptor.set( [] );
          descriptor.set( [].concat(result));
-         console.log(result,"**************************")
         // descriptor.set(result);
          return result
        }
@@ -1709,12 +1708,12 @@
   function parseTemplateRAW(node, scopeName, currentScopeIndex, isSub, needScope) {
 
     if (!node) {
-      return
+      return;
     }
 
-    if (!isSub) {
-      backtrackingPoints = [];
-    }
+    // if (!isSub) {
+      // backtrackingPoints = [];
+    // }
     currentScopeIndex = currentScopeIndex || 0;
 
     var popPoints = function(nextNode, scopeName) {
@@ -1728,12 +1727,12 @@
     var goOn = function(nextNode, scopeName) {
       if (!nextNode && isSub) {
         var lastNode = backtrackingPoints.pop();
-        nextNode = lastNode && lastNode.nextSibling;
+        nextNode = lastNode && getNode(lastNode.nextSibling);
         var targetScopeIndex = isView(lastNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
         scopeName = isView(lastNode) && targetScopeIndex;
       }
 
-      return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
+      parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
     }
 
     if (isView(node) || needScope) {
@@ -1742,7 +1741,7 @@
       currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
       // scopeName = currentScopeIndex;
     } else if (isRepeat(node)) { // view 不允许进行 repeat
-      var nextNode = isSub && node.nextSibling;
+      var nextNode = isSub && getNode(node.nextSibling);
       var repeatNode = createRepeatNodes(node, currentScopeIndex);
       if (!repeatNode) {
         // repeat 元素没有下一个节点时退栈，统一放到 goOn 中处理
@@ -1755,9 +1754,9 @@
 
 
     // 回溯点压栈
-    if (isSub && node.nextSibling && node.firstChild) { backtrackingPoints.push(node) };
+    if (isSub && getNode(node.nextSibling) && getNode(node.firstChild)) { backtrackingPoints.push(node) };
 
-    var nextSibling = node.nextSibling;
+    var nextSibling = getNode(node.nextSibling);
     switch (node.nodeType) {
       case nodeUtil.type.HTML:
         parseHTML(node, currentScopeIndex);
@@ -1771,16 +1770,16 @@
 
     var nextNode;
     if (!node.parentElement) {
-      if (isSub && node.firstChild) {
+      if (isSub && (node.firstChild)) {
         backtrackingPoints.pop();
       }
 
       nextNode = (isSub && nextSibling);
     } else {
-      nextNode = node.firstChild || (isSub && nextSibling);
+      nextNode = getNode(node.firstChild) || (isSub && nextSibling);
     }
 
-    return goOn(nextNode, scopeName);
+    goOn(nextNode, scopeName);
   }
 
 
@@ -1806,8 +1805,8 @@
     }
 }
 
-// var parseTemplate = parseTemplateProxy(parseTemplateRAW);
-var parseTemplate = parseTemplateRAW;
+var parseTemplate = parseTemplateProxy(parseTemplateRAW);
+// var parseTemplate = parseTemplateRAW;
 
 
   /**
@@ -1889,13 +1888,37 @@ var parseTemplate = parseTemplateRAW;
           }
         }
       }
-    }
+    };
     return descriptor;
   }
   beacon.on('updateObjectData', function(e, args){
     bindObjectData(args.dataPath, args.currentScopeIndex);
     // args.callback && args.callback();
-  })
+  });
+
+
+  function getNode(node) {
+    if(!node) {return node;}
+    switch (node.nodeType) {
+      case nodeUtil.type.HTML:
+        return node; // TODO: 过滤无效 HTML
+        break;
+      case nodeUtil.type.TEXT:
+      case nodeUtil.type.ATTR:
+        return getTextNode(node);
+        break;
+      default:
+    }
+  }
+
+  function getTextNode(node){
+    var hasTempleteTag = node.nodeValue.indexOf('{{')>=0;
+    if(hasTempleteTag){
+      return node;
+    } else {
+      return getNode(node.nextSibling)
+    }
+  }
 
   return {
     parseScope: parseScope,

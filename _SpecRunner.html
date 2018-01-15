@@ -225,13 +225,12 @@ viewport view[active="true"]{display:block}
     <div></div>
   </view>
 
-<view name="page_repeat_subElement_with_b-repeat">
+<view name="page_repeat_subRepeat_has_b-exist">
     <div class='listC' b-repeat="item in list" >
         <div class='spanParent'>
             <span class='span'>{{item.name}}</span>
             <div class='btnsParent'>
                 <div class='btns' b-repeat="div1 in item.div1">
-
                    <button>{{div1.name}}</button>
                 </div>
             </div>
@@ -386,7 +385,7 @@ viewport view[active="true"]{display:block}
 
   <view name="page_select-option">
      <select b-model="data.cityId" name="numSelector" >
-        <option value="">?????????</option>
+        <option value="">请选择</option>
         <option b-repeat="city in cityList" value="{{city.cityId}}">{{city.cityName}}</option>
      </select>
   </view>

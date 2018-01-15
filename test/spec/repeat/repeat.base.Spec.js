@@ -1,4 +1,4 @@
-describe('repeat', function () {
+describe('repeat base', function () {
 
   it('repeat 基础', function (done) {
     b.run('page_repeat', function(require, $scope){
@@ -350,7 +350,6 @@ describe('repeat', function () {
                     ul1  : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul')[0],
                     ul2  : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul')[1]
                 }
-                console.log(dom.ul1);
                 expect(dom.list.length).toEqual(2);
 
                 expect(dom.ul1.querySelectorAll("li").length).toEqual(3);
@@ -876,7 +875,6 @@ describe('repeat', function () {
     })
 
   });
-
 
   it('repeat 嵌套内绑定的事件', function (done) {
     b.run('page_repeat_in_repeat_event', function(require, $scope){

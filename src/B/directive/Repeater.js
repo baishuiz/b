@@ -173,7 +173,7 @@ Air.Module('B.directive.Repeater', function(require) {
       var isAdd = num > 0;
       isRemove && removeUI(num, path);
 
-      updateOldUI(uiElementCount);
+      (uiElementCount > 0) && updateOldUI(uiElementCount);
       var newFirstNode = isAdd && addUI(num);
       return newFirstNode;
     }
@@ -240,7 +240,6 @@ Air.Module('B.directive.Repeater', function(require) {
            var result = [].concat(item, this)
          descriptor.set( [] );
          descriptor.set( [].concat(result));
-         console.log(result,"**************************")
         // descriptor.set(result);
          return result
        }
