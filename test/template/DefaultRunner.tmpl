@@ -225,27 +225,38 @@ viewport view[active="true"]{display:block}
     <div></div>
   </view>
 
-<view name="page_repeat_subRepeat_has_b-exist">
+<view name="page_repeat_subElement_with_b-repeat">
     <div class='listC' b-repeat="item in list" >
-        <div class='spanParent'>
+        <div class='spanParent' b-exist="item.showStatus_1">
             <span class='span'>{{item.name}}</span>
             <div class='btnsParent'>
-                <div class='btns' b-repeat="div1 in item.div1">
+                <div class='btns' b-repeat="div1 in item.div1" b-exist="div1.status">
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
                    <button>{{div1.name}}</button>
                 </div>
             </div>
         </div>
 
-        <div class='spanParent'>
+        <div class='spanParent' b-exist="item.showStatus_2">
             <span class='span'>{{item.name}}</span>
             <div class='btnsParent'>
-                <div class='btns' b-repeat="div1 in item.div1"><button>{{div1.name}}</button></div>
+                <div class='btns' b-repeat="div1 in item.div1" b-exist="div1.status">
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <span>{{div1.name}}</span>
+                   <button>{{div1.name}}</button>
+                </div>
             </div>
         </div>
+
+
     </div>
     <div></div>
   </view>
-
 
 
 
