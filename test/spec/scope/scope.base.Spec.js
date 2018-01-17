@@ -70,6 +70,7 @@ describe('数据绑定', function () {
           });
 
           $scope.city = '铁岭';
+          $scope.cc = {a:{b:{c:'ok'}}};
 
         });
       }, 500);

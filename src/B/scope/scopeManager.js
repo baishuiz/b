@@ -430,7 +430,9 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
       case nodeUtil.type.ATTR:
         return getTextNode(node);
         break;
+        
       default:
+        return node
     }
   }
 
