@@ -338,6 +338,22 @@ viewport view[active="true"]{display:block}
     </div>
   </view>
 
+
+
+  <view name="page_repeat_with_big_data">
+      <p class="title">{{notice}}</p>
+      <ul>
+        <li b-repeat="man in list" class="{{man.sex === 'male' ? 'male' : 'female'}} {{man.age}} {{man.isHandsome ? 'handsome' : ''}}" b-show="man.hasBoyFriend">
+            <span>姓名:{{man.name}};</span><p>住址:{{man.address}};工作:{{man.work}};是否单身:{{man.hasGirlFriend ? '是' : '否'}};身高:{{man.high/100}}米;体重:{{man.weight}}kg;备注:{{man.remark}}</p>
+        </li>
+      </ul>
+  </view>
+
+
+
+
+
+
   <view name="page_model_bind">
     <input b-model="username" type="text" class="username"></input>
     <input b-model="checked" type="checkbox" class="checkbox"></input>
@@ -437,7 +453,7 @@ viewport view[active="true"]{display:block}
   
   <script src="node_modules/jasmine-ajax/lib/mock-ajax.js"></script>
   
-  <script src="dist/web/b.0.4.15.min.js"></script>
+  <script src="dist/web/b.0.4.15.js"></script>
   
 
 
@@ -549,6 +565,8 @@ viewport view[active="true"]{display:block}
   
   <script src="test/spec/b-show/show.base.Spec.js"></script>
   
+  <script src="test/spec/b-exist/exist.base.Spec.js"></script>
+  
   <script src="test/spec/b-style/style.base.Spec.js"></script>
   
   <script src="test/spec/formElement/select-option.base.Spec.js"></script>
@@ -556,6 +574,8 @@ viewport view[active="true"]{display:block}
   <script src="test/spec/b-property/b-property.base.Spec.js"></script>
   
   <script src="test/spec/TDK/TDK.Spec.js"></script>
+  
+  <script src=".grunt/grunt-contrib-jasmine/grunt-template-jasmine-istanbul/reporter.js"></script>
   
   <script src=".grunt/grunt-contrib-jasmine/reporter.js"></script>
   

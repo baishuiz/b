@@ -925,4 +925,34 @@ describe('repeat base', function () {
     });
   });
 
+
+    it('repeat 大数据性能', function (done) {
+        b.run('page_repeat_with_big_data', function(require, $scope){
+
+
+            var list = [];
+            for (var i = 0;i < 1500; i++) {
+                var obj = {
+                    name: '小帅' + i, sex: '男', age: 23, address: '上海市', work: 'IT 民工', hasBoyFriend: true, hasGirlFriend: false, high: 180, weight: 90,  isHandsome: true, remark: '没什么需要备注的，就是帅'
+                };
+                list.push(obj);
+            }
+
+            var start = new Date().getTime();
+            $scope.list = list;
+            $scope.notice = 'repeat 大数据性能';
+            var end = new Date().getTime();
+
+            setTimeout(function () {
+                var view = document.querySelector('view[name=page_repeat_with_big_data]');
+
+                expect(end - start).toBeLessThan(100);
+                expect(view.querySelectorAll('ul li').length).toEqual(1500);
+                expect(view.querySelector('ul li:last-child span').innerText).toEqual('姓名:小帅1499;');
+                done();
+            }, 0);
+
+        });
+    });
+
 });
