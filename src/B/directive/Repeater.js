@@ -117,10 +117,19 @@ Air.Module('B.directive.Repeater', function(require) {
         var targetNode = docContainer.firstChild;
         targetNode.removeAttribute('b-repeat');
         targetNode.$index = uiIndex;
-        parseTemplate && parseTemplate(targetNode, scopeStructure, currentScopeIndex);
+        // parseTemplate && parseTemplate(targetNode, scopeStructure, currentScopeIndex);
         elementContainer.appendChild(targetNode);
         // newFirstNode = newFirstNode || ((i === 0) && targetNode);
         newNodeList.push(targetNode)
+      }
+      for (var j = 0; j < newNodeList.length; j++) {
+        if (j && j% 50 === 0) {
+          setTimeout(function () {
+              parseTemplate && parseTemplate(newNodeList[j], scopeStructure, currentScopeIndex);
+          }, 10);
+        } else {
+            parseTemplate && parseTemplate(newNodeList[j], scopeStructure, currentScopeIndex);
+        }
       }
 
       // 如果是 select 变动，则将 option 赋值后恢复 select 的选中值
@@ -173,7 +182,7 @@ Air.Module('B.directive.Repeater', function(require) {
       var isAdd = num > 0;
       isRemove && removeUI(num, path);
 
-      (uiElementCount > 0) && updateOldUI(uiElementCount);
+      // (uiElementCount > 0) && updateOldUI(uiElementCount);
       var newFirstNode = isAdd && addUI(num);
       return newFirstNode;
     }

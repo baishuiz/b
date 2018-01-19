@@ -103,7 +103,7 @@ Air.Module('B.scope.scopeManager', function(require) {
        callback && callbackNow && callback(util.getData(activeToken, scope.scope));
 
        tagManager.addNode(scopeIndex, activeToken, node, callback);
-       bindObjectData(activeToken, scopeIndex, callback);
+       // bindObjectData(activeToken, scopeIndex, callback);
      }
 
   }
@@ -120,24 +120,51 @@ Air.Module('B.scope.scopeManager', function(require) {
     // var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
     var tokens = tag.match(/(['"])\s*([$a-zA-Z\._0-9\s\-]+)\s*\1|(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g) || [];
     var result = [];
+    var temp = [];
     for (var i = 0; i < tokens.length; i++) {
       var token = trim(tokens[i]);
       if (!(/^\d+$/.test(token) || /^['"]/.test(token) || token == '' || token === 'true' || token === 'false')) {
-        var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
+        // var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
+          var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')');
         var lastTagStr = (node.$tag || tag);
-        var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
-          if ($0.indexOf('util.getData("' + token) >= 0) {
-            return $0
-          } else {
-            return $0.replace($2, 'util.getData("' + token + '", scope)')
-          }
-        });
-        node.$template = node.$template.replace(lastTagStr, tagStr);
-        node.$tag = tagStr;
+        // var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
+        //   if ($0.indexOf('util.getData("' + token) >= 0) {
+        //     return $0
+        //   } else {
+        //     return $0.replace($2, 'util.getData("' + token + '", scope)')
+        //   }
+        // });
+
+          var tagStrList = lastTagStr.match(tokenReg);
+          // var tagStrList = tokenReg.exec(token);
+          temp.push(tagStrList);
+          // temp.push(tagStr);
+
+        // node.$template = node.$template.replace(lastTagStr, tagStr);
+        // node.$tag = tagStr;
 
         result.push(token);
       }
     }
+
+    // console.log(JSON.stringify(temp),"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
+    for(var j = temp.length - 1; j >=0; j--) {
+        // var activeToken = temp[j];
+        // // console.log(activeToken[0], activeToken[1], activeToken[2], activeToken.index);
+        // var lastTagStr = (node.$tag || tag);
+        //
+        // var left = activeToken.input.substr(0, activeToken.index);
+        // var right = activeToken.input.substr(activeToken.index + activeToken[0].length);
+        // var ttt = 'util.getData("' + activeToken[2] + '", scope)'
+        // var tagStrNew = left + ttt + right;
+        //
+        // node.$template = node.$template.replace(lastTagStr, tagStrNew);
+        // node.$tag = tagStrNew;
+
+        // console.log(tagStrNew, "*****************************************88");
+    }
+
     return result;
   }
 
@@ -219,6 +246,14 @@ Air.Module('B.scope.scopeManager', function(require) {
       }
       parseTEXT(activeAttribute, currentScopeIndex);
     }
+
+      var children = node.childNodes;
+      for (var childIndex = 0; childIndex < children.length; childIndex++) {
+          var activeChild = children[childIndex];
+          if (activeChild.nodeType === nodeUtil.type.TEXT && activeChild.nodeValue.indexOf('{{')>=0) {
+              parseTEXT(activeChild, currentScopeIndex);
+          }
+      }
   }
 
 
@@ -328,8 +363,69 @@ Air.Module('B.scope.scopeManager', function(require) {
     }
 }
 
-var parseTemplate = parseTemplateProxy(parseTemplateRAW);
+// var parseTemplate = parseTemplateProxy(parseTemplateRAW);
 // var parseTemplate = parseTemplateRAW;
+
+    /**
+     * @param node
+     * @param scopeName
+     * @param currentScopeIndex
+     * @param isSub
+     * @param needScope
+     */
+    var parseTemplate = function (node, scopeName, currentScopeIndex, isSub, needScope) {
+        if (!node) {
+            return;
+        }
+
+        currentScopeIndex = currentScopeIndex || 0;
+        parseNode(node, currentScopeIndex)
+
+        var activeRepeat;
+        while(activeRepeat = node.querySelector('[b-repeat]')) {
+
+          // if(!activeRepeat){break;}
+          parseNode(activeRepeat, currentScopeIndex);
+        }
+
+
+         var nodes = node.querySelectorAll('*');
+         // var nodes = node.childNodes;
+         for(var nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++){
+           var activeNode = nodes[nodeIndex];
+           // var targetScopeIndex = isView(activeNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex;
+           // scopeName = isView(activeNode) && targetScopeIndex;
+           parseNode(activeNode, currentScopeIndex)
+         }
+
+
+
+         function parseNode(node){
+             if (isView(node) || needScope) {
+                 // view scope 压栈
+                 scopeName = node.getAttribute('b-scope-key') || node.getAttribute('name');
+                 currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
+             }
+             else if (isRepeat(node)) { // view 不允许进行 repeat
+                 // var nextNode = isSub && getNode(node.nextSibling);
+                 createRepeatNodes(node, currentScopeIndex);
+                 return;
+
+             }
+             switch (node.nodeType) {
+                 case nodeUtil.type.HTML:
+                   if (!node.kkk) {
+                       parseHTML(node, currentScopeIndex);
+                   }
+                     break;
+                 case nodeUtil.type.TEXT:
+                 case nodeUtil.type.ATTR:
+                     parseTEXT(node, currentScopeIndex);
+                     break;
+                 default:
+             }
+         }
+    };
 
 
   /**

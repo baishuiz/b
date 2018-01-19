@@ -928,7 +928,7 @@ describe('repeat base', function () {
 
     it('repeat 大数据性能', function (done) {
         b.run('page_repeat_with_big_data', function(require, $scope){
-
+            $scope.notice = 'repeat 大数据性能';
 
             var list = [];
             for (var i = 0;i < 1500; i++) {
@@ -940,7 +940,6 @@ describe('repeat base', function () {
 
             var start = new Date().getTime();
             $scope.list = list;
-            $scope.notice = 'repeat 大数据性能';
             var end = new Date().getTime();
 
             setTimeout(function () {

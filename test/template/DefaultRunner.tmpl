@@ -342,11 +342,12 @@ viewport view[active="true"]{display:block}
 
   <view name="page_repeat_with_big_data">
       <p class="title">{{notice}}</p>
-      <ul>
-        <li b-repeat="man in list" class="{{man.sex === 'male' ? 'male' : 'female'}} {{man.age}} {{man.isHandsome ? 'handsome' : ''}}" b-show="man.hasBoyFriend">
-            <span>姓名:{{man.name}};</span><p>住址:{{man.address}};工作:{{man.work}};是否单身:{{man.hasGirlFriend ? '是' : '否'}};身高:{{man.high/100}}米;体重:{{man.weight}}kg;备注:{{man.remark}}</p>
-        </li>
-      </ul>
+    <ul>
+      <li b-repeat="man in list" class="{{man.sex === 'male' ? 'male' : 'female'}} {{man.age}} {{man.isHandsome ? 'handsome' : ''}}" b-show="man.hasBoyFriend">
+          <span>姓名:{{man.name}};</span><p>住址:{{man.address}};工作:{{man.work}};是否单身:{{man.hasGirlFriend ? '是' : '否'}};身高:{{man.high/100}}米;体重:{{man.weight}}kg;备注:{{man.remark}}</p>
+      </li>
+    </ul>
+
   </view>
 
 
