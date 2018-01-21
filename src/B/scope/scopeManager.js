@@ -97,13 +97,12 @@ Air.Module('B.scope.scopeManager', function(require) {
      var tokens = getTokens(tag, node, scopeIndex);
      for(var i = 0; i < tokens.length; i++){
        var activeToken = tokens[i];
-
-      //  var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
-      //  var scope = scopeStructure.scope
        callback && callbackNow && callback(util.getData(activeToken, scope.scope));
-
        tagManager.addNode(scopeIndex, activeToken, node, callback);
-       // bindObjectData(activeToken, scopeIndex, callback);
+       setTimeout(function(){
+        bindObjectData(activeToken, scopeIndex, callback);
+       },0)
+       
      }
 
   }
@@ -124,47 +123,23 @@ Air.Module('B.scope.scopeManager', function(require) {
     for (var i = 0; i < tokens.length; i++) {
       var token = trim(tokens[i]);
       if (!(/^\d+$/.test(token) || /^['"]/.test(token) || token == '' || token === 'true' || token === 'false')) {
-        // var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
-          var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')');
+        var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
         var lastTagStr = (node.$tag || tag);
-        // var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
-        //   if ($0.indexOf('util.getData("' + token) >= 0) {
-        //     return $0
-        //   } else {
-        //     return $0.replace($2, 'util.getData("' + token + '", scope)')
-        //   }
-        // });
+        var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
+          if ($0.indexOf('util.getData("' + token) >= 0) {
+            return $0
+          } else {
+            return $0.replace($2, 'util.getData("' + token + '", scope)')
+          }
+        });
 
-          var tagStrList = lastTagStr.match(tokenReg);
-          // var tagStrList = tokenReg.exec(token);
-          temp.push(tagStrList);
-          // temp.push(tagStr);
 
-        // node.$template = node.$template.replace(lastTagStr, tagStr);
-        // node.$tag = tagStr;
+        node.$template = node.$template.replace(lastTagStr, tagStr);
+        node.$tag = tagStr;
 
         result.push(token);
       }
     }
-
-    // console.log(JSON.stringify(temp),"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-    for(var j = temp.length - 1; j >=0; j--) {
-        // var activeToken = temp[j];
-        // // console.log(activeToken[0], activeToken[1], activeToken[2], activeToken.index);
-        // var lastTagStr = (node.$tag || tag);
-        //
-        // var left = activeToken.input.substr(0, activeToken.index);
-        // var right = activeToken.input.substr(activeToken.index + activeToken[0].length);
-        // var ttt = 'util.getData("' + activeToken[2] + '", scope)'
-        // var tagStrNew = left + ttt + right;
-        //
-        // node.$template = node.$template.replace(lastTagStr, tagStrNew);
-        // node.$tag = tagStrNew;
-
-        // console.log(tagStrNew, "*****************************************88");
-    }
-
     return result;
   }
 
@@ -229,9 +204,9 @@ Air.Module('B.scope.scopeManager', function(require) {
     tryGenerateSubViewScope(node, scopeStructure);
     var scope = scopeStructure.scope;
     existDirective(node, scopeStructure, watchData)
-    if (!node.parentElement) {
-      return;
-    }
+    // if (!node.parentElement) {
+    //   return;
+    // }
     initModel(node, scopeStructure, watchData);
     eventDirective(node, scope);
     showDirective(node, scopeStructure, watchData);
@@ -377,6 +352,7 @@ Air.Module('B.scope.scopeManager', function(require) {
         if (!node) {
             return;
         }
+        var treeScopeList = [];
 
         currentScopeIndex = currentScopeIndex || 0;
         parseNode(node, currentScopeIndex)
@@ -388,7 +364,7 @@ Air.Module('B.scope.scopeManager', function(require) {
           parseNode(activeRepeat, currentScopeIndex);
         }
 
-
+        
          var nodes = node.querySelectorAll('*');
          // var nodes = node.childNodes;
          for(var nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++){
@@ -399,10 +375,19 @@ Air.Module('B.scope.scopeManager', function(require) {
          }
 
 
-
+         
          function parseNode(node){
+             if(treeScopeList.length>0&&node===treeScopeList[treeScopeList.length-1].nextSubTree){
+              currentScopeIndex = treeScopeList[treeScopeList.length-1].scopeName;
+               treeScopeList.pop();
+
+             }
              if (isView(node) || needScope) {
                  // view scope 压栈
+                 treeScopeList.push({
+                   nextSubTree : getNode(node.nextSibling),
+                   scopeName : scopeName 
+                 });
                  scopeName = node.getAttribute('b-scope-key') || node.getAttribute('name');
                  currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
              }

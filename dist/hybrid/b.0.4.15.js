@@ -1208,13 +1208,7 @@
         newNodeList.push(targetNode)
       }
       for (var j = 0; j < newNodeList.length; j++) {
-        if (j && j% 50 === 0) {
-          setTimeout(function () {
-              parseTemplate && parseTemplate(newNodeList[j], scopeStructure, currentScopeIndex);
-          }, 10);
-        } else {
-            parseTemplate && parseTemplate(newNodeList[j], scopeStructure, currentScopeIndex);
-        }
+        parseTemplate && parseTemplate(newNodeList[j], scopeStructure, currentScopeIndex);
       }
 
       // 如果是 select 变动，则将 option 赋值后恢复 select 的选中值
@@ -1267,7 +1261,7 @@
       var isAdd = num > 0;
       isRemove && removeUI(num, path);
 
-      // (uiElementCount > 0) && updateOldUI(uiElementCount);
+      (uiElementCount > 0) && updateOldUI(uiElementCount);
       var newFirstNode = isAdd && addUI(num);
       return newFirstNode;
     }
@@ -1349,6 +1343,7 @@
     function createRepeatDataDescriptor(repeater, value, dataPath) {
       var oldLength = 0;
       value = value || [];
+      var getList =[];
       var descriptor = {
         enumerable: true,
         configurable: true,
@@ -1356,9 +1351,14 @@
 
 
           // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
-          setTimeout(function() {
+          var getIndex =setTimeout(function() {
             var length = value && value.length || 0;
             if (oldLength !== length) {
+
+                for(var i= 0; i<getList.length;i++){
+                  clearTimeout(getList[i]);
+                }
+                oldLength = length;
                 repeaterUpdate();
               // var nodes = repeater.updateUI();
               // node && parseTemplate(node, currentScopeIndex);
@@ -1372,8 +1372,9 @@
               //   descriptorList[i] && descriptorList[i].get && descriptorList[i].get();
               // }
             }
-            oldLength = length;
+            
           }, 0);
+          getList.push(getIndex);
           return value;
         },
 
@@ -1583,13 +1584,12 @@
      var tokens = getTokens(tag, node, scopeIndex);
      for(var i = 0; i < tokens.length; i++){
        var activeToken = tokens[i];
-
-      //  var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
-      //  var scope = scopeStructure.scope
        callback && callbackNow && callback(util.getData(activeToken, scope.scope));
-
        tagManager.addNode(scopeIndex, activeToken, node, callback);
-       // bindObjectData(activeToken, scopeIndex, callback);
+       setTimeout(function(){
+        bindObjectData(activeToken, scopeIndex, callback);
+       },0)
+       
      }
 
   }
@@ -1610,47 +1610,23 @@
     for (var i = 0; i < tokens.length; i++) {
       var token = trim(tokens[i]);
       if (!(/^\d+$/.test(token) || /^['"]/.test(token) || token == '' || token === 'true' || token === 'false')) {
-        // var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
-          var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')');
+        var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
         var lastTagStr = (node.$tag || tag);
-        // var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
-        //   if ($0.indexOf('util.getData("' + token) >= 0) {
-        //     return $0
-        //   } else {
-        //     return $0.replace($2, 'util.getData("' + token + '", scope)')
-        //   }
-        // });
+        var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
+          if ($0.indexOf('util.getData("' + token) >= 0) {
+            return $0
+          } else {
+            return $0.replace($2, 'util.getData("' + token + '", scope)')
+          }
+        });
 
-          var tagStrList = lastTagStr.match(tokenReg);
-          // var tagStrList = tokenReg.exec(token);
-          temp.push(tagStrList);
-          // temp.push(tagStr);
 
-        // node.$template = node.$template.replace(lastTagStr, tagStr);
-        // node.$tag = tagStr;
+        node.$template = node.$template.replace(lastTagStr, tagStr);
+        node.$tag = tagStr;
 
         result.push(token);
       }
     }
-
-    // console.log(JSON.stringify(temp),"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-    for(var j = temp.length - 1; j >=0; j--) {
-        // var activeToken = temp[j];
-        // // console.log(activeToken[0], activeToken[1], activeToken[2], activeToken.index);
-        // var lastTagStr = (node.$tag || tag);
-        //
-        // var left = activeToken.input.substr(0, activeToken.index);
-        // var right = activeToken.input.substr(activeToken.index + activeToken[0].length);
-        // var ttt = 'util.getData("' + activeToken[2] + '", scope)'
-        // var tagStrNew = left + ttt + right;
-        //
-        // node.$template = node.$template.replace(lastTagStr, tagStrNew);
-        // node.$tag = tagStrNew;
-
-        // console.log(tagStrNew, "*****************************************88");
-    }
-
     return result;
   }
 
@@ -1715,9 +1691,9 @@
     tryGenerateSubViewScope(node, scopeStructure);
     var scope = scopeStructure.scope;
     existDirective(node, scopeStructure, watchData)
-    if (!node.parentElement) {
-      return;
-    }
+    // if (!node.parentElement) {
+    //   return;
+    // }
     initModel(node, scopeStructure, watchData);
     eventDirective(node, scope);
     showDirective(node, scopeStructure, watchData);
@@ -1863,6 +1839,7 @@
         if (!node) {
             return;
         }
+        var treeScopeList = [];
 
         currentScopeIndex = currentScopeIndex || 0;
         parseNode(node, currentScopeIndex)
@@ -1874,7 +1851,7 @@
           parseNode(activeRepeat, currentScopeIndex);
         }
 
-
+        
          var nodes = node.querySelectorAll('*');
          // var nodes = node.childNodes;
          for(var nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++){
@@ -1885,10 +1862,19 @@
          }
 
 
-
+         
          function parseNode(node){
+             if(treeScopeList.length>0&&node===treeScopeList[treeScopeList.length-1].nextSubTree){
+              currentScopeIndex = treeScopeList[treeScopeList.length-1].scopeName;
+               treeScopeList.pop();
+
+             }
              if (isView(node) || needScope) {
                  // view scope 压栈
+                 treeScopeList.push({
+                   nextSubTree : getNode(node.nextSibling),
+                   scopeName : scopeName 
+                 });
                  scopeName = node.getAttribute('b-scope-key') || node.getAttribute('name');
                  currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
              }

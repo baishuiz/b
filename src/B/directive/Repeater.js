@@ -123,13 +123,7 @@ Air.Module('B.directive.Repeater', function(require) {
         newNodeList.push(targetNode)
       }
       for (var j = 0; j < newNodeList.length; j++) {
-        if (j && j% 50 === 0) {
-          setTimeout(function () {
-              parseTemplate && parseTemplate(newNodeList[j], scopeStructure, currentScopeIndex);
-          }, 10);
-        } else {
-            parseTemplate && parseTemplate(newNodeList[j], scopeStructure, currentScopeIndex);
-        }
+        parseTemplate && parseTemplate(newNodeList[j], scopeStructure, currentScopeIndex);
       }
 
       // 如果是 select 变动，则将 option 赋值后恢复 select 的选中值
@@ -182,7 +176,7 @@ Air.Module('B.directive.Repeater', function(require) {
       var isAdd = num > 0;
       isRemove && removeUI(num, path);
 
-      // (uiElementCount > 0) && updateOldUI(uiElementCount);
+      (uiElementCount > 0) && updateOldUI(uiElementCount);
       var newFirstNode = isAdd && addUI(num);
       return newFirstNode;
     }
@@ -264,6 +258,7 @@ Air.Module('B.directive.Repeater', function(require) {
     function createRepeatDataDescriptor(repeater, value, dataPath) {
       var oldLength = 0;
       value = value || [];
+      var getList =[];
       var descriptor = {
         enumerable: true,
         configurable: true,
@@ -271,9 +266,14 @@ Air.Module('B.directive.Repeater', function(require) {
 
 
           // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
-          setTimeout(function() {
+          var getIndex =setTimeout(function() {
             var length = value && value.length || 0;
             if (oldLength !== length) {
+
+                for(var i= 0; i<getList.length;i++){
+                  clearTimeout(getList[i]);
+                }
+                oldLength = length;
                 repeaterUpdate();
               // var nodes = repeater.updateUI();
               // node && parseTemplate(node, currentScopeIndex);
@@ -287,8 +287,9 @@ Air.Module('B.directive.Repeater', function(require) {
               //   descriptorList[i] && descriptorList[i].get && descriptorList[i].get();
               // }
             }
-            oldLength = length;
+            
           }, 0);
+          getList.push(getIndex);
           return value;
         },
 

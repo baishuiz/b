@@ -597,7 +597,8 @@ describe('repeat base', function () {
           name: ' Name 2-3'
         }
       ];
-      $scope.list1.length = 2;
+      // $scope.list1.length = 2;
+      $scope.list1.pop();
 
       var view = document.querySelector('view[name="page_repeat_nearby_repeat"]');
 
