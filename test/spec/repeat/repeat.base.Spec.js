@@ -566,7 +566,7 @@ describe('repeat base', function () {
           expect(view.querySelector('.list:nth-child(4) .sub-list:nth-child(2)').innerText.trim()).toEqual('Name 1-4 Name 1-4-2');
 
           done();
-        }, 0);
+        }, 100);
 
       }, 0);
     });
@@ -753,7 +753,7 @@ describe('repeat base', function () {
           expect(dom.listB.querySelector('span:nth-child(2)').innerText.trim()).toEqual('T2');
           expect(dom.listB.querySelector('span:nth-child(3)').innerText.trim()).toEqual('T3');
           done();
-      },0);
+      },100);
       // });
       var target = dom.list.querySelector('li:nth-child(3)');
       beacon(target).on('click');
@@ -798,7 +798,7 @@ describe('repeat base', function () {
             expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 44');
             expect(dom.list.querySelector('li:nth-child(5)').innerText.trim()).toEqual('Name 55');
             done();
-          }, 0);
+          }, 100);
         }
       }
 
@@ -847,7 +847,7 @@ describe('repeat base', function () {
             expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 444');
 
             beacon(dom.list.querySelector('li:nth-child(4)>a')).on('click');
-          }, 0);
+          }, 200);
         },
         'itemClickHandle' : function(e, index){
           $scope.notice = 'Hello ' + index;
@@ -860,7 +860,7 @@ describe('repeat base', function () {
             expect(dom.list.querySelector('li:nth-child(4)').innerText.trim()).toEqual('Name 444');
             expect(dom.title.innerText).toEqual('Hello 3');
             done();
-          }, 0);
+          }, 100);
         }
       }
 
@@ -871,7 +871,7 @@ describe('repeat base', function () {
         // expect(dom.list.querySelector('li:nth-child(3)').innerText.trim()).toEqual('Name 33');
 
         beacon(dom.title).on('click');
-      }, 0);
+      }, 300);
 
     })
 
@@ -916,7 +916,7 @@ describe('repeat base', function () {
             expect(view.querySelector('.list1:nth-child(4) .list2:nth-child(1)').innerText.trim()).toEqual('Name 1-4 Name 2-1');
             expect(view.querySelector('.list1:nth-child(2) .list2:nth-child(3)').innerText.trim()).toEqual('Name 1-2 Name 2-333');
             done();
-          }, 0);
+          }, 100);
         }
       };
 

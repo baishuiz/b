@@ -51,10 +51,33 @@ Air.Module('B.scope.tagManager', function(require) {
    **/
   function updateNodeValue(scopeIndex, scope, token, callback){
     var nodes = getNodes(scopeIndex, token);
+    var result;
     for(var i = 0; i< nodes.length; i++){
       var activeNode = nodes[i];
       var newValue = activeNode.element.$template.replace(/{{(.*?)}}/g, function(tag, expression){
-        return eval(expression) || '';
+        // return eval(expression) || '';
+        
+        try{
+          result = eval(expression);
+        }catch(e){
+          // result = expression;
+          var result= expression.replace(/[\$_\w]+(\.[\w\d]+)*|['"]?\w+?\b/g, function(a){
+            // console.log(a,"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+            if(/^['"]/.test(a)||/^\d+$/.test(a)){
+              return a;
+            }else{
+              return "util.getData('" + a +"', scope)"
+
+            }
+            // return '6666666666666666666' 
+          })
+
+          // console.log(result,"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+          result = eval(result);
+          // console.log(scopeIndex,scope)
+          // console.log(expression, '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        }
+        return result || '';
       });
 
       // 修正 select 开始

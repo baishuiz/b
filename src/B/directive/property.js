@@ -25,12 +25,20 @@ Air.Module('B.directive.property', function(require) {
         if (value !== undefined) {
           target[name] = value;
         }
+        
 
-        var bindPath = '{{' + dataPath + '}}';
-        watchData(bindPath, attrNode, scopeIndex, function() {
+
+        beacon($scope).on(EVENTS.DATA_CHANGE, function(){
           var value = util.getData(dataPath, $scope);
           target[name] = value;
         });
+
+        // var bindPath = '{{' + dataPath + '}}';
+          // watchData(bindPath, attrNode, scopeIndex, function() {
+          //   var value = util.getData(dataPath, $scope);
+          //   target[name] = value;
+          // });
+
       })(activeProperty.dataPath, activeProperty.name);
     }
   }

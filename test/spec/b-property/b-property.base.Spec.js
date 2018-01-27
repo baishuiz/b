@@ -16,7 +16,7 @@ describe('b-property', function () {
       $scope.a = {
         b: {
           readonly: true,
-          disabled: false
+          disable: false
         }
       };
 

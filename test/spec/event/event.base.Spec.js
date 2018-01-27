@@ -61,7 +61,7 @@ describe('事件绑定', function () {
       };
       setTimeout(function(){
         dispatchEvent(dom.btn, 'click');
-      }, 0);
+      }, 100);
     })
   });
 

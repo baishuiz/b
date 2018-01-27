@@ -335,6 +335,7 @@ Air.Module('B.directive.Repeater', function(require) {
             // 子回调不赋值，只处理 dom
             if (!isSub) {
               beacon.utility.merge(value, val);
+              repeaterUpdate();
             }
           } else if (isArray) {
                  // beacon.utility.merge(value, val);

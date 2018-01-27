@@ -76,8 +76,21 @@ Air.Module('B.scope.scopeManager', function(require) {
       activeObj = activeObj || Air.NS(activePath, scope);
       var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
 
-      nextPathNode && (!(Object.getOwnPropertyDescriptor(activeObj, nextPathNode) && Object.getOwnPropertyDescriptor(activeObj, nextPathNode).set) || (i === pathNodes.length - 1)) &&
-        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
+      // nextPathNode && (!(Object.getOwnPropertyDescriptor(activeObj, nextPathNode) && Object.getOwnPropertyDescriptor(activeObj, nextPathNode).set) || (i === pathNodes.length - 1)) &&
+      //   Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
+
+      
+      // window.aaa = window.aaa || 0;
+      // window.aaa++;
+      // if(window.aaa>200){ return}
+      if (nextPathNode  && (!(Object.getOwnPropertyDescriptor(activeObj, nextPathNode) && Object.getOwnPropertyDescriptor(activeObj, nextPathNode).set) || (i === pathNodes.length - 1)) )
+        {
+          // console.log(window.aaa,"%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+          
+          // console.count(scopeStructure.viewName+ nextPathNode + 'defineProperty')
+          // console.count("scopeManager")
+          Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
+        }
       activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
     }
   }
@@ -93,18 +106,20 @@ Air.Module('B.scope.scopeManager', function(require) {
    *返回：undefind
    **/
   function watchData(tag, node, scopeIndex, callback, callbackNow){
+    // setTimeout(function(){
+
+    
      var scope = scopeTreeManager.getScope(scopeIndex);
      var tokens = getTokens(tag, node, scopeIndex);
      for(var i = 0; i < tokens.length; i++){
        var activeToken = tokens[i];
        callback && callbackNow && callback(util.getData(activeToken, scope.scope));
        tagManager.addNode(scopeIndex, activeToken, node, callback);
-       setTimeout(function(){
+      //  setTimeout(function(){
         bindObjectData(activeToken, scopeIndex, callback);
-       },0)
-       
+      //  },0)
      }
-
+    // },0);
   }
 
 
@@ -152,11 +167,34 @@ Air.Module('B.scope.scopeManager', function(require) {
   function parseTEXT(node, currentScopeIndex) {
     var tags = node.nodeValue.match(/{{.*?}}/g) || [];
     var scope = scopeTreeManager.getScope(currentScopeIndex).scope;
-
+    
     // 遍历节点内所有数据标签
     for (var i = 0; i < tags.length; i++) {
       var activeTag = tags[i];
-      watchData(activeTag, node, currentScopeIndex);
+
+      if(node.ownerElement &&(node.ownerElement.tagName.toLowerCase()=='script' || node.ownerElement.tagName.toLowerCase()=='img')){
+        watchData(activeTag, node, currentScopeIndex);
+      }else {
+        setTimeout((function(activeTag, node, currentScopeIndex){
+          return function(){
+
+          
+          watchData(activeTag, node, currentScopeIndex);
+            // tagManager.updateNodeValue(currentScopeIndex, scope, activeTag.replace('{{','').replace('}}','').trim());
+          var tokens = getTokens(activeTag, node, currentScopeIndex);
+          if( /{{/.test(node.nodeValue)){
+            for(var i=0;i<tokens.length;i++){
+              var token = tokens[i];
+              // console.log(token,"##########################")
+              tagManager.updateNodeValue(currentScopeIndex, scope, token);
+
+            } 
+          }
+        }
+ 
+        })(activeTag, node, currentScopeIndex),0)
+      }
+    
       if (node.$tag) {
         var val = eval(node.$tag.replace(/(^{{)|(}}$)/g, '')) || '';
         node.nodeValue = node.nodeValue.replace(activeTag, val);
@@ -216,7 +254,7 @@ Air.Module('B.scope.scopeManager', function(require) {
     var attributes = [].concat.apply([], node.attributes);
     for (var i = 0; i < attributes.length; i++) {　
       var activeAttribute = attributes[i];
-      if ([initModel.key, showDirective.key].indexOf(activeAttribute.name) !== -1) {
+      if ([initModel.key, showDirective.key, propertyDirective.key].indexOf(activeAttribute.name) !== -1) {
         continue;
       }
       parseTEXT(activeAttribute, currentScopeIndex);
@@ -399,9 +437,7 @@ Air.Module('B.scope.scopeManager', function(require) {
              }
              switch (node.nodeType) {
                  case nodeUtil.type.HTML:
-                   if (!node.kkk) {
-                       parseHTML(node, currentScopeIndex);
-                   }
+                     parseHTML(node, currentScopeIndex);
                      break;
                  case nodeUtil.type.TEXT:
                  case nodeUtil.type.ATTR:
@@ -450,7 +486,7 @@ Air.Module('B.scope.scopeManager', function(require) {
            }
            oldLength = value.length;
          }, 0);
-       }
+       } 
 
         return value;
       },
@@ -479,7 +515,9 @@ Air.Module('B.scope.scopeManager', function(require) {
             }
           }
 
-          beacon.utility.merge(value, val);
+          // beacon.utility.merge(value, val);
+          value=val;
+          tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
           // beacon.utility.blend(value, val, {reset:true});
            isArray && callBack && callBack();
           //  (isObject) && callBack && callBack(util.getData(dataPath, scope.scope));
