@@ -105,7 +105,6 @@ Air.Module('B.scope.scopeManager', function(require) {
        tagManager.addNode(scopeIndex, activeToken, node, callback);
        bindObjectData(activeToken, scopeIndex, callback);
      }
-
   }
 
 
@@ -138,6 +137,9 @@ Air.Module('B.scope.scopeManager', function(require) {
         result.push(token);
       }
     }
+    if (result.length === 0) {
+      node.$tag = tag;
+    }
     return result;
   }
 
@@ -160,6 +162,7 @@ Air.Module('B.scope.scopeManager', function(require) {
         node.nodeValue = node.nodeValue.replace(activeTag, val);
         node.$tag = '';
       }
+      
     }
   }
 

@@ -1385,7 +1385,6 @@
        tagManager.addNode(scopeIndex, activeToken, node, callback);
        bindObjectData(activeToken, scopeIndex, callback);
      }
-
   }
 
 
@@ -1418,6 +1417,9 @@
         result.push(token);
       }
     }
+    if (result.length === 0) {
+      node.$tag = tag;
+    }
     return result;
   }
 
@@ -1440,6 +1442,7 @@
         node.nodeValue = node.nodeValue.replace(activeTag, val);
         node.$tag = '';
       }
+      
     }
   }
 

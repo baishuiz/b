@@ -927,4 +927,33 @@ describe('repeat', function () {
     });
   });
 
+  it('repeat dom中使用表达式', function (done) {
+    b.run('page_repeat_has_expression', function(require, $scope){
+      $scope.notice = ", welcome";
+      $scope.list = [
+        {
+          name: 'Name 1'
+        },
+        {
+          name: 'Name 2'
+        },
+        {
+          name: 'Name 3'
+        }
+      ];
+
+      setTimeout(function(){
+        var dom = {
+          div : document.querySelector('view[name=page_repeat_has_expression]>div')
+        }
+
+        expect(dom.div.querySelectorAll('.show').length).toEqual(2);
+
+        done();
+
+      }, 50);
+    });
+  });
+
+
 });

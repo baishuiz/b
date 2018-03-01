@@ -341,6 +341,16 @@ viewport view[active="true"]{display:block}
     </div>
   </view>
 
+  <view name="page_repeat_has_expression">
+    <p class="title">{{notice}}</p>
+    <div>
+      <div class="list {{item.$index != 2 ? 'show' : ''}}" b-repeat="item in list">{{item.name}}</div>
+    </div>
+  </view>
+
+
+
+
   <view name="page_model_bind">
     <input b-model="username" type="text" class="username"></input>
     <input b-model="checked" type="checkbox" class="checkbox"></input>
