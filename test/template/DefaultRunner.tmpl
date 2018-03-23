@@ -347,7 +347,16 @@ viewport view[active="true"]{display:block}
       <div class="list {{item.$index != 2 ? 'show' : ''}}" b-repeat="item in list">{{item.name}}</div>
     </div>
   </view>
-
+  
+  <view name="page_repeat_same_repeat_use_push">
+    <p class="title">{{notice}}</p>
+    <div>
+      <div class="list1" b-repeat="item in list1">{{item.name}}</div>
+    </div>
+    <div>
+      <div class="list2" b-repeat="item in list2">{{item.name}}</div>
+    </div>
+  </view>
 
 
 

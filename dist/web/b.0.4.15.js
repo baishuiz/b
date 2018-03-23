@@ -1153,9 +1153,11 @@
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
 
-            for (var i = 0; i < descriptorList.length; i++) {
-              descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
-            }
+            // for (var i = 0; i < descriptorList.length; i++) {
+            //   if (this !== descriptorList[i]) {
+            //     descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
+            //   }
+            // }
 
           } else {
             value = val;
