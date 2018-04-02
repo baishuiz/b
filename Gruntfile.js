@@ -134,7 +134,7 @@ module.exports = function(grunt){
                     template : 'test/template/DefaultRunner.tmpl',
                     coverage: 'bin/coverage/coverage.json',
                     report: 'bin/coverage',
-                    files:'./dist/web/<%=output.fileName %>'
+                    files:'dist/web/<%=output.fileName %>'
                 }
               }
             }
