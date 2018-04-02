@@ -1116,26 +1116,6 @@
           } else if (isArray) {
             value = value || [];
 
-            // if (val.length === 0) {
-            //   var tmp = util.getData(dataPath, scope);
-            //   tmp.splice(0);
-            //   // value = val;
-            //
-            //   var nodes = repeater.updateUI(dataPath);
-            //   for (var i = 0; i < nodes.length; i++) {
-            //     var activeNode = nodes[i];
-            //     activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
-            //   }
-            //
-            //
-            //   return;
-            //   // val = [undefined];
-            //   // setTimeout(function () {
-            //   //   value.splice(0);
-            //   // }, 0);
-            //   // return;
-            // }
-            // console.log(this,"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             fixUnshift(val, value, descriptor);
 
             // 子回调不赋值，只处理 dom
@@ -1153,15 +1133,7 @@
                   if(!isNumKey && !val[key]){
                     val[key] = undefined;
                   }
-                  // else if (isNumKey && +key <= Math.min(oldLen, newLen)) {
-                  //   value[key] = val[key];
-                  //   if (beacon.utility.isType(val[key], 'Object')) {
-                  //     beacon.on('updateObjectData',{
-                  //       currentScopeIndex: currentScopeIndex,
-                  //       dataPath : dataPath
-                  //     })
-                  //   }
-                  // }
+                  
 
                 }
               }
@@ -1169,25 +1141,9 @@
                 value.splice(newLen - oldLen, oldLen - newLen);
               }
 
-              // if (newLen > oldLen) {
-              //   for (var i = oldLen; i < newLen; i++) {
-              //     // if (beacon.utility.isType(val[key], 'Object')) {
-              //     //   beacon.on('updateObjectData',{
-              //     //     currentScopeIndex: currentScopeIndex,
-              //     //     dataPath : dataPath
-              //     //   })
-              //     // }
-              //     value[value.length] = val[i];
-              //     // value.push(val[i]);
-              //   }
-              // }
-
               oldLength = newLen;
 
-              // value = val;
-              // beacon.on('updateRepeatData' + (dataPath && dataPath.split('.').join('') || ''),{
-              //   dataPath : dataPath
-              // })
+              
               beacon.utility.merge(value, val);
             }
 
@@ -1196,6 +1152,12 @@
               var activeNode = nodes[i];
               activeNode && parseTemplate(activeNode, currentScopeIndex, currentScopeIndex)
             }
+
+            // for (var i = 0; i < descriptorList.length; i++) {
+            //   if (this !== descriptorList[i]) {
+            //     descriptorList[i] && descriptorList[i].set && descriptorList[i].set(val, true);
+            //   }
+            // }
 
           } else {
             value = val;
@@ -1425,7 +1387,6 @@
        tagManager.addNode(scopeIndex, activeToken, node, callback);
        bindObjectData(activeToken, scopeIndex, callback);
      }
-
   }
 
 
@@ -1458,6 +1419,9 @@
         result.push(token);
       }
     }
+    if (result.length === 0) {
+      node.$tag = tag;
+    }
     return result;
   }
 
@@ -1480,6 +1444,7 @@
         node.nodeValue = node.nodeValue.replace(activeTag, val);
         node.$tag = '';
       }
+      
     }
   }
 

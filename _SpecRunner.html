@@ -341,6 +341,25 @@ viewport view[active="true"]{display:block}
     </div>
   </view>
 
+  <view name="page_repeat_has_expression">
+    <p class="title">{{notice}}</p>
+    <div>
+      <div class="list {{item.$index != 2 ? 'show' : ''}}" b-repeat="item in list">{{item.name}}</div>
+    </div>
+  </view>
+  
+  <view name="page_repeat_same_repeat_use_push">
+    <p class="title">{{notice}}</p>
+    <div>
+      <div class="list1" b-repeat="item in list1">{{item.name}}</div>
+    </div>
+    <div>
+      <div class="list2" b-repeat="item in list2">{{item.name}}</div>
+    </div>
+  </view>
+
+
+
   <view name="page_model_bind">
     <input b-model="username" type="text" class="username"></input>
     <input b-model="checked" type="checkbox" class="checkbox"></input>
@@ -399,7 +418,7 @@ viewport view[active="true"]{display:block}
 
   <view name="page_select-option">
      <select b-model="data.cityId" name="numSelector" >
-        <option value="">?????????</option>
+        <option value="">请选择</option>
         <option b-repeat="city in cityList" value="{{city.cityId}}">{{city.cityName}}</option>
      </select>
   </view>

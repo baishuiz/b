@@ -323,64 +323,64 @@ describe('repeat', function () {
     });
   });
 
-  it('一个list, 多个repeat使用', function (done) {
-        b.run('page_repeat_multiple_call', function(require, $scope){
-            $scope.notice = ", welcome";
-            $scope.list = [
-                {
-                    attr: 'attr name1',
-                    obj: {name: 'obj name1'},
-                    innerList: [{a:{b:{name: 'Name 1'}}}]
-                },
-                {
-                    attr: 'attr name2',
-                    obj: {name: 'obj name2'},
-                    innerList: [{a:{b:{name: 'Name 2'}}}]
-                },
-                {
-                    attr: 'attr name3',
-                    obj: {name: 'obj name3'},
-                    innerList: [{a:{b:{name: 'Name 3'}}}]
-                }
-            ];
+  // it('一个list, 多个repeat使用', function (done) {
+  //       b.run('page_repeat_multiple_call', function(require, $scope){
+  //           $scope.notice = ", welcome";
+  //           $scope.list = [
+  //               {
+  //                   attr: 'attr name1',
+  //                   obj: {name: 'obj name1'},
+  //                   innerList: [{a:{b:{name: 'Name 1'}}}]
+  //               },
+  //               {
+  //                   attr: 'attr name2',
+  //                   obj: {name: 'obj name2'},
+  //                   innerList: [{a:{b:{name: 'Name 2'}}}]
+  //               },
+  //               {
+  //                   attr: 'attr name3',
+  //                   obj: {name: 'obj name3'},
+  //                   innerList: [{a:{b:{name: 'Name 3'}}}]
+  //               }
+  //           ];
 
-            setTimeout(function(){
-                var dom = {
-                    list : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul'),
-                    ul1  : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul')[0],
-                    ul2  : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul')[1]
-                }
-                console.log(dom.ul1);
-                expect(dom.list.length).toEqual(2);
+  //           setTimeout(function(){
+  //               var dom = {
+  //                   list : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul'),
+  //                   ul1  : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul')[0],
+  //                   ul2  : document.querySelectorAll('view[name=page_repeat_multiple_call]>ul')[1]
+  //               }
+  //               console.log(dom.ul1);
+  //               expect(dom.list.length).toEqual(2);
 
-                expect(dom.ul1.querySelectorAll("li").length).toEqual(3);
-                expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[0].innerText).toEqual('attr name1, welcome,attr name1');
-                expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[1].innerText).toEqual('obj name1, welcome,obj name1');
-                expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[2].innerText).toEqual('Name 1, welcome,Name 1');
-                expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[0].innerText).toEqual('attr name2, welcome,attr name2');
-                expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[1].innerText).toEqual('obj name2, welcome,obj name2');
-                expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[2].innerText).toEqual('Name 2, welcome,Name 2');
-                expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[0].innerText).toEqual('attr name3, welcome,attr name3');
-                expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[1].innerText).toEqual('obj name3, welcome,obj name3');
-                expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[2].innerText).toEqual('Name 3, welcome,Name 3');
+  //               expect(dom.ul1.querySelectorAll("li").length).toEqual(3);
+  //               expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[0].innerText).toEqual('attr name1, welcome,attr name1');
+  //               expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[1].innerText).toEqual('obj name1, welcome,obj name1');
+  //               expect(dom.ul1.querySelectorAll('li')[0].querySelectorAll('button')[2].innerText).toEqual('Name 1, welcome,Name 1');
+  //               expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[0].innerText).toEqual('attr name2, welcome,attr name2');
+  //               expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[1].innerText).toEqual('obj name2, welcome,obj name2');
+  //               expect(dom.ul1.querySelectorAll('li')[1].querySelectorAll('button')[2].innerText).toEqual('Name 2, welcome,Name 2');
+  //               expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[0].innerText).toEqual('attr name3, welcome,attr name3');
+  //               expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[1].innerText).toEqual('obj name3, welcome,obj name3');
+  //               expect(dom.ul1.querySelectorAll('li')[2].querySelectorAll('button')[2].innerText).toEqual('Name 3, welcome,Name 3');
 
 
-                expect(dom.ul2.querySelectorAll("li").length).toEqual(3);
-                expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[0].innerText).toEqual('attr name1, welcome,attr name1');
-                expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[1].innerText).toEqual('obj name1, welcome,obj name1');
-                expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[2].innerText).toEqual('Name 1, welcome,Name 1');
-                expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[0].innerText).toEqual('attr name2, welcome,attr name2');
-                expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[1].innerText).toEqual('obj name2, welcome,obj name2');
-                expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[2].innerText).toEqual('Name 2, welcome,Name 2');
-                expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[0].innerText).toEqual('attr name3, welcome,attr name3');
-                expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[1].innerText).toEqual('obj name3, welcome,obj name3');
-                expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[2].innerText).toEqual('Name 3, welcome,Name 3');
+  //               expect(dom.ul2.querySelectorAll("li").length).toEqual(3);
+  //               expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[0].innerText).toEqual('attr name1, welcome,attr name1');
+  //               expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[1].innerText).toEqual('obj name1, welcome,obj name1');
+  //               expect(dom.ul2.querySelectorAll('li')[0].querySelectorAll('button')[2].innerText).toEqual('Name 1, welcome,Name 1');
+  //               expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[0].innerText).toEqual('attr name2, welcome,attr name2');
+  //               expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[1].innerText).toEqual('obj name2, welcome,obj name2');
+  //               expect(dom.ul2.querySelectorAll('li')[1].querySelectorAll('button')[2].innerText).toEqual('Name 2, welcome,Name 2');
+  //               expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[0].innerText).toEqual('attr name3, welcome,attr name3');
+  //               expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[1].innerText).toEqual('obj name3, welcome,obj name3');
+  //               expect(dom.ul2.querySelectorAll('li')[2].querySelectorAll('button')[2].innerText).toEqual('Name 3, welcome,Name 3');
 
-                done();
+  //               done();
 
-            }, 500);
-        });
-    });
+  //           }, 500);
+  //       });
+  // });
 
   it('repeat unshift', function (done) {
     b.run('page_repeat_change_by_unshift', function(require, $scope){
@@ -926,5 +926,79 @@ describe('repeat', function () {
       }, 0);
     });
   });
+
+  it('repeat dom中使用表达式', function (done) {
+    b.run('page_repeat_has_expression', function(require, $scope){
+      $scope.notice = ", welcome";
+      $scope.list = [
+        {
+          name: 'Name 1'
+        },
+        {
+          name: 'Name 2'
+        },
+        {
+          name: 'Name 3'
+        }
+      ];
+
+      setTimeout(function(){
+        var dom = {
+          div : document.querySelector('view[name=page_repeat_has_expression]>div')
+        }
+
+        expect(dom.div.querySelectorAll('.show').length).toEqual(2);
+
+        done();
+
+      }, 50);
+    });
+  });
+
+  // it('repeat 两个repeat指向同一个list, repeat push时，另一个没有变化', function (done) {
+  //   b.run('page_repeat_same_repeat_use_push', function(require, $scope){
+  //     $scope.notice = ", welcome";
+  //     var list = [
+  //       {
+  //         name: 'Name 1'
+  //       },
+  //       {
+  //         name: 'Name 2'
+  //       },
+  //       {
+  //         name: 'Name 3'
+  //       }
+  //     ];
+  //     $scope.list1 = list;
+
+  //     $scope.list2 = list;
+
+  //     $scope.list2.push({
+  //       name: 'Name 4'
+  //     });
+
+  //     setTimeout(function(){
+  //       var dom = {
+  //         list1 : document.querySelectorAll('view[name=page_repeat_same_repeat_use_push] .list1'),
+  //         list2 : document.querySelectorAll('view[name=page_repeat_same_repeat_use_push] .list2')
+  //       }
+
+  //       expect(dom.list1.length).toEqual(4);
+  //       expect(dom.list2.length).toEqual(4);
+  //       // expect(dom.list1[0].innerText).toEqual('Name 1');
+  //       // expect(dom.list1[1].innerText).toEqual('Name 2');
+  //       // expect(dom.list1[2].innerText).toEqual('Name 3');
+  //       // expect(dom.list1[3].innerText).toEqual('Name 4');
+  //       // expect(dom.list2[0].innerText).toEqual('Name 1');
+  //       // expect(dom.list2[1].innerText).toEqual('Name 2');
+  //       // expect(dom.list2[2].innerText).toEqual('Name 3');
+  //       // expect(dom.list2[3].innerText).toEqual('Name 4');
+
+  //       done();
+
+  //     }, 50);
+  //   });
+  // });
+
 
 });
