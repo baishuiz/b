@@ -1,7 +1,7 @@
 Air.Module('B.data.storage', function(require){
   var bridge = require('B.bridge');
   var two = function(str) {
-    str = (str || '') + '';
+    str = (str || '0') + '';
     if (str.length === 1) {
       str = '0' + str;
     }
