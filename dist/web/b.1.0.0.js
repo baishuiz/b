@@ -2109,106 +2109,93 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
     abortAll: abortAll
   }
 });
-;Air.Module("B.router.router", function(){
-
-  var routers = [];
-
-
-  function set(routerConfig){
-    var ruleObj = parseRule(routerConfig.rule);
-    var router  = {
-                    rule     : routerConfig.rule,
-                    viewName : routerConfig.viewName,
-                    sign     : routerConfig.sign,
-                    reg      : ruleObj.reg,
-                    params   : ruleObj.params
-                  }
-    routers.push(router);
-    routers[routerConfig.viewName] = router;
-  }
-
-  function parseRule(ruleString){
-    var paramRule = /:[\w-]+/ig;
-    var params = [];
-    var matchRuleStr  = ruleString.replace(paramRule, function(param){
-                          params.push(param.replace(":",""));
-                          return "([\\w-]+)";
-                        });
-    var reg = new RegExp("^" + matchRuleStr + "\/*$","i");
-    return {
-      reg: reg,
-      params: params
-    };
-  }
-
-  function getMatchedRouter(urlPath){
-    var rulesCount = routers.length;
-    var ruleIndex  = 0
-    for(ruleIndex; ruleIndex < rulesCount; ruleIndex++){
-      var activeRouter = routers[ruleIndex];
-      var matchedRouter = tryMatchParams(activeRouter, urlPath);
-      if (matchedRouter) {
-        return matchedRouter;
-      }
-    }
-    return null;
-  }
-
-  function tryMatchParams(activeRouter, urlPath) {
-    var matchedRouter = null;
-    var matchedParam = urlPath.match(activeRouter.reg);
-
-    if(matchedParam){
-      matchedRouter = {
-        rule: activeRouter.rule,
-        viewName: activeRouter.viewName,
-        params: {}
-      };
-      var matchedParamCount = matchedParam.length;
-      var marchedParamIndex = 1;
-
-      for (marchedParamIndex; marchedParamIndex < matchedParamCount; marchedParamIndex++) {
-        var paramName = activeRouter.params[marchedParamIndex - 1];
-        matchedRouter.params[paramName] = matchedParam[marchedParamIndex]
-      }
-    }
-
-    return matchedRouter;
-  }
-
-  function getURLByRule(rule, params, query, noOrigin) {
-    var url = rule.replace(/:(\w+)/ig, function(param, key){
-      return params[key] || "";
-    });
-    if (!location.origin) {
-      location.origin = location.protocol + "//" + location.hostname + (location.port ? ':' + location.port: '');
-    }
-    url = (noOrigin ? '' : location.origin) + url + query;
-    return url;
-  }
-
-  function getURLPathByViewName(viewName, options) {
-    options = options || {};
-    var params = options.params || {};
-    var query  = options.query || "";
-    query = options.hash ? query + options.hash : query;
-    var router = routers[viewName];
-    var rule = router && router.rule || "";
-    var url = getURLByRule(rule, params, query, options.noOrigin);
-    return url;
-  }
-
-  function get(viewName) {
-    return routers[viewName] || {};
-  }
-
-  var api = {
-    set : set,
-    getMatchedRouter : getMatchedRouter,
-    getURLPathByViewName : getURLPathByViewName,
-    get: get
-  }
-  return api;
+;Air.Module("B.router.router", function () {
+    var Router = (function () {
+        function Router() {
+            this.routers = [];
+        }
+        Router.getURLByRule = function (rule, params, query, noOrigin) {
+            var url = rule.replace(/:(\w+)/ig, function (param, key) {
+                return params[key] || "";
+            });
+            var defaultOrigin;
+            if (!location.origin) {
+                defaultOrigin = location.protocol + "//" + location.hostname + (location.port ? ':' + location.port : '');
+            }
+            url = (noOrigin ? '' : location.origin || defaultOrigin) + url + query;
+            return url;
+        };
+        Router.tryMatchParams = function (activeRouter, urlPath) {
+            var matchedRouter;
+            var matchedParam = urlPath.match(activeRouter.reg);
+            if (matchedParam) {
+                matchedRouter = {
+                    rule: activeRouter.rule,
+                    viewName: activeRouter.viewName,
+                    params: {}
+                };
+                var matchedParamCount = matchedParam.length;
+                var marchedParamIndex = 1;
+                for (marchedParamIndex; marchedParamIndex < matchedParamCount; marchedParamIndex++) {
+                    var paramName = activeRouter.params[marchedParamIndex - 1];
+                    matchedRouter.params[paramName] = matchedParam[marchedParamIndex];
+                }
+            }
+            return matchedRouter;
+        };
+        Router.parseRule = function (ruleString) {
+            var paramRule = /:[\w-]+/ig;
+            var params = [];
+            var matchRuleStr = ruleString.replace(paramRule, function (param) {
+                params.push(param.replace(":", ""));
+                return "([\\w-]+)";
+            });
+            var reg = new RegExp("^" + matchRuleStr + "\/*$", "i");
+            return {
+                reg: reg,
+                params: params
+            };
+        };
+        Router.prototype.set = function (routerConfig) {
+            var ruleObj = Router.parseRule(routerConfig.rule);
+            var router = {
+                rule: routerConfig.rule,
+                viewName: routerConfig.viewName,
+                sign: routerConfig.sign,
+                reg: ruleObj.reg,
+                params: ruleObj.params
+            };
+            this.routers.push(router);
+            this.routers[routerConfig.viewName] = router;
+        };
+        Router.prototype.getMatchedRouter = function (urlPath) {
+            var rulesCount = this.routers.length;
+            var ruleIndex = 0;
+            for (ruleIndex; ruleIndex < rulesCount; ruleIndex++) {
+                var activeRouter = this.routers[ruleIndex];
+                var matchedRouter = Router.tryMatchParams(activeRouter, urlPath);
+                if (matchedRouter) {
+                    return matchedRouter;
+                }
+            }
+            return null;
+        };
+        Router.prototype.getURLPathByViewName = function (viewName, options) {
+            options = options || {};
+            var params = options.params || {};
+            var query = options.query || "";
+            query = options.hash ? query + options.hash : query;
+            var router = this.routers[viewName];
+            var rule = router && router.rule || "";
+            var url = Router.getURLByRule(rule, params, query, options.noOrigin);
+            return url;
+        };
+        Router.prototype.get = function (viewName) {
+            return this.routers[viewName] || {};
+        };
+        return Router;
+    }());
+    return new Router();
 });
 ;Air.Module("B.view.View", function (require) {
     var scopeManager = require('B.scope.scopeManager');
