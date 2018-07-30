@@ -110,6 +110,120 @@
   };
   return util;
 });
+;Air.Module("B.bridge", function() {
+  var PROTOCOL_KEY = 'cjiahybrid';
+
+  /**
+   * 执行 Hybrid 方法
+   * @param {String} fnName 方法名
+   * @param {Object} param  传入参数对象
+   */
+  function run(fnName, param, options) {
+    if (!fnName) {
+      return;
+    }
+    options = options || {};
+
+    var url = generateUrl(fnName, param, options);
+
+    var iframe = document.createElement('iframe');
+    var cont = document.body || document.documentElement;
+
+    iframe.style.display = 'none';
+    iframe.setAttribute('src', url);
+    cont.appendChild(iframe);
+
+    setTimeout(function(){
+      iframe.parentNode.removeChild(iframe);
+      iframe = null;
+    }, 200);
+  }
+
+  /**
+   * 生成访问的Url
+   * @param {String} fnName       方法名
+   * @param {Object} param        传入参数对象
+   * @param {Object} options      选项
+   *   @options {boolean} unified 使用统一回调，默认 true
+   * @return {String} url
+   */
+  function generateUrl(fnName, param, options) {
+    param = param || {};
+    var url = PROTOCOL_KEY + '://' + fnName + '?jsparams=';
+    var unified = typeof options.unified === 'boolean' ? options.unified : true;
+
+    if (unified) {
+      param.success = register(fnName, param.success);
+      param.failed = register(fnName, param.failed);
+    }
+
+    url += encodeURIComponent(JSON.stringify(param));
+
+    return url;
+  }
+
+  /**
+   * 注册全局回调
+   * @param {String} fnName 方法名
+   * @param {Function} fn 回调方法
+   * @return {String} callbackName 方法名（PROTOCOL_KEY + GUID + 毫秒数）
+   */
+  function register(fnName, fn, options) {
+    var callbackName = PROTOCOL_KEY + getGUID() + new Date().getTime();
+    options = options || {};
+    var keepCallback = typeof options.keepCallback === 'boolean' ? options.keepCallback : false;
+    console.log(fnName, callbackName);
+
+    window[callbackName] = function() {
+      if (typeof fn === 'function') {
+        fn.apply(window, arguments);
+      }
+      if (!keepCallback) {
+        destroyCallback(callbackName);
+      }
+    }
+
+    return callbackName;
+  }
+  /**
+   * 销毁全局回调
+   * @param {String} callbackName 方法名
+   */
+  function destroyCallback(callbackName) {
+    delete window[callbackName];
+  }
+
+  /**
+   * 获取不带连接符的GUID
+   * @return {String} guid
+   */
+  function getGUID() {
+    var lut = [];
+    for (var i = 0; i < 256; i++) { lut[i] = (i < 16 ? '0' : '') + (i).toString(16); }
+
+    function generater() {
+      var d0 = Math.random() * 0xffffffff | 0;
+      var d1 = Math.random() * 0xffffffff | 0;
+      var d2 = Math.random() * 0xffffffff | 0;
+      var d3 = Math.random() * 0xffffffff | 0;
+      return lut[d0 & 0xff] + lut[d0 >> 8 & 0xff] + lut[d0 >> 16 & 0xff] + lut[d0 >> 24 & 0xff] +
+        lut[d1 & 0xff] + lut[d1 >> 8 & 0xff] + lut[d1 >> 16 & 0x0f | 0x40] + lut[d1 >> 24 & 0xff] +
+        lut[d2 & 0x3f | 0x80] + lut[d2 >> 8 & 0xff] + lut[d2 >> 16 & 0xff] + lut[d2 >> 24 & 0xff] +
+        lut[d3 & 0xff] + lut[d3 >> 8 & 0xff] + lut[d3 >> 16 & 0xff] + lut[d3 >> 24 & 0xff];
+    }
+
+    return generater();
+  }
+
+  var isHybrid = /^file:/.test(location.protocol);
+
+  return {
+    run: run,
+    register: register,
+    isHybrid: isHybrid,
+    isInApp: true
+  };
+});
 ;Air.Module('B.data.memCache', function(){
   var MEMORY_CACHE = {};
   var EXPIRED_LIST = {};
@@ -148,13 +262,64 @@
   }
 });
 ;Air.Module('B.data.storage', function(require){
-  var memCache = require('B.data.memCache');
+  var bridge = require('B.bridge');
+  var two = function(str) {
+    str = (str || '') + '';
+    if (str.length === 1) {
+      str = '0' + str;
+    }
+    return str;
+  }
 
-  var set = memCache.set;
+  var set = function(key, value, options) {
+    if (!key) {
+      return;
+    }
+    options = options || {};
+    var expiredSecond = typeof options.expiredSecond === 'number' ? options.expiredSecond : 0;
+    var expireTime = 0;
+
+    if (expiredSecond) {
+      expireTime = new Date();
+      expireTime.setSeconds(expireTime.getSeconds() + expiredSecond);
+      expireTime = expireTime.getFullYear() + two(expireTime.getMonth() + 1) + two(expireTime.getDate()) +
+                   two(expireTime.getHours()) + two(expireTime.getMinutes()) + two(expireTime.getSeconds());
+    }
+
+    var param = {
+      key: key,
+      value: JSON.stringify(value)
+    };
+
+    if (expireTime) {
+      param['expireTime'] = expireTime;
+    }
+
+    bridge.run('setdata', param);
+  };
 
   var get = function(key, callback){
-    var value = memCache.get(key);
-    callback && callback(value);
+    if (!key) {
+      callback && callback();
+      return;
+    }
+    var param = {
+      key: key,
+      success: function(res) {
+        var result = res && res.result;
+        try {
+          result = JSON.parse(result);
+        } catch (e) {
+          result = null;
+        }
+        callback && callback(result);
+      },
+      failed: function() {
+        callback && callback(null);
+      }
+    };
+
+    bridge.run('getdata', param);
   }
 
   return {
@@ -2210,500 +2375,611 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
   }
   return api;
 });
-;Air.Module("B.view.View", function(require){
-  var scopeManager = require('B.scope.scopeManager');
-  var EVENTS =  require('B.event.events');
-
-  window.statsEvents || (window.statsEvents = {});
-  statsEvents.PAGE_SHOW = EVENTS.PAGE_SHOW;
-  statsEvents.PAGE_HIDE = EVENTS.PAGE_HIDE;
-
-  function createDomByString(templateString){
-    var div = document.createElement('div');
-    if(typeof DOMParser === 'undefined'){
-      div.innerHTML = 'X<div></div>' + templateString; // 兼容 IE8
-    } else {
-      div.innerHTML = templateString;
-    }
-    return div;
-  }
-
-  function loadStyle(styleList, dom) {
-    for (var i = 0, len = styleList.length, style; i < len; i++) {
-      style = styleList[i];
-      dom.appendChild(style);
-    }
-  }
-
-
-  function loadScript(scopeList, dom, fn) {
-    // var scripts= dom.querySelector('script');
-    setTimeout(function(){ // 兼容IE8 本地缓存造成的执行顺序bug
-      runJS(scopeList, dom);
-    },0)
-    // var scripts= dom.querySelector('script');
-    // runJS(scopeList, dom);
-    fn && fn();
-
-  }
-
-  function runJS(scripts, dom){
-    for (var scriptIndex = 0; scriptIndex < scripts.length; scriptIndex++) {
-      var activeScript = scripts[scriptIndex];
-      var tmpScript = document.createElement('script');
-      var src = activeScript.src;
-
-      // TODO loadJS 会检查相同url的则不重新加载
-      // 不知为什么 loadJS 的时候该 view 的 dom 已经被插入了页面
-      // 所以先给移除掉，后续再排查
-      activeScript.parentNode && activeScript.parentNode.removeChild(activeScript);
-
-      if (src) {
-        Air.loadJS(src);
-      } else {
-        tmpScript.text = activeScript.text;
-        dom.appendChild(tmpScript);
-      }
-    };
-  }
-
-  function splitDom(domWrapper, selector){
-    //var scripts = domWrapper.querySelectorAll(selector);
-    var scripts = domWrapper.getElementsByTagName(selector);
-    scripts = [].concat.apply([], scripts)//[].slice.call(scripts); //兼容 IE8
-    return scripts
-  }
-
-  function parseTag(tagName, viewName, dom, domWrapper, fn) {
-    var domList = splitDom(domWrapper, tagName) || [];
-    domList = [].concat.apply([], domList);
-
-    for (var i = 0; i < domList.length; i++) {
-      // TODO : scope 命名 修改为 viewName::tagname 以 避免与view命名冲突
-      var needScope = true;
-      var tagScope = scopeManager.parseScope(viewName + tagName, domList[i], needScope);
-
-      fn && fn(domList);
-    }
-  }
-
-  function View(viewName, dom, options){
-    options = options || {};
-    // TODO 本地模板需要解析script上的{{}}
-    if (beacon.isType(dom, 'String')) {
-      var domWrapper = createDomByString(dom);
-
-      dom = domWrapper.querySelector('view[name="' + viewName + '"]');
-
-      parseTag('style', viewName, dom, domWrapper, function(tagList){
-        loadStyle(tagList, dom);
-      });
-      parseTag('script', viewName, dom, domWrapper, function(tagList){
-        loadScript(tagList, dom, options.initCallback);
-      });
-    }
-
-    var template = null,
-        router = null,
-        initQueue = [],
-        showBeforeQueue = [],
-        showAfterQueue = [],
-        hideQueue =[],
-        events = {
-          onShow: beacon.createEvent('view onShow'),
-          onHide: beacon.createEvent('view onHide')
-        };
-
-    beacon(this).on(events.onShow, function () {
-      beacon.on(statsEvents.PAGE_SHOW, [location.href, viewName]);
-    });
-    beacon(this).on(events.onHide, function () {
-      beacon.on(statsEvents.PAGE_HIDE, [location.href, viewName]);
-    });
-
-    this.show = function (){
-      dom.setAttribute('active','true');
-
-      // IE8 不渲染
-      if(typeof DOMParser === 'undefined'){
-        dom.style.borderBottom = '1px solid transparent';
-        setTimeout(function(){
-          dom.style.borderBottom = 'none';
-        }, 0);
-      }
-    };
-
-    this.hide = function(){
-      dom.removeAttribute('active');
-    };
-
-    this.getDom = function (){
-      return dom;
-    };
-
-    this.getViewName = function (){
-      return viewName;
-    };
-
-    this.events = events;
-
-    this.parseSrc = function (){
-      var els = dom.querySelectorAll('[b-src]') || [];
-      for (var i = 0, len = els.length, el; i < len; i++) {
-        el = els[i];
-        var src = el.getAttribute('b-src');
-        if (src) {
-          el.setAttribute('src', src);
-        }
-      }
-    };
-
-  }
-
-  return View;
-
-});
-;Air.Module("B.view.viewManager", function (require) {
-    var View = require("B.view.View");
-    var router = require('B.router.router');
-    var HTTP = require('B.network.HTTP');
-    var memCache = require('B.data.memCache');
+;Air.Module("B.view.View", function (require) {
     var scopeManager = require('B.scope.scopeManager');
     var EVENTS = require('B.event.events');
-    var middleware = require('B.util.middleware');
-    var loading = {
-        loadingHandle: null,
-        showLoading: function () {
-            loading.loadingHandle && loading.loadingHandle.show();
-        },
-        hideLoading: function () {
-            loading.loadingHandle && loading.loadingHandle.hide();
-        },
-        setLoading: function (handle) {
-            loading.loadingHandle = handle;
-        },
-        unsetLoading: function () {
-            loading.loadingHandle = null;
-        }
-    };
-    var ViewManager = (function () {
-        function ViewManager() {
-            this.loading = loading;
-        }
-        ViewManager.prototype.setMainViewport = function (viewport) {
-            this.mainViewport = viewport;
-        };
-        ViewManager.prototype.initLocalView = function (viewport) {
-            var viewportElement = viewport.dom;
-            var views = viewportElement.children;
-            var viewCount = views.length;
-            for (var viewIndex = 0; viewIndex < viewCount; viewIndex++) {
-                var activeView = views[viewIndex];
-                if (activeView.tagName.toLowerCase() === 'view') {
-                    var activeViewName = activeView.getAttribute('name');
-                    var view = new View(activeViewName, activeView);
-                    viewport.views[activeViewName] = view;
-                    scopeManager.parseScope(activeViewName, view.getDom());
-                }
-            }
-        };
-        ViewManager.prototype.getViewByViewName = function (viewName) {
-            return this.mainViewport.views[viewName];
-        };
-        ViewManager.prototype.appendView = function (viewName, view) {
-            this.mainViewport.dom.appendChild(view.getDom());
-            this.mainViewport.views[viewName] = view;
-        };
-        ViewManager.prototype.changeURLParams = function (viewName, options) {
+    var View = (function () {
+        function View(viewName, dom, options) {
             if (options === void 0) { options = {}; }
-            if (options.isComponent) {
-                return;
-            }
-            var $scope = scopeManager.getScopeInstance(viewName);
-            $scope['$request'] = $scope.$request || {};
-            $scope.$request.params = options.params;
-        };
-        ViewManager.prototype.getURL = function (viewName, options) {
-            var url = router.getURLPathByViewName(viewName, {
-                params: options.params,
-                query: options.query,
-                hash: options.hash
-            });
-            return url;
-        };
-        ViewManager.prototype.switchURL = function (viewName, options) {
-            if (options === void 0) { options = {}; }
-            if (options.isComponent) {
-                return;
-            }
-            var url = this.getURL(viewName, options);
-            var isReplace = options.replace;
-            if (history.pushState && history.replaceState) {
-                var changeURLState = isReplace ? history.replaceState : history.pushState;
-                changeURLState && changeURLState.call(history, {
-                    viewName: viewName,
-                    params: options.params,
-                    hash: options.hash
-                }, viewName, url);
+            this.initQueue = [];
+            this.showBeforeQueue = [];
+            this.showAfterQueue = [];
+            this.hideQueue = [];
+            this.events = {
+                onShow: beacon.createEvent('view onShow'),
+                onHide: beacon.createEvent('view onHide')
+            };
+            this.show = function () {
+                this.dom.setAttribute('active', 'true');
+            };
+            this.hide = function () {
+                this.dom.removeAttribute('active');
+            };
+            this.getDom = function () {
+                return this.dom;
+            };
+            this.viewName = viewName;
+            if (beacon.isType(dom, 'String')) {
+                var domWrapper = View.createDomByString(dom);
+                this.dom = domWrapper.querySelector("view[name=\"" + viewName + "\"]");
+                View.parseTag('style', viewName, domWrapper, function (tagList) {
+                    View.loadStyle(tagList, dom);
+                });
+                View.parseTag('script', viewName, domWrapper, function (tagList) {
+                    View.loadScript(tagList, dom, options.initCallback);
+                });
             }
             else {
-                if (isReplace) {
-                    !options.init && location.replace(url);
+                this.dom = dom;
+            }
+        }
+        ;
+        View.createDomByString = function (templateString) {
+            var div = document.createElement('div');
+            if (typeof DOMParser === 'undefined') {
+                div.innerHTML = 'X<div></div>' + templateString;
+            }
+            else {
+                div.innerHTML = templateString;
+            }
+            return div;
+        };
+        View.loadStyle = function (styleList, dom) {
+            for (var i = 0, len = styleList.length; i < len; i++) {
+                var style = styleList[i];
+                dom.appendChild(style);
+            }
+        };
+        View.loadScript = function (scriptList, dom, fn) {
+            setTimeout(function () {
+                View.runJS(scriptList, dom);
+            }, 0);
+            fn && fn();
+        };
+        View.runJS = function (scripts, dom) {
+            for (var scriptIndex = 0; scriptIndex < scripts.length; scriptIndex++) {
+                var activeScript = scripts[scriptIndex];
+                var tmpScript = document.createElement('script');
+                var src = activeScript.src;
+                activeScript.parentNode && activeScript.parentNode.removeChild(activeScript);
+                if (src) {
+                    Air.loadJS(src);
                 }
                 else {
-                    location.href = url;
+                    tmpScript.text = activeScript.text;
+                    dom.appendChild(tmpScript);
                 }
-            }
-            this.runURLChangeMiddleWare();
-        };
-        ViewManager.prototype.runURLChangeMiddleWare = function () {
-            var fnName = 'afterURLChange';
-            middleware.run(fnName);
-        };
-        ViewManager.prototype.listenURLChange = function () {
-            beacon(window).on('popstate', function (e) {
-                var state = e.state || {};
-                this.saveLastView();
-                if (state.viewName) {
-                    var hasView = this.getViewByViewName(state.viewName);
-                    if (hasView) {
-                        this.changeURLParams(state.viewName, state);
-                        this.show(state.viewName);
-                        this.runURLChangeMiddleWare();
-                    }
-                    else {
-                        var URLPath = location.pathname;
-                        var activeRouter = router.getMatchedRouter(URLPath);
-                        if (activeRouter) {
-                            this.goTo(activeRouter.viewName, {
-                                replace: true,
-                                params: activeRouter.params,
-                                query: location.search,
-                                hash: location.hash
-                            });
-                        }
-                        else {
-                            this.throw404();
-                        }
-                    }
-                }
-            });
-        };
-        ViewManager.prototype.show = function (viewName) {
-            var view = this.getViewByViewName(viewName);
-            if (view) {
-                view.parseSrc();
-                this.switchView(view);
-            }
-            else {
-                this.throw404();
-            }
-        };
-        ViewManager.prototype.throw404 = function () {
-            var fnName = 'viewNotFound';
-            middleware.run(fnName);
-        };
-        ;
-        ViewManager.prototype.saveLastView = function () {
-            this.lastView = this.getActive();
-        };
-        ViewManager.prototype.setActive = function (view) {
-            this.activeView = view;
-        };
-        ViewManager.prototype.switchView = function (view) {
-            var lastViewName = '';
-            if (this.lastView) {
-                lastViewName = this.lastView.getViewName();
-                this.triggerOnHide(this.lastView, view);
-            }
-            this.setActive(view);
-            this.activeView.show();
-            this.triggerOnShow(this.activeView, lastViewName);
-            loading.hideLoading();
-        };
-        ViewManager.prototype.triggerOnHide = function (curView, toView) {
-            var viewName = curView.getViewName();
-            curView && curView.hide();
-            beacon(curView).on(curView.events.onHide, {
-                to: toView
-            });
-            var $scope = scopeManager.getScopeInstance(viewName);
-            beacon($scope).on(EVENTS.DATA_CHANGE);
-        };
-        ViewManager.prototype.triggerOnShow = function (curView, lastViewName) {
-            var viewName = curView.getViewName();
-            if (viewName !== lastViewName) {
-                beacon(curView).on(curView.events.onShow, {
-                    from: lastViewName
-                });
-            }
-            var $scope = scopeManager.getScopeInstance(viewName);
-            beacon($scope).on(EVENTS.DATA_CHANGE);
-        };
-        ViewManager.prototype.initLocalViewport = function () {
-            var viewportList;
-            var viewports = document.querySelectorAll('viewport');
-            var viewportCount = viewports.length;
-            for (var viewportIndex = 0; viewportIndex < viewportCount; viewportIndex++) {
-                var activeViewportElement = viewports[viewportIndex];
-                var isMainViewport = (activeViewportElement.getAttribute('main') === 'true');
-                var activeViewport = {
-                    'dom': activeViewportElement,
-                    'views': {}
-                };
-                viewportList.push(activeViewport);
-                isMainViewport && this.setMainViewport(activeViewport);
-                this.initLocalView(activeViewport);
-            }
-        };
-        ViewManager.prototype.loadView = function (viewName, options) {
-            if (options === void 0) { options = {}; }
-            loading.showLoading();
-            var env = memCache.get('env');
-            var curRouter = router.get(viewName);
-            var sign = curRouter.sign || '';
-            var extPath = sign ? '_' + sign : '';
-            var templateBasePath = options.templatePath || env.$templatePath;
-            var templatePath = templateBasePath + viewName + extPath + '.html';
-            var http = new HTTP();
-            http.get(templatePath, {
-                successCallBack: successCallBack,
-                errorCallBack: errorCallBack
-            });
-            function successCallBack(xhr) {
-                var responseText = xhr.responseText;
-                var view = new View(viewName, responseText, {
-                    initCallback: function () {
-                    }
-                });
-                var scope = scopeManager.parseScope(viewName, view.getDom());
-                this.changeURLParams(viewName, options);
-                this.appendView(viewName, view);
-                this.saveLastView();
-                this.setActive(view);
-                beacon(scope).once(EVENTS.RUN_COMPLETE, function () {
-                    this.switchURL(viewName, options);
-                    this.show(viewName);
-                    this.removeLoadingView(viewName);
-                });
-            }
-            function errorCallBack() {
-                this.throw404();
-            }
-        };
-        ViewManager.prototype.viewIsLoading = function (viewName) {
-            return beacon.utility.arrayIndexOf(this.loadingViewList, viewName) === -1 ? false : true;
-        };
-        ViewManager.prototype.addLoadingView = function (viewName) {
-            var idx = beacon.utility.arrayIndexOf(this.loadingViewList, viewName);
-            if (idx === -1) {
-                this.loadingViewList.push(viewName);
-            }
-        };
-        ViewManager.prototype.removeLoadingView = function (viewName) {
-            var idx = beacon.utility.arrayIndexOf(this.loadingViewList, viewName);
-            if (idx !== -1) {
-                this.loadingViewList.splice(idx, 1);
-            }
-        };
-        ViewManager.prototype.goTo = function (viewName, options) {
-            var fnName = 'beforeGoTo';
-            var paramObj = { viewName: viewName, options: options };
-            var next = function () {
-                var hasView = this.getViewByViewName(viewName);
-                if (!this.viewIsLoading(viewName)) {
-                    if (hasView) {
-                        this.saveLastView();
-                        this.switchURL(viewName, options);
-                        this.changeURLParams(viewName, options);
-                        this.show(viewName);
-                    }
-                    else {
-                        this.addLoadingView(viewName);
-                        this.loadView(viewName, options);
-                    }
-                }
-            };
-            middleware.run(fnName, paramObj, next);
-        };
-        ViewManager.prototype.jump = function (options) {
-            var url = options.url || '';
-            var projectPath = options.project || '';
-            var urlPath = options.urlPath || '';
-            var query = options.query || '';
-            projectPath = projectPath.replace(/^\//, '');
-            var reg = new RegExp('^(\/)?(' + projectPath + '[\/|$])?');
-            urlPath = urlPath.replace(reg, '');
-            if (url) {
-                location.href = url;
-            }
-            else {
-                location.href = '/' + (projectPath || '') + '/' + (urlPath || '') + (query || '');
-            }
-        };
-        ViewManager.prototype.back = function () {
-            window.history.back();
-        };
-        ViewManager.prototype.addMiddleware = function () {
-            middleware.add();
-        };
-        ViewManager.prototype.removeMiddleware = function () {
-            middleware.remove();
-        };
-        ViewManager.prototype.getActive = function () {
-            return this.activeView;
-        };
-        ViewManager.prototype.getScopeKeyByViewName = function (viewName) {
-            var dom = this.activeView.getDom();
-            var subViewDom = dom.querySelector('view[name="' + viewName + '"]');
-            return subViewDom && subViewDom.getAttribute('b-scope-key') || '';
-        };
-        ViewManager.prototype.getTemplate = function (viewName, options) {
-            if (options === void 0) { options = {}; }
-            var env = memCache.get('env');
-            var path = options.path || env.$templatePath;
-            var templatePath = path + options.templatePath.replace(/\./g, '/') + '.html';
-            var errorCallBack = options.errorCallBack || function () { };
-            var template = this.templateCache[viewName];
-            if (template) {
-                return template;
             }
             ;
-            var http = new HTTP();
-            http.get(templatePath, {
-                successCallBack: function (xhr) {
-                    var responseText = xhr.responseText;
-                    this.templateCache[viewName] = responseText;
-                    options.onSuccess && options.onSuccess(responseText);
-                },
-                errorCallBack: errorCallBack
-            });
         };
-        ViewManager.prototype.init = function (env) {
-            scopeManager.setRoot(env);
-            this.initLocalViewport();
-            var URLPath = location.pathname;
-            var activeRouter = router.getMatchedRouter(URLPath);
-            var hash = location.hash;
-            if (activeRouter) {
-                this.goTo(activeRouter.viewName, {
-                    replace: true,
-                    init: true,
-                    params: activeRouter.params,
-                    query: location.search,
-                    hash: hash
-                });
-            }
-            else {
-                this.throw404();
-            }
-            this.listenURLChange();
+        View.splitDom = function (domWrapper, cssSelector) {
+            var elements = domWrapper.getElementsByTagName(cssSelector);
+            elements = [].concat.apply([], elements);
+            return elements;
         };
-        return ViewManager;
+        View.parseTag = function (tagName, viewName, domWrapper, fn) {
+            var domList = View.splitDom(domWrapper, tagName);
+            domList = [].concat.apply([], domList);
+            for (var i = 0; i < domList.length; i++) {
+                var needScope = true;
+                var tagScope = scopeManager.parseScope(viewName + tagName, domList[i], needScope);
+                fn && fn(domList);
+            }
+        };
+        View.prototype.getViewName = function () {
+            return this.viewName;
+        };
+        ;
+        View.prototype.parseSrc = function () {
+            var els = this.dom.querySelectorAll('[b-src]');
+            if (!els) {
+                return;
+            }
+            for (var i = 0, len = els.length; i < len; i++) {
+                var el = els[i];
+                var src = el.getAttribute('b-src');
+                if (src) {
+                    el.setAttribute('src', src);
+                }
+            }
+        };
+        ;
+        return View;
     }());
-    return new ViewManager();
+    return View;
 });
-//# sourceMappingURL=viewManager.js.map;Air.Module("B.controller.run", function(require){
+;Air.Module("B.view.viewManager", function(require){
+  var View = require("B.view.View");
+  var router = require('B.router.router');
+  var HTTP   = require('B.network.HTTP');
+  var memCache = require('B.data.memCache');
+  var scopeManager = require('B.scope.scopeManager');
+  var EVENTS =  require('B.event.events');
+  var middleware = require('B.util.middleware');
+  var bridge = require('B.bridge');
+  var viewList = [],
+      viewportList = [],
+      loadingViewList = [], // 记载中的view
+      activeView = null,
+      mainViewport = null;
+  var lastView = null;
+
+  /**
+   * 初始化首屏 View
+   */
+  function init(env){
+    scopeManager.setRoot(env);
+    initLocalViewport();
+    var URLPath, query;
+    if (bridge.isHybrid) {
+      URLPath = location.hash.replace(/^#/, '') || '/';
+      var URLPathAry = URLPath.split('?');
+      URLPath = URLPathAry[0];
+      query = URLPathAry[1] ? '?' + URLPathAry[1] : '';
+    } else {
+      URLPath = location.pathname;
+      query = location.search;
+    }
+    var activeRouter = router.getMatchedRouter(URLPath);
+    if (activeRouter) {
+      goTo(activeRouter.viewName, {
+        replace: true,
+        init: true,
+        params: activeRouter.params,
+        query: query
+      });
+    } else {
+      throw404();
+    }
+    listenURLChange();
+    listenNativeAppear();
+  }
+
+  function initLocalViewport(){
+    var viewports = document.querySelectorAll('viewport');
+    var viewportIndex = 0;
+    var viewportCount = viewports.length;
+    for(; viewportIndex < viewportCount; viewportIndex++){
+      var activeViewport = viewports[viewportIndex];
+      var isMainViewport = (activeViewport.getAttribute('main')==='true');
+      var activeViewportInfo = {
+        dom : activeViewport,
+        views : []
+      };
+      viewportList.push(activeViewportInfo);
+      isMainViewport && setMainViewport(activeViewportInfo);
+      initLocalView(activeViewportInfo);
+    }
+  }
+
+  function appendView(viewName, view) {
+    mainViewport.dom.appendChild(view.getDom());
+    mainViewport.views[viewName] = view;
+  }
+
+  function setMainViewport(viewport){
+    mainViewport = viewport;
+  }
+
+  function initLocalView(viewContainer){
+    var viewport = viewContainer.dom;
+    var views = viewport.children;
+    var viewIndex = 0;
+    var viewCount = views.length;
+    for(; viewIndex < viewCount; viewIndex++){
+      var activeView = views[viewIndex];
+
+      if (activeView.tagName.toLowerCase() === 'view') {
+        var activeViewName = activeView.getAttribute('name');
+        var view = new View(activeViewName, activeView)
+        viewContainer['views'][activeViewName] = view;
+        scopeManager.parseScope(activeViewName, view.getDom());
+      }
+    }
+  }
+
+
+
+  function goTo (viewName, options){
+    var fnName = 'beforeGoTo';
+    var url = getURL(viewName, options);
+    var paramObj = { viewName: viewName, options: options, url: url };
+    var next = function(){
+      var hasView = getViewByViewName(viewName);
+      if (!viewIsLoading(viewName)) {
+        if (hasView) {
+          saveLastView();
+          switchURL(viewName, options);
+          changeURLParams(viewName, options);
+          show(viewName);
+        } else {
+          addLoadingView(viewName);
+          loadView(viewName, options);
+        }
+      }
+    }
+
+    // goTo 方法对外支持中间件，中间件参数为 paramObj
+    middleware.run(fnName, paramObj, next);
+  }
+
+  function viewIsLoading(viewName) {
+    return loadingViewList.indexOf(viewName) === -1 ? false : true;
+  }
+
+  function addLoadingView(viewName) {
+    var idx = loadingViewList.indexOf(viewName);
+    if (idx === -1) {
+      loadingViewList.push(viewName);
+    }
+  }
+
+  function removeLoadingView(viewName) {
+    var idx = loadingViewList.indexOf(viewName);
+    if (idx !== -1) {
+      loadingViewList.splice(idx, 1);
+    }
+  }
+
+  function changeURLParams(viewName, options) {
+    options = options || {};
+    if(options.isComponent){return;} // 全屏组件不切换 URL，也不需要更新URL参数
+    var $scope = scopeManager.getScopeInstance(viewName);
+    $scope['$request'] = $scope.$request || {};
+    $scope.$request.params = options.params;
+  }
+
+  function getURL (viewName, options) {
+    options = options || {}
+    var url = router.getURLPathByViewName(viewName, {
+      params: options.params,
+      query: options.query,
+      noOrigin: true
+    });
+
+    return url;
+  }
+
+  function switchURL (viewName, options) {
+    options = options || {};
+    if(options.isComponent){return;} // 全屏组件不切换 URL
+    var url = getURL(viewName, options);
+
+    // 不支持pushState则跳转。后续是否考虑锚点方案？
+    var isReplace = options.replace;
+    if (history.pushState && history.replaceState){
+      var changeURLState = isReplace ? history.replaceState : history.pushState;
+      changeURLState && changeURLState.call(history, {
+        viewName: viewName,
+        params: options.params
+      }, viewName, url);
+    } else {
+      if (isReplace) { // 初始化不进行跳转，否则会循环跳转
+        !options.init && location.replace(url);
+      } else {
+        location.href = url;
+      }
+    }
+
+    runURLChangeMiddleWare();
+  }
+
+  function runURLChangeMiddleWare() {
+    var fnName = 'afterURLChange';
+    middleware.run(fnName);
+  }
+
+  function listenURLChange() {
+    beacon(window).on('popstate', function(e){
+      var state  = e.state || {};
+      saveLastView();
+      if (state.viewName) {
+        var hasView = getViewByViewName(state.viewName);
+        if (hasView) {
+          changeURLParams(state.viewName, state);
+          show(state.viewName);
+          runURLChangeMiddleWare();
+        } else {
+          var URLPath = location.pathname;
+          var activeRouter = router.getMatchedRouter(URLPath);
+          if (activeRouter) {
+            goTo(activeRouter.viewName, {
+              replace: true,
+              params: activeRouter.params,
+              query: location.search
+            });
+          } else {
+            throw404();
+          }
+        }
+      }
+    });
+  }
+
+  function show (viewName){
+    var view = getViewByViewName(viewName);
+    if (view) {
+      view.parseSrc();
+      switchView(view);
+    } else {
+      throw404();
+    }
+  }
+
+  function hideNativeLoading() {
+    bridge.run('hideloading');
+  }
+
+
+  function throw404(){
+    var fnName = 'viewNotFound';
+    middleware.run(fnName);
+    hideNativeLoading();
+  };
+
+  function getViewByViewName(viewName){
+    return mainViewport.views[viewName];
+  }
+
+  function getScopeKeyByViewName(viewName) {
+    var dom = activeView.getDom();
+    var subViewDom = dom.querySelector('view[name="' + viewName + '"]');
+    return subViewDom && subViewDom.getAttribute('b-scope-key') || '';
+  }
+
+  //加载模板信息
+  var templateCache = {};
+  function getTemplate(viewName, options){
+    options = options || {};
+    var env = memCache.get('env');
+    var path = options.path || env.$templatePath;
+    var templatePath = path + options.templatePath.replace(/\./g, '/') + '.html';
+    var errorCallBack =  options.errorCallBack || function(){};
+    if(templateCache[viewName]) { return templateCache[viewName]};
+    var http = new HTTP();
+    http.get(templatePath, {
+      successCallBack : function(xhr){
+        var responseText = xhr.responseText;
+        templateCache[viewName] = responseText;
+        options.onSuccess && options.onSuccess(responseText);
+      },
+      errorCallBack : errorCallBack
+    });
+  }
+
+  function loadView(viewName, options){
+    options = options || {};
+    loading.showLoading();
+    var env = memCache.get('env');
+    var curRouter = router.get(viewName);
+    var sign = curRouter.sign || '';
+    var extPath = sign ? '_' + sign : '';
+    var templateBasePath = options.templatePath || env.$templatePath;
+    var templatePath = templateBasePath + viewName + extPath + '.html';
+    var http = new HTTP();
+
+    http.get(templatePath, {
+      successCallBack : successCallBack,
+      errorCallBack : errorCallBack
+    });
+
+    function successCallBack(xhr){
+      var responseText = xhr.responseText;
+      // 2
+      var view = new View(viewName, responseText, {
+        initCallback: function(){
+          // hideLoading();
+        }
+      });
+      var scope = scopeManager.parseScope(viewName, view.getDom());
+      changeURLParams(viewName, options);
+      appendView(viewName, view);
+
+      saveLastView();
+      setActive(view);
+
+      // 3
+      beacon(scope).once(EVENTS.RUN_COMPLETE, function(){
+        // 6
+        switchURL(viewName, options);
+        show(viewName);
+
+        removeLoadingView(viewName);
+        // hideNativeLoading();
+      });
+    }
+
+    function errorCallBack(){
+      throw404();
+    }
+  }
+
+  function saveLastView() {
+    lastView = getActive();
+  }
+
+  function setActive(view) {
+    activeView = view;
+  }
+
+  function switchView(view){
+    var lastViewName = '';
+    // 7
+    if (lastView) {
+      lastViewName = lastView.getViewName();
+      triggerOnHide(lastView, view);
+    }
+
+    setActive(view);
+
+    activeView.show();
+    triggerOnShow(activeView, lastViewName);
+    hideNativeLoading();
+  }
+
+  /**
+  * 监听Native appear
+  */
+  function listenNativeAppear() {
+    bridge.run('appear', {
+      callback: bridge.register('appear', viewAppear, { keepCallback: true })
+    }, {
+      unified: false
+    });
+  }
+
+  /**
+  * Native appear 后执行 view onShow
+  */
+  function viewAppear() {
+    if(!activeView){
+      runOnAppear();
+      return;
+    }
+    var params = {
+      viewName: activeView.getViewName()
+    };
+    runOnAppear(params, function() {
+      activeView.show();
+      triggerOnShow(activeView);
+    });
+  }
+
+  function triggerOnHide(curView, toView, noHide) {
+    var viewName = curView.getViewName();
+    !noHide && curView && curView.hide();
+    beacon(curView).on(curView.events.onHide, {
+      to: toView
+    });
+
+    var $scope = scopeManager.getScopeInstance(viewName);
+    beacon($scope).on(EVENTS.DATA_CHANGE);
+  }
+
+  function triggerOnShow(curView, lastViewName) {
+    var viewName = curView.getViewName();
+    if (viewName !== lastViewName) {
+      beacon(curView).on(curView.events.onShow, {
+        from: lastViewName
+      });
+    }
+
+    var $scope = scopeManager.getScopeInstance(viewName);
+    beacon($scope).on(EVENTS.DATA_CHANGE);
+  }
+
+  function getActive(){
+    return activeView;
+  }
+
+  function goToHybrid(viewName, options) {
+    options = options || {};
+    if (options.replace) {
+      goTo(viewName, options);
+    } else {
+      var fnName = 'beforeGoTo';
+      var url = getURL(viewName, options);
+      var paramObj = { viewName: viewName, options: options, url: url };
+      var next = function(paramObj){
+        activeView && triggerOnHide(activeView, null ,true);
+
+        bridge.run('gotopage', {
+          vc: paramObj.vc,
+          url: paramObj.url
+        });
+      }
+
+      // goTo 方法对外支持中间件，中间件参数为 paramObj
+      middleware.run(fnName, paramObj, next);
+    }
+  }
+
+  function jump (options) {
+    var url = options.url || '';
+    var projectPath = options.project || '';
+    var urlPath = options.urlPath || '';
+    var query = options.query || '';
+    var title = options.title || '';
+    projectPath = projectPath.replace(/^\//, '');
+    var reg = new RegExp('^(\/)?(' + projectPath + '[\/|$])?');
+    urlPath = urlPath.replace(reg, '');
+    if (!url) {
+      url = getHybridPageUrl(projectPath, urlPath, query);
+    }
+    bridge.run('gotopage', {
+      vc: 'CjiaHybrid',
+      url: url,
+      data: {
+        title: title
+      }
+    });
+  }
+
+  function getHybridPageUrl(projectPath, urlPath, query) {
+    return (projectPath || '') + '/index.html#/' + (projectPath || '') + '/' + (urlPath || '') + (query || '');
+  }
+
+  function goToNative(key, data) {
+    key = key || 'CjiaHybrid';
+    bridge.run('gotopage', {
+      vc: key,
+      data: data
+    })
+  }
+
+  function back () {
+    activeView && triggerOnHide(activeView, null ,true);
+    bridge.run('goback');
+  }
+
+  /**
+  * show 之前对外提供中间件 onAppear
+  */
+  function runOnAppear(params, next) {
+    var fnName = 'onAppear';
+    middleware.run(fnName, params, next);
+  }
+
+  var loading = {
+    loadingHandle : null, // handle 须实现接口【Iloading】 show() & hide()
+
+    showLoading : function (){
+                    loading.loadingHandle && loading.loadingHandle.show();
+                  },
+
+    hideLoading :function (){
+                   loading.loadingHandle && loading.loadingHandle.hide();
+                  },
+
+    setLoading : function(handle){
+                   loading.loadingHandle = handle
+                 },
+
+    unsetLoading : function(){
+                  loading.loadingHandle = null
+                }
+  }
+
+  api = {
+    init : init,
+    goTo : goToHybrid,
+    jump : jump,
+    goToNative : goToNative,
+    back : back,
+    addMiddleware : middleware.add,
+    removeMiddleware : middleware.remove,
+    // showLoading : loading.showLoading,
+    // hideLoading : loading.hideLoading,
+    loading : loading,
+    getActive : getActive,
+    getScopeKeyByViewName: getScopeKeyByViewName,
+    getTemplate : getTemplate
+
+  }
+
+  return api;
+});
+;Air.Module("B.controller.run", function(require){
   var memCache = require('B.data.memCache');
   var run = function(controllerName, controller){
     var scopeManager = require("B.scope.scopeManager");
@@ -2772,47 +3048,64 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
   }
   return api;
 });
-;Air.run(function (require) {
-    var FRAMEWORK_NAME = 'b';
-    var viewManager = require("B.view.viewManager"), scopeManager = require('B.scope.scopeManager'), router = require("B.router.router"), memCache = require('B.data.memCache'), run = require('B.controller.run'), serviceFactory = require('B.service.serviceFactory'), HTTP = require('B.network.HTTP'), storage = require('B.data.storage'), TDK = require('B.TDK.TDK');
-    var B = (function () {
-        function B() {
-            this.FRAMEWORK_NAME = 'b';
-            this.views = viewManager;
-            this.router = router;
-            this.scopeManagerr = scopeManager;
-            this.service = serviceFactory;
-            this.run = run;
-            this.Module = Air.Module;
-            this.TDK = TDK;
-            this.bridge = {
-                run: function () { },
-                isHybrid: false,
-                isInApp: false
-            };
-            this.utility = {
-                storage: storage,
-                HTTP: HTTP
-            };
-        }
-        B.prototype.init = function (env) {
-            if (env === void 0) { env = {}; }
-            memCache.set('env', env);
-            Air.moduleURL(env.$moduleURL);
-            viewManager.init(env);
+;/**
+ * @author baishuiz@gmail.com, xuemengfei@gmail.com
+ * @version v0.2.0
+ */
+Air.run(function(require){
+  var viewManager   = require("B.view.viewManager"),
+      scopeManager = require('B.scope.scopeManager'),
+      router = require("B.router.router"),
+      memCache = require('B.data.memCache'),
+      run = require('B.controller.run'),
+      serviceFactory = require('B.service.serviceFactory'),
+      HTTP = require('B.network.HTTP'),
+      storage = require('B.data.storage'),
+      TDK = require('B.TDK.TDK'),
+      bridge = require('B.bridge');
+  void function main(){
+    var FRAMEWORK_NAME = "b";
+    var api = {
+      views    : viewManager, // ViewManager
+      router   : router, // Router
+      scopeManager　:　scopeManager,
+      service  : serviceFactory,
+      utility  : {
+        storage  : storage,
+        HTTP: HTTP
+      },
+
+      /**
+       * [环境初始化]
+       * @param  {Environment} env [环境配置对象]
+       * @return void
+       */
+      init     : function(env){
+        env = env || {};
+        memCache.set('env', env);
+        Air.moduleURL(env.$moduleURL);
+        viewManager.init(env);
+      },
+      run      : run,
+      Module   : Air.Module,
+      TDK      : TDK,
+      bridge   : bridge,
+      ready    : function(callback){
+        callback = typeof callback === 'function' ? callback : function(){};
+        var handle = function(res) {
+          res = res || { resultCode: 1 };
+          callback(res);
         };
-        B.prototype.ready = function (callback) {
-            if (callback === void 0) { callback = function () { }; }
-            Air.domReady(function () {
-                callback();
-            });
-        };
-        ;
-        B.prototype.setModuleURL = function (url) {
-            Air.moduleURL(url);
-        };
-        return B;
-    }());
-    window[FRAMEWORK_NAME] = new B();
+
+        bridge.run('getdeviceinfo', {
+          success: handle,
+          failed: handle
+        });
+      },
+      setModuleURL: function(url) {
+        Air.moduleURL(url);
+      }
+    };
+    window[FRAMEWORK_NAME] = api;
+  }()
 });
-//# sourceMappingURL=b.js.map

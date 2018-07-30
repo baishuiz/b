@@ -6,16 +6,25 @@ module.exports = function(grunt){
             fileName: '<%= pkg.name %>.<%= pkg.version %>.js',
             minFileName : '<%= pkg.name %>.<%= pkg.version %>.min.js'
         },
+
+        ts: {
+          default : {
+              src: ["'./dist//**/*.ts"],
+              tsconfig :true
+          }
+        },
+
         connect: {
           server: {
             options: {
-              port: 8000,
+              port: 8001,
               base: './',
-              useAvailablePort: true,
+              useAvailablePort: false,
               middleware: function(connect, options, middlewares) {
                 // inject a custom middleware into the array of default middlewares
                 // this is likely the easiest way for other grunt plugins to
                 // extend the behavior of grunt-contrib-connect
+                
                 middlewares.unshift(function(req, res, next) {
                   if (req.url.indexOf('timeoutService.json') !== -1){
                     setTimeout(function(){
@@ -36,9 +45,9 @@ module.exports = function(grunt){
         concat: {
             options: {
                 separator: ';'
-            }
+            },
 
-           ,web: {
+           web: {
                 src : [
                         './libs/*.js',
                         './src/B/util/*.js',
@@ -102,9 +111,9 @@ module.exports = function(grunt){
                       ],
                 dest: './dist/hybrid/<%= output.fileName %>'
             }
-        }
+        },
 
-       ,jasmine: {
+       jasmine: {
             pivotal: {
               src: './dist/web/<%=output.fileName %>',
               coverage: './dist/web/<%=output.fileName %>',
@@ -137,9 +146,9 @@ module.exports = function(grunt){
                     files:'./dist/web/<%=output.fileName %>'
                 }
               }
-            }
-
-           ,mini: {
+            },
+            
+            mini: {
               src: './dist/web/<%= output.minFileName %>',
               options: {
                 template: 'test/template/DefaultRunner.tmpl',
@@ -161,8 +170,9 @@ module.exports = function(grunt){
                 vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],
               }
             }
-        }
-       ,uglify: {
+        },
+
+       uglify: {
           options: {
             mangle: {
               except: ['require']
@@ -174,8 +184,9 @@ module.exports = function(grunt){
               './dist/hybrid/<%= output.minFileName %>': ['./dist/hybrid/<%= output.fileName %>']
             }
           }
-        }
-      ,jshint: {
+        },
+      
+        jshint: {
         options: {
           curly: true,
           eqeqeq: true,
@@ -208,7 +219,9 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.registerTask('default', ['connect',  'concat', 'uglify', 'jasmine:mini']);
-    grunt.registerTask('package', [ 'concat', 'uglify']);
-    grunt.registerTask('debug', [ 'connect', 'concat', 'jasmine:pivotal', 'jshint']);
+    grunt.loadNpmTasks("grunt-ts");
+    // grunt.registerTask("default", ["ts"]);
+    grunt.registerTask('default', ['ts','connect',  'concat', 'uglify', 'jasmine:mini']);
+    grunt.registerTask('package', [ 'ts','concat', 'uglify']);
+    grunt.registerTask('debug', [ 'ts','connect', 'concat', 'jasmine:pivotal', 'jshint']);
 };

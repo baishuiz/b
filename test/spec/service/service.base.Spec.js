@@ -215,7 +215,7 @@ describe('服务请求', function () {
 
   it('服务超时', function(done) {
     b.service.set('service.timeoutService', {
-      path: 'timeoutService.json',
+      path: 'http://127.0.0.1:8001/timeoutService.json',
       expiredSecond: 1,
       extend : 'default'
     });
@@ -231,8 +231,9 @@ describe('服务请求', function () {
       }, {
         noCache: true,
         successCallBack: function(data, fromCache){
+          console.log('no timeout');
         },
-        errorCallBack: function(errorCode) {
+        errorCallBack: function(errorCode) {  
           expect(errorCode).toEqual(ERROR_CODE.timeout);
           done();
         }
