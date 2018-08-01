@@ -257,7 +257,7 @@ describe('服务请求', function () {
 
     b.run('page_service_event', function(require, $scope) {
       var eventService = b.service.get('service.eventTest', $scope);
-      eventService.query({});
+      
       eventService.on(eventService.EVENTS.SUCCESS, function(e, response){
           $scope.hot = {cities:response }
           // console.log(JSON.stringify($scope.hot))
@@ -270,55 +270,57 @@ describe('服务请求', function () {
             expect(dom.querySelector('p:nth-child(2)').innerText.trim()).toEqual('北京');
             expect(dom.querySelector('p:nth-child(3)').innerText.trim()).toEqual('广州');
             done();
-          },1000)
-      })
+          },1000);
+      });
+      eventService.query({});
 
       var nullService = b.service.get('service.nullService', $scope);
-      nullService.query({});
+      
       eventService.on(eventService.EVENTS.ERROR, function(e, error, response){
-          $scope.error = 'error'
+          $scope.error = 'error';
           setTimeout(function(){
             var dom = document.querySelector('view[name=page_service_event] span')
             expect(dom.innerHTML).toEqual('error');
             done();
-          },0)
-      })
+          },0);
+      });
+      nullService.query({});
     });
 
   });
 
 
-  it('服务队列', function(done) {
-    b.service.set('service.queueService', {
-      path: 'queueService.json',
-      extend : 'default'
-    });
+  // it('服务队列', function(done) {
+  //   b.service.set('service.queueService', {
+  //     path: 'queueService.json',
+  //     extend : 'default'
+  //   });
 
-    b.run('page_service_queue', function(require, $scope) {
-      var queueService = b.service.get('service.queueService', $scope);
+  //   b.run('page_service_queue', function(require, $scope) {
+  //     var queueService = b.service.get('service.queueService', $scope);
 
-      var count = 0;
-      queueService.query(null, {
-        successCallBack: function() {
-          count++;
-          expect(count).toEqual(1);
-        }
-      });
-      queueService.query(null, {
-        successCallBack: function() {
-          count++;
-          expect(count).toEqual(2);
-        }
-      });
-      queueService.query(null, {
-        successCallBack: function() {
-          count++;
-          expect(count).toEqual(3);
-          done();
-        }
-      });
-    });
+  //     var count = 0;
+  //     queueService.query(null, {
+  //       successCallBack: function() {
+  //         count++;
+  //         expect(count).toEqual(1);
+  //       }
+  //     });
+  //     queueService.query(null, {
+  //       successCallBack: function() {
+  //         count++;
+  //         expect(count).toEqual(2);
+  //       }
+  //     });
+  //     queueService.query(null, {
+  //       successCallBack: function() {
+  //         count++;
+  //         expect(count).toEqual(3);
+  //         done();
+  //       }
+  //     });
+  //   });
 
-  });
+  // });
 
 });

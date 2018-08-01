@@ -6,6 +6,7 @@ Air.Module('B.data.storage', function(require){
   var get = function(key, callback){
     var value = memCache.get(key);
     callback && callback(value);
+    return value;
   }
 
   return {

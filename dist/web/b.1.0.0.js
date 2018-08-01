@@ -155,6 +155,7 @@
   var get = function(key, callback){
     var value = memCache.get(key);
     callback && callback(value);
+    return value;
   }
 
   return {
@@ -162,17 +163,17 @@
     set: set
   }
 });
-;Air.Module("B.event.events", function(){
-  var events = {
-    DATA_CHANGE        : beacon.createEvent("data change"),
-    RUN_COMPLETE       : beacon.createEvent("run complete"),
-    URL_CHANGE         : beacon.createEvent("url change"),
-    USER_ACTION        : beacon.createEvent("user action"),
-    PAGE_SHOW          : beacon.createEvent("page show"),
-    PAGE_HIDE          : beacon.createEvent("page hide"),
-    PAGE404            : beacon.createEvent("")
-  }
-  return events;
+;Air.Module("B.event.events", function () {
+    var events = {
+        DATA_CHANGE: beacon.createEvent("data change"),
+        RUN_COMPLETE: beacon.createEvent("run complete"),
+        URL_CHANGE: beacon.createEvent("url change"),
+        USER_ACTION: beacon.createEvent("user action"),
+        PAGE_SHOW: beacon.createEvent("page show"),
+        PAGE_HIDE: beacon.createEvent("page hide"),
+        PAGE404: beacon.createEvent("")
+    };
+    return events;
 });
 ;Air.Module('B.directive.event', function(require){
   var node      = require('B.util.node'),
@@ -1764,350 +1765,296 @@ var parseTemplate = parseTemplateProxy(parseTemplateRAW);
   }
   return XHR;
 });
-;Air.Module('B.service.Service', function(require) {
-  var HTTP = require('B.network.HTTP');
-  var EVENTS =  require('B.event.events');
-  var storage = require('B.data.storage');
-  var middleware = require('B.util.middleware');
-
-  var serviceQueue = {};
-
-  var ERROR_CODE = {
-    parse: 1, // JSON 解析出错
-    timeout: 2, // 超时
-    network: 3, // 网络错误
-    business: 4 // 业务错误（由中间件控制）
-  }
-
-  function Service(config, scope, controlEvents){
-    config = config || {};
-    var header = config.header || {};
-    header['Content-Type'] = 'application/json;charset=utf-8';
-
-    var self = this;
-    var requestParams = null;
-    var http = new HTTP();
-    this.noTriggerEvent = false; // 不触发事件
-
-    var SERVICEEVENTS = {
-      SUCCESS: beacon.createEvent("service response success"),
-      ERROR: beacon.createEvent("service response error")
-    }
-
-    this.EVENTS = SERVICEEVENTS;
-
-    this.on = function(event, handle){
-      beacon(self).on(event, handle);
-    }
-
-    this.off = function(event, handle){
-      beacon(self).off(event, handle);
-    }
-
-    this.getConfig = function() {
-      var header = beacon.utility.merge({}, config.header);
-      return beacon.utility.merge({}, config, {header: header});
-    }
-
-    this.query = function(requestParams, options){
-      options = options || {};
-      var timeoutSeconds = beacon.isType(config.timeout, 'Number') ? config.timeout : 30;
-      var url = config.protocol + '://' + config.host + config.path;
-      var cacheKey = url + JSON.stringify(requestParams);
-      var finished = false;
-      var timer = null;
-
-      var requestOptions = {
-        url: url,
-        method: config.method,
-        header: header,
-        data: JSON.stringify(requestParams),
-        serviceName: config.serviceName
-      };
-
-      var tryReturnCacheData = function(noCacheCallback) {
-        storage.get(cacheKey, function(cachedDataText) {
-          try {
-            var cachedData = JSON.parse(cachedDataText);
-
-            if (cachedData) {
-              var fromCache = true;
-              setTimeout(function(){ // 否则在有缓存时，事件会等服务回来后才执行完毕
-                options.successCallBack && options.successCallBack(cachedData, fromCache);
-                beacon(self).on(SERVICEEVENTS.SUCCESS, cachedData);
-                beacon(scope).on(EVENTS.DATA_CHANGE);
-              }, 0);
-
-              return;
-            }
-          } catch(e) {}
-
-          noCacheCallback && noCacheCallback();
-        });
-      }
-
-      var curServiceQueue = serviceQueue[cacheKey];
-      if (!options.noCache && !curServiceQueue) {
-        tryReturnCacheData(startQuery);
-      } else {
-        startQuery();
-      }
-
-      function startQuery() {
-        controlEvents.onQuery && controlEvents.onQuery();
-
-        callBeforeQueryMiddleware(requestOptions, function(){
-          curServiceQueue = serviceQueue[cacheKey];
-
-          // 首次进入，队列不存在
-          if (!curServiceQueue) {
-            curServiceQueue = serviceQueue[cacheKey] = [];
-
-            // 避免外部修改回调函数，所以在外部处理完成后再赋值
-            requestOptions.successCallBack = httpSuccessCallback;
-            requestOptions.errorCallBack = httpErrorCallback;
-
-            http.request(requestOptions);
-            startTimeoutCount();
-          } else {
-            curServiceQueue.push({
-              httpSuccessCallback: httpSuccessCallback,
-              httpErrorCallback: httpErrorCallback
-            })
-          }
-        });
-      }
-
-      function startTimeoutCount() {
-        timer = setTimeout(function(){
-          http.abort();
-        }, timeoutSeconds * 1000);
-      }
-
-      function clearTimeoutCount() {
-        clearTimeout(timer);
-      }
-
-      function httpSuccessCallback(xhrOrResponseData, isQueue) {
-        clearTimeoutCount();
-        xhrOrResponseData = xhrOrResponseData || {};
-        var responseText = '';
-        var responseData = null;
-        var parseError = false;
-
-        controlEvents.onComplete && controlEvents.onComplete();
-
-        // 不是队列进入的，并且readState为4，则解析json
-        if (!isQueue && xhrOrResponseData.readyState === 4) {
-          responseText = xhrOrResponseData.responseText;
-          try {
-            responseData = JSON.parse(responseText);
-          } catch(e) {
-            parseError = true;
-          }
-        } else { // 否则，为队列传入的responseData
-          responseData = xhrOrResponseData;
+;Air.Module('B.service.Request', function (require) {
+    var HTTP = require('B.network.HTTP');
+    var EVENTS = require('B.event.events');
+    var storage = require('B.data.storage');
+    var middleware = require('B.util.middleware');
+    var Request = (function () {
+        function Request(request, options, scope) {
+            if (options === void 0) { options = {}; }
+            this.http = new HTTP();
+            this.options = {};
+            this.EVENTS = {
+                SUCCESS: beacon.createEvent("service response success"),
+                TIMEOUT: beacon.createEvent("service request timout"),
+                ERROR: beacon.createEvent("service response error"),
+                BIZERROR: beacon.createEvent("business error"),
+                NETWORKERROR: beacon.createEvent("network error")
+            };
+            this.request = request;
+            this.options = options;
+            this.scope = scope;
         }
-
-        if (parseError) {
-          callAfterQueryMiddleware({xhr: http.xhr, data: responseData, requestParam: requestOptions, errorCode: ERROR_CODE.parse}, function(isError) {
-            options.errorCallBack && options.errorCallBack(ERROR_CODE.parse, responseText);
-            beacon(self).on(SERVICEEVENTS.ERROR, {
-              error : ERROR_CODE.parse,
-              response : responseText
+        Request.callBeforeQueryMiddleware = function (request, next) {
+            var fnName = 'beforeQuery';
+            middleware.run(fnName, request, next);
+        };
+        Request.callAfterQueryMiddleware = function (responseData, next) {
+            var fnName = 'afterQuery';
+            middleware.run(fnName, responseData, next);
+        };
+        Request.prototype.sendRequest = function (request) {
+            var _this = this;
+            if (request === void 0) { request = this.request; }
+            Request.callBeforeQueryMiddleware(request, function () {
+                request.successCallBack = function (response) {
+                    _this.httpSuccessCallback(response);
+                };
+                request.errorCallBack = function (xhr) { _this.httpErrorCallback(xhr); };
+                _this.http.request(request);
+                _this.startTimeoutCount();
             });
-            beacon(scope).on(EVENTS.DATA_CHANGE);
-            if (!isQueue) {
-              var isError = true;
-              runQueue(isError, xhrOrResponseData);
-            }
-            tryClearQueue();
-          });
-        } else {
-          callAfterQueryMiddleware({xhr: http.xhr, data: responseData, requestParam: requestOptions}, function(isError) {
-            if (isError) {
-              options.errorCallBack && options.errorCallBack(ERROR_CODE.business, responseData);
-              beacon(self).on(SERVICEEVENTS.ERROR, {
-                error : ERROR_CODE.business,
-                response : responseData
-              });
-              if (!isQueue) {
-                var isError = true;
-                runQueue(isError, xhrOrResponseData);
-              }
-            } else {
-              var useCache = false;
-              var noCacheRun = function() {
-                // 记录缓存
-                config.expiredSecond && storage.set(cacheKey, responseText, {
-                  expiredSecond: config.expiredSecond
+        };
+        Request.prototype.startTimeoutCount = function () {
+            var _this = this;
+            this.timer = setTimeout(function () {
+                _this.http.abort();
+            }, this.options.timeout * 1000);
+        };
+        Request.prototype.clearTimeoutCount = function () {
+            clearTimeout(this.timer);
+        };
+        Request.prototype.parseResponseError = function (responseData) {
+            var _this = this;
+            var options = {
+                xhr: this.http.xhr,
+                data: responseData,
+                requestParam: this.request,
+                errorCode: Request.ERROR_CODE.parse
+            };
+            Request.callAfterQueryMiddleware(options, function (isError) {
+                _this.options.errorCallBack && _this.options.errorCallBack(Request.ERROR_CODE.parse);
+                beacon(_this).on(_this.EVENTS.ERROR, {
+                    error: Request.ERROR_CODE.parse,
+                    errorType: 'response parse error'
                 });
-
-                options.successCallBack && options.successCallBack(responseData);
-                beacon(self).on(SERVICEEVENTS.SUCCESS, responseData);
-                if (!isQueue) {
-                  var isError = false;
-                  runQueue(isError, responseData);
+                beacon(_this.scope).on(EVENTS.DATA_CHANGE);
+            });
+        };
+        Request.prototype.cacheResponse = function (responseText) {
+            this.options.expiredSecond && storage.set(this.options.cacheKey, responseText, {
+                expiredSecond: this.options.expiredSecond
+            });
+        };
+        Request.prototype.responseComplate = function (responseData, responseText) {
+            var _this = this;
+            var options = {
+                xhr: this.http.xhr,
+                data: responseData,
+                requestParam: this.request
+            };
+            Request.callAfterQueryMiddleware(options, function (isError) {
+                if (isError) {
+                    _this.options.errorCallBack && _this.options.errorCallBack(Request.ERROR_CODE.business, responseData);
+                    var eventData = {
+                        error: Request.ERROR_CODE.business,
+                        errorType: 'business error',
+                        response: responseData
+                    };
+                    beacon(_this).on(_this.EVENTS.ERROR, eventData);
+                    beacon(_this).on(_this.EVENTS.BIZERROR, eventData);
+                    return;
                 }
-              }
-
-              if (!options.noCache) {
-                useCache = tryReturnCacheData(noCacheRun);
-              } else {
-                noCacheRun();
-              }
+                _this.cacheResponse(responseText);
+                _this.options.successCallBack && _this.options.successCallBack(responseData);
+                beacon(_this).on(_this.EVENTS.SUCCESS, responseData);
+                beacon(_this.scope).on(EVENTS.DATA_CHANGE);
+            });
+        };
+        Request.prototype.httpSuccessCallback = function (response) {
+            if (response === void 0) { response = {}; }
+            this.clearTimeoutCount();
+            var responseText = '';
+            var responseData;
+            if (response.readyState === 4) {
+                responseText = response.responseText;
+                try {
+                    responseData = JSON.parse(responseText);
+                    this.responseComplate(responseData, responseText);
+                }
+                catch (e) {
+                    this.parseResponseError(responseData);
+                    return;
+                }
             }
-
-            beacon(scope).on(EVENTS.DATA_CHANGE);
-
-            tryClearQueue();
-
-          });
-        }
-      }
-
-      function httpErrorCallback(xhr, isQueue) {
-        clearTimeoutCount();
-
-        controlEvents.onComplete && controlEvents.onComplete();
-        tryClearQueue();
-
-        // abortAll时不触发事件
-        if (self.noTriggerEvent) {
-          self.noTriggerEvent = false;
-          return;
-        }
-
-        // status = 0 为abort后进入的，算做超时
-        var errorCode = xhr.status ? ERROR_CODE.network : ERROR_CODE.timeout;
-        callAfterQueryMiddleware({errorCode: errorCode, xhr: xhr, requestParam: requestOptions}, function(errorInfo){
-          options.errorCallBack && options.errorCallBack(errorCode, errorInfo);
-          beacon(self).on(SERVICEEVENTS.ERROR, {
-            error : errorCode,
-            response : errorInfo
-          });
-
-          if (!isQueue) {
-            var isError = true;
-            runQueue(isError, xhr);
-          }
-        });
-
-        beacon(scope).on(EVENTS.DATA_CHANGE);
-
-      }
-
-      function runQueue(isError, xhrOrResponseData) {
-        var args = [].slice.call(arguments, 1);
-        var isQueue = true;
-        if (curServiceQueue && curServiceQueue.length) {
-          for (var curService; curService = curServiceQueue.shift();) {
-            if (curService) {
-              if (isError) {
-                curService.httpErrorCallback && curService.httpErrorCallback.call(self, xhrOrResponseData, isQueue);
-              } else {
-                curService.httpSuccessCallback && curService.httpSuccessCallback.call(self, xhrOrResponseData, isQueue);
-              }
-            }
-          }
-          tryClearQueue();
-        }
-      }
-
-      // 服务请求完，如果队列为空，则删除队列
-      function tryClearQueue() {
-        if (curServiceQueue && !curServiceQueue.length) {
-          delete serviceQueue[cacheKey];
-        }
-      }
-    };
-
-    this.abort = function(noTriggerEvent){
-      self.noTriggerEvent = noTriggerEvent;
-      http.abort();
-    };
-  }
-
-  // beforeQuery 方法对外支持中间件，中间件参数为 requestOptions，中间件无返回值
-  function callBeforeQueryMiddleware(requestOptions, next) {
-    var fnName = 'beforeQuery';
-    middleware.run(fnName, requestOptions, next);
-  }
-
-  // afterQuery 方法对外支持中间件，中间件参数为 requestOptions，中间件返回是否失败
-  function callAfterQueryMiddleware(responseData, next) {
-    var fnName = 'afterQuery';
-    middleware.run(fnName, responseData, next);
-  }
-
-  return Service;
-
+        };
+        Request.prototype.httpErrorCallback = function (xhr) {
+            var _this = this;
+            this.clearTimeoutCount();
+            var errorCode = xhr.status ? Request.ERROR_CODE.network : Request.ERROR_CODE.timeout;
+            var errorType = xhr.status ? "network Error" : "request timeout";
+            var request = {
+                errorCode: errorCode,
+                xhr: xhr,
+                requestParam: this.options
+            };
+            Request.callAfterQueryMiddleware(request, function (errorInfo) {
+                _this.options.errorCallBack && _this.options.errorCallBack(errorCode, errorInfo);
+                beacon(_this).on(_this.EVENTS.ERROR, {
+                    error: errorCode,
+                    response: errorInfo
+                });
+            });
+            beacon(this.scope).on(EVENTS.DATA_CHANGE);
+        };
+        Request.ERROR_CODE = {
+            parse: 1,
+            timeout: 2,
+            network: 3,
+            business: 4
+        };
+        return Request;
+    }());
+    return Request;
 });
-;Air.Module('B.service.serviceFactory', function(require) {
-  var configList = [];
-  var serviceList = [];
-  var Service = require('B.service.Service');
-  var middleware = require('B.util.middleware');
-  var serviceInstanceList = [];
-
-  function setConfig(configName, config) {
-    if (configName) {
-      configList[configName] = config;
-    }
-  }
-
-  function getConfig(configName) {
-    return configList[configName] || {};
-  }
-
-
-
-  function set(serviceName, config) {
-    if (serviceName) {
-      var newConfig = beacon.utility.merge({}, getConfig(config.extend), config);
-      serviceList[serviceName] = newConfig;
-    } else {
-      throw new Error('serviceName is required');
-    }
-  }
-
-  function get(serviceName, scope) {
-    var serviceConfig = serviceList[serviceName];
-    if (serviceConfig) {
-      serviceConfig.serviceName = serviceName;
-      var service = new Service(serviceConfig, scope, {
-        onQuery: function() {
-          serviceInstanceList.push(service);
-        },
-        onComplete: function() {
-          var index = beacon.utility.arrayIndexOf(serviceInstanceList, service);
-          if (index !== -1) {
-            serviceInstanceList.splice(index, 1);
-          }
+;Air.Module('B.service.Service', function (require) {
+    var HTTP = require('B.network.HTTP');
+    var storage = require('B.data.storage');
+    var Request = require('B.service.Request');
+    var Service = (function () {
+        function Service(config, scope) {
+            if (config === void 0) { config = {}; }
+            this.requestQueue = [];
+            this.EVENTS = {
+                SUCCESS: beacon.createEvent("service response success"),
+                TIMEOUT: beacon.createEvent("service request timout"),
+                ERROR: beacon.createEvent("service response error"),
+                BIZERROR: beacon.createEvent("business error"),
+                NETWORKERROR: beacon.createEvent("network error")
+            };
+            this.config = config;
+            this.scope = scope;
+            this.config.header = this.config.header || {};
+            this.config.header['Content-Type'] = this.config.header['Content-Type'] || 'application/json;charset=utf-8';
         }
-      });
-      return service;
-    } else {
-      throw new Error(serviceName + ' not found');
-    }
-  }
-
-  function abortAll() {
-    var tmpList = serviceInstanceList.concat([]);
-    for (var i = 0, len = tmpList.length, service; i < len; i++) {
-      service = tmpList[i];
-      service && service.abort(true);
-    }
-  }
-
-  return {
-    setConfig: setConfig,
-    set: set,
-    get : get,
-    addMiddleware : middleware.add,
-    removeMiddleware : middleware.remove,
-    abortAll: abortAll
-  }
+        Service.prototype.on = function (event, handle) {
+            beacon(this).on(event, handle);
+        };
+        Service.prototype.off = function (event, handle) {
+            beacon(this).off(event, handle);
+        };
+        Service.prototype.getConfig = function () {
+            return this.config;
+        };
+        Service.prototype.responseCacheData = function (cachedData, requestOptions) {
+            if (cachedData) {
+                var fromCache = true;
+                requestOptions.successCallBack && requestOptions.successCallBack(cachedData, fromCache);
+                beacon(this).on(this.EVENTS.SUCCESS, cachedData);
+                return;
+            }
+        };
+        Service.prototype.getCacheData = function (requestParams) {
+            var url = this.config.protocol + '://' + this.config.host + this.config.path;
+            var cacheKey = url + JSON.stringify(requestParams);
+            var cachedData;
+            var cachedDataText = storage.get(cacheKey);
+            try {
+                cachedData = JSON.parse(cachedDataText);
+            }
+            catch (e) { }
+            return cachedData;
+        };
+        Service.prototype.query = function (requestParams, options) {
+            if (options === void 0) { options = {}; }
+            var url = this.config.protocol + '://' + this.config.host + this.config.path;
+            var cacheKey = url + JSON.stringify(requestParams);
+            var cachedData = this.getCacheData(requestParams);
+            if (!options.noCache && cachedData) {
+                this.responseCacheData(cachedData, options);
+            }
+            else {
+                var request = {
+                    url: url,
+                    method: this.config.method,
+                    header: this.config.header,
+                    data: JSON.stringify(requestParams),
+                    serviceName: this.config.serviceName
+                };
+                options.timeout = options.timeout || this.config.timeout;
+                options.expiredSecond = options.expiredSecond || this.config.expiredSecond;
+                options.cacheKey = cacheKey;
+                var serviceRequest = new Request(request, options, this.scope);
+                this.bindRequestEvent(serviceRequest);
+                this.requestQueue.push(serviceRequest);
+                serviceRequest.sendRequest();
+            }
+        };
+        ;
+        Service.prototype.bindRequestEvent = function (request) {
+            var _this = this;
+            beacon(request).on(request.EVENTS.SUCCESS, function (e, data) { beacon(_this).on(_this.EVENTS.SUCCESS, data); });
+            beacon(request).on(request.EVENTS.TIMEOUT, function (e, data) { beacon(_this).on(_this.EVENTS.TIMEOUT, data); });
+            beacon(request).on(request.EVENTS.BIZERROR, function (e, data) { beacon(_this).on(_this.EVENTS.BIZERROR, data); });
+            beacon(request).on(request.EVENTS.NETWORKERROR, function (e, data) { beacon(_this).on(_this.EVENTS.NETWORKERROR, data); });
+            beacon(request).on(request.EVENTS.ERROR, function (e, data) { beacon(_this).on(_this.EVENTS.ERROR, data); });
+        };
+        Service.prototype.abort = function (noTriggerEvent) {
+            for (var requestIndex = 0; requestIndex < this.requestQueue.length; requestIndex++) {
+                var request = this.requestQueue[requestIndex];
+                request.abort();
+            }
+        };
+        Service.serviceQueue = {};
+        return Service;
+    }());
+    return Service;
+});
+;Air.Module('B.service.serviceFactory', function (require) {
+    var Service = require('B.service.Service');
+    var middleware = require('B.util.middleware');
+    var serviceFactory = (function () {
+        function serviceFactory() {
+            this.configList = [];
+            this.serviceList = [];
+        }
+        serviceFactory.prototype.getConfig = function (configName) {
+            return this.configList[configName] || {};
+        };
+        serviceFactory.prototype.addMiddleware = function (middlewareName, fn) {
+            middleware.add(middlewareName, fn);
+        };
+        serviceFactory.prototype.removeMiddleware = function (middlewareName, fn) {
+            middleware.remove(middlewareName, fn);
+        };
+        serviceFactory.prototype.setConfig = function (configName, config) {
+            if (configName) {
+                this.configList[configName] = config;
+            }
+        };
+        serviceFactory.prototype.set = function (serviceName, config) {
+            if (serviceName) {
+                var newConfig = beacon.utility.merge({}, this.getConfig(config.extend), config);
+                this.serviceList[serviceName] = newConfig;
+            }
+            else {
+                throw new Error('serviceName is required');
+            }
+        };
+        serviceFactory.prototype.get = function (serviceName, scope) {
+            var serviceConfig = this.serviceList[serviceName];
+            if (serviceConfig) {
+                serviceConfig.serviceName = serviceName;
+                var service = new Service(serviceConfig, scope);
+                return service;
+            }
+            else {
+                throw new Error(serviceName + ' not found');
+            }
+        };
+        serviceFactory.prototype.abortAll = function () {
+            for (var serviceName in this.serviceList) {
+                if (this.serviceList.hasOwnProperty(serviceName)) {
+                    var service = this.serviceList[serviceName];
+                    service.abort(true);
+                }
+            }
+            ;
+        };
+        return serviceFactory;
+    }());
+    return new serviceFactory();
 });
 ;Air.Module("B.router.router", function () {
     var Router = (function () {
