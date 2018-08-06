@@ -65,50 +65,63 @@
   }
   return node;
 });
-;Air.Module('B.util.util', function() {
-  var util = {
-    isEmpty: function(obj) {
-      if (obj == null) {
-        return true;
-      }
-      var isObject = beacon.utility.isType(obj, 'Object');
-      var isArray = beacon.utility.isType(obj, 'Array');
-      if (!isObject && !isArray) {
-        return false;
-      }
-      for (var prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
-          return false;
+;Air.Module('B.util.util', function (require) {
+    var nodeUtil = require('B.util.node');
+    var Util = (function () {
+        function Util() {
         }
-      }
-      return true;
-    },
-
-    enums: function(keys) {
-      var result = {};
-      for (var i = keys.length - 1; i >= 0; i--) {
-        result[keys[i]] = keys[i];
-      };
-      return result;
-    },
-
-    getData : function(pathString, root){
-      var rootParent = root.parent;
-      var nsPath = pathString.split("."),
-          ns = root || window || {},
-          root = ns;
-      // 如果不是最后一个为undefined，则赋值为空数组，避免Observe绑定失败
-      for (var i = 0, len = nsPath.length; i < len; i++) {
-          if(!ns || (ns[nsPath[i]] === undefined)){
-              return  rootParent && util.getData(pathString, rootParent);
-          } else {
-              ns = ns[nsPath[i]];
-          }
-      };
-      return ns ;
-    }
-  };
-  return util;
+        Util.isEmpty = function (obj) {
+            if (obj == null) {
+                return true;
+            }
+            var isObject = beacon.utility.isType(obj, 'Object');
+            var isArray = beacon.utility.isType(obj, 'Array');
+            if (!isObject && !isArray) {
+                return false;
+            }
+            for (var prop in obj) {
+                if (obj.hasOwnProperty(prop)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        ;
+        Util.enums = function (keys) {
+            var result = {};
+            for (var i = keys.length - 1; i >= 0; i--) {
+                result[keys[i]] = keys[i];
+            }
+            ;
+            return result;
+        };
+        ;
+        Util.getData = function (pathString, root) {
+            var rootParent = root.parent;
+            var nsPath = pathString.split("."), ns = root || window || {}, root = ns;
+            for (var i = 0, len = nsPath.length; i < len; i++) {
+                if (!ns || (ns[nsPath[i]] === undefined)) {
+                    return rootParent && Util.getData(pathString, rootParent);
+                }
+                else {
+                    ns = ns[nsPath[i]];
+                }
+            }
+            ;
+            return ns;
+        };
+        Util.trim = function (str) {
+            str = str || '';
+            return str.trim ? str.trim() : str.replace(/^\s+|\s+^/, '');
+        };
+        ;
+        Util.isHTML = function (node) {
+            return node ? node.nodeType === nodeUtil.type.HTML : false;
+        };
+        return Util;
+    }());
+    ;
+    return Util;
 });
 ;Air.Module('B.data.memCache', function(){
   var MEMORY_CACHE = {};
@@ -776,6 +789,7 @@
       rootScope.scope = rootScope.scope || {};
       beacon.utility.merge(rootScope.scope, scope);
       scopeTree[0] = rootScope;
+      scopeTree['root'] = rootScope;
     }
 
     /**
@@ -784,7 +798,7 @@
      *返回：生成的scope结构的索引值
      **/
     var addScope = function(parentIndex, scopeName) {
-      var parentScopeStructure = getScope(parentIndex);
+      var parentScopeStructure = getScope(parentIndex)||getScope(0);
       var newScope = getStructure();
       scopeTree[scopeName] = newScope;
       var scopeIndex = scopeTree.push(newScope) - 1;
@@ -1281,436 +1295,327 @@
   };
   return api;
 });
-;Air.Module('B.scope.scopeManager', function(require) {
-  var rootScope = {};
-  var ScopeTreeManager = require('B.scope.ScopeTreeManager');
-  var initModel = require('B.directive.model');
-  var eventDirective = require('B.directive.event');
-  var showDirective = require('B.directive.show');
-  var existDirective = require('B.directive.exist');
-  var styleDirective = require('B.directive.style');
-  var propertyDirective = require('B.directive.property');
-  var Repeater = require('B.directive.Repeater');
-  var tagManager = require('B.scope.tagManager');
-
-  var util = require('B.util.util');
-  var nodeUtil = require('B.util.node');
-  var memCache = require('B.data.memCache');
-
-  var scopeTreeManager = new ScopeTreeManager(rootScope);
-
-  var trim = function(str) {
-    str = str || ''
-    return str.trim ? str.trim() : str.replace(/^\s+|\s+^/, '');
-  };
-
-  function parseScope(scopeName, dom, needScope) {
-    var scopeStructure = scopeTreeManager.getScopeByName(scopeName);
-    if (!scopeStructure) {
-      parseTemplate(dom, scopeName, null, null, needScope);
-      scopeStructure = scopeTreeManager.getScopeByName(scopeName) || {};
+;Air.Module('B.scope.scopeManager', function (require) {
+    var rootScope = {};
+    var ScopeTreeManager = require('B.scope.ScopeTreeManager');
+    var initModel = require('B.directive.model');
+    var eventDirective = require('B.directive.event');
+    var showDirective = require('B.directive.show');
+    var existDirective = require('B.directive.exist');
+    var styleDirective = require('B.directive.style');
+    var propertyDirective = require('B.directive.property');
+    var Repeater = require('B.directive.Repeater');
+    var tagManager = require('B.scope.tagManager');
+    var util = require('B.util.util');
+    var nodeUtil = require('B.util.node');
+    var memCache = require('B.data.memCache');
+    var scopeTreeManager = new ScopeTreeManager(rootScope);
+    function isView(node) {
+        var isHTMLElement = util.isHTML(node);
+        return isHTMLElement && (node.nodeName.toUpperCase() == 'VIEW');
     }
-
-    return scopeStructure.scope;
-  }
-
-  function isHTML(node) {
-    return node ? node.nodeType === nodeUtil.type.HTML : false;
-  }
-
-  function isView(node) {
-    var isHTMLElement = isHTML(node);
-    return isHTMLElement && (node.nodeName.toUpperCase() == 'VIEW');
-  }
-
-  function isRepeat(node) {
-    var isHTMLElement = isHTML(node);
-    return isHTMLElement && (node.hasAttribute('b-repeat'));
-  }
-
-  // DOM 树遍历回溯栈
-  var backtrackingPoints = [];
-
-  /**
-   *作用：获取模板标签
-   *参数: <content> 文本节点值/属性节点值
-   *返回：array  模板标签列表
-   **/
-  function getDataPath(content) {
-    return content.match(/{{.+?}}/g) || [];
-  }
-
-  /**
-   *作用：监听文本节点或属性节点的数据源变动
-   *参数: <dataPath> 数据源路径（有效 token）
-   *参数: <currentScopeIndex> 当前作用域索引值
-   *返回：undefined
-   **/
-  function bindObjectData(dataPath, currentScopeIndex, callback) {
-    var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
-    var scope = scopeStructure.scope
-    var activePath = '';
-    // dataPath = dataPath.replace(/\.\d+$/,'')
-    var pathNodes = dataPath.split('.') || [];
-    for (var i = 0; i < pathNodes.length; i++) {
-      // var nextPathNode = pathNodes.shift();
-      var nextPathNode = pathNodes[i];
-      var activeObj = activePath ? util.getData(activePath, scope) : scope;
-      activeObj = activeObj || Air.NS(activePath, scope);
-      var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
-
-      nextPathNode && (!(Object.getOwnPropertyDescriptor(activeObj, nextPathNode) && Object.getOwnPropertyDescriptor(activeObj, nextPathNode).set) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
-        Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
-      activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
+    function isRepeat(node) {
+        var isHTMLElement = util.isHTML(node);
+        return isHTMLElement && (node.hasAttribute('b-repeat'));
     }
-  }
-
-
-
-
-  /**
-   *作用：监听文本节点|属性节点的数据变化
-   *参数: <tag>  数据标签
-   *参数: <node> 文本节点|属性节点
-   *参数: <scopeIndex> 数据标签所在作用域索引值
-   *返回：undefind
-   **/
-  function watchData(tag, node, scopeIndex, callback, callbackNow){
-     var scope = scopeTreeManager.getScope(scopeIndex);
-     var tokens = getTokens(tag, node, scopeIndex);
-     for(var i = 0; i < tokens.length; i++){
-       var activeToken = tokens[i];
-
-      //  var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
-      //  var scope = scopeStructure.scope
-       callback && callbackNow && callback(util.getData(activeToken, scope.scope));
-
-       tagManager.addNode(scopeIndex, activeToken, node, callback);
-       bindObjectData(activeToken, scopeIndex, callback);
-     }
-  }
-
-
-  /**
-   *作用：获得有效 token 列表
-   *参数: <tag> 数据标签
-   *返回：有效 token 列表
-   **/
-  function getTokens(tag, node, scopeIndex) {
-    node.$template = node.$template || node.nodeValue;
-    var scope = scopeTreeManager.getScope(scopeIndex);
-    // var tokens = tag.match(/(['"])?\s*([$a-zA-Z\._0-9\s\-]+)\s*\1?/g) || [];
-    var tokens = tag.match(/(['"])\s*([$a-zA-Z\._0-9\s\-]+)\s*\1|(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g) || [];
-    var result = [];
-    for (var i = 0; i < tokens.length; i++) {
-      var token = trim(tokens[i]);
-      if (!(/^\d+$/.test(token) || /^['"]/.test(token) || token == '' || token === 'true' || token === 'false')) {
-        var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
-        var lastTagStr = (node.$tag || tag);
-        var tagStr = lastTagStr.replace(tokenReg, function($0, $1, $2) {
-          if ($0.indexOf('util.getData("' + token) >= 0) {
-            return $0
-          } else {
-            return $0.replace($2, 'util.getData("' + token + '", scope)')
-          }
-        });
-        node.$template = node.$template.replace(lastTagStr, tagStr);
-        node.$tag = tagStr;
-
-        result.push(token);
-      }
-    }
-    if (result.length === 0) {
-      node.$tag = tag;
-    }
-    return result;
-  }
-
-  /**
-   *作用：解析文本|属性节点，监听数据变化
-   *参数: <node> 文本节点|属性节点
-   *参数: <currentScopeIndex> 数据标签所在作用域索引值
-   *返回：undefind
-   **/
-  function parseTEXT(node, currentScopeIndex) {
-    var tags = node.nodeValue.match(/{{.*?}}/g) || [];
-    var scope = scopeTreeManager.getScope(currentScopeIndex).scope;
-
-    // 遍历节点内所有数据标签
-    for (var i = 0; i < tags.length; i++) {
-      var activeTag = tags[i];
-      watchData(activeTag, node, currentScopeIndex);
-      if (node.$tag) {
-        var val = eval(node.$tag.replace(/(^{{)|(}}$)/g, '')) || '';
-        node.nodeValue = node.nodeValue.replace(activeTag, val);
-        node.$tag = '';
-      }
-      
-    }
-  }
-
-  function tryGenerateSubViewScope(node, scopeStructure) {
-    if (node.tagName.toLowerCase() === 'view') {
-      var scopeKey = node.getAttribute('b-scope-key');
-      var viewName = node.getAttribute('name');
-      var subScopeName = scopeKey || viewName;
-      // var subScope = scopeTreeManager.getScopeByName(subScopeName);
-      var subScope = scopeStructure.scope;
-      var currentScopeIndex = scopeStructure.index;
-      if (!subScope) {
-        var subScopeIndex = scopeTreeManager.addScope(currentScopeIndex, subScopeName);
-        subScope = scopeTreeManager.getScope(subScopeIndex);
-      }
-
-      if (scopeKey) {
-        var controllerMap = memCache.get('controllerMap') || {};
-        var controller = controllerMap[viewName];
-
-        if (controller) {
-          setTimeout(function() {
-            b.run(viewName, controller);
-          }, 0);
-        }
-      }
-    }
-
-    return scopeStructure;
-  }
-
-  /**
-   *作用：遍历属性节点
-   *参数: <node> HTML引用.
-   *参数: <currentScopeIndex> 当前作用域索引值.
-   *返回：undefind
-   **/
-  function parseHTML(node, currentScopeIndex) {
-    var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
-    tryGenerateSubViewScope(node, scopeStructure);
-    var scope = scopeStructure.scope;
-    existDirective(node, scopeStructure, watchData)
-    if (!node.parentElement) {
-      return;
-    }
-    initModel(node, scopeStructure, watchData);
-    eventDirective(node, scope);
-    showDirective(node, scopeStructure, watchData);
-    styleDirective(node, scopeStructure, watchData);
-    propertyDirective(node, scopeStructure, watchData);
-
-    var attributes = [].concat.apply([], node.attributes);
-    for (var i = 0; i < attributes.length; i++) {　
-      var activeAttribute = attributes[i];
-      if ([initModel.key, showDirective.key].indexOf(activeAttribute.name) !== -1) {
-        continue;
-      }
-      parseTEXT(activeAttribute, currentScopeIndex);
-    }
-  }
-
-
-  /**
-   *作用：模板解析
-   *参数: <node> 模板引用.
-   *参数: [currentScopeIndex] 模板当前所处作用域索引值. 默认值 = 0 
-   *返回：undefind
-   **/
-  function parseTemplateRAW(node, scopeName, currentScopeIndex, isSub, needScope) {
-
-    if (!node) {
-      return
-    }
-
-    if (!isSub) {
-      backtrackingPoints = [];
-    }
-    currentScopeIndex = currentScopeIndex || 0;
-
-    var popPoints = function(nextNode, scopeName) {
-      return {
-        nextNode: nextNode,
-        scopeName: scopeName
-      }
-    }
-
-
-    var goOn = function(nextNode, scopeName) {
-      if (!nextNode && isSub) {
-        var lastNode = backtrackingPoints.pop();
-        nextNode = lastNode && lastNode.nextSibling;
-        var targetScopeIndex = isView(lastNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
-        scopeName = isView(lastNode) && targetScopeIndex;
-      }
-
-      return parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
-    }
-
-    if (isView(node) || needScope) {
-      // view scope 压栈
-      scopeName = node.getAttribute('b-scope-key') || node.getAttribute('name');
-      currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
-      // scopeName = currentScopeIndex;
-    } else if (isRepeat(node)) { // view 不允许进行 repeat
-      var nextNode = isSub && node.nextSibling;
-      var repeatNode = createRepeatNodes(node, currentScopeIndex);
-      if (!repeatNode) {
-        // repeat 元素没有下一个节点时退栈，统一放到 goOn 中处理
-        return goOn(nextNode, scopeName);
-      } else {
-        node = repeatNode;
-      }
-    }
-
-
-
-    // 回溯点压栈
-    if (isSub && node.nextSibling && node.firstChild) { backtrackingPoints.push(node) };
-
-    var nextSibling = node.nextSibling;
-    switch (node.nodeType) {
-      case nodeUtil.type.HTML:
-        parseHTML(node, currentScopeIndex);
-        break;
-      case nodeUtil.type.TEXT:
-      case nodeUtil.type.ATTR:
-        parseTEXT(node, currentScopeIndex);
-        break;
-      default:
-    }
-
-    var nextNode;
-    if (!node.parentElement) {
-      if (isSub && node.firstChild) {
-        backtrackingPoints.pop();
-      }
-
-      nextNode = (isSub && nextSibling);
-    } else {
-      nextNode = node.firstChild || (isSub && nextSibling);
-    }
-
-    return goOn(nextNode, scopeName);
-  }
-
-
-  function parseTemplateProxy(f) {
-    var value;
-    var active = false;
-    var accumulated = [];
-
-    return function accumulator() {
-        accumulated.push(arguments);
-
-        if (!active) {
-            active = true;
-
-            while (accumulated.length) {
-                value = f.apply(this, accumulated.shift());
-            }
-
-            active = false;
-
-            return value;
+    var backtrackingPoints = [];
+    function bindObjectData(dataPath, currentScopeIndex, callback) {
+        var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
+        var scope = scopeStructure.scope;
+        var activePath = '';
+        var pathNodes = dataPath.split('.') || [];
+        for (var i = 0; i < pathNodes.length; i++) {
+            var nextPathNode = pathNodes[i];
+            var activeObj = activePath ? util.getData(activePath, scope) : scope;
+            activeObj = activeObj || Air.NS(activePath, scope);
+            var nextObj = nextPathNode && util.getData(nextPathNode, activeObj);
+            nextPathNode && (!(Object.getOwnPropertyDescriptor(activeObj, nextPathNode) && Object.getOwnPropertyDescriptor(activeObj, nextPathNode).set) || /^\d+$/.test(nextPathNode) || (i === pathNodes.length - 1)) &&
+                Object.defineProperty(activeObj, nextPathNode, createDescriptor.call(activeObj, nextObj, dataPath, currentScopeIndex, callback));
+            activePath = nextPathNode && activePath ? (activePath + '.' + nextPathNode) : nextPathNode;
         }
     }
-}
-
-var parseTemplate = parseTemplateProxy(parseTemplateRAW);
-
-
-  /**
-   *作用：基于 repeat 模板生成对应 UI元素
-   *参数: <template> repeat模板引用.
-   *参数: <scope> 当前 repeat 元素所处的作用域.
-   *返回：使用 repeat 模板生成的第一个元素
-   **/
-  function createRepeatNodes(template, currentScopeIndex) {
-    var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
-    var repeater = new Repeater(template, currentScopeIndex, scopeStructure, parseTemplate);
-    var newFirstNode = repeater.updateUI()[0];
-    return newFirstNode;
-  }
-
-  /**
-   *作用：创建文本节点或属性节点数据源的描述符
-   *参数: <value> 模板标签初始值.
-   *参数: <dataPath> 数据路径（标签模板内的有效 token）
-   *参数: <scope> 当前标签所在的作用域id.
-   *返回：文本节点或属性节点数据源的描述符
-   **/
-  function createDescriptor(value, dataPath, scopeIndex, callBack) {
-    var scope = scopeTreeManager.getScope(scopeIndex);
-    var oldLength = 0;
-
-    var descriptor = {
-      enumerable: true,
-      configurable: true,
-      get: function() {
-       var isArray = beacon.utility.isType(value, 'Array');
-       if(isArray){
-         // 数组push操作等，会触发get，此时拿到的length是push之前的，所以要延迟
-         setTimeout(function() {
-           if (oldLength !== value.length) {
-             callBack && callBack();
-           }
-           oldLength = value.length;
-         }, 0);
-       }
-
-        return value;
-      },
-
-      set: function(val) {
-        var hasChanged = value !== val;
-        var isArray = beacon.utility.isType(val, 'Array');
-        var isObject = beacon.utility.isType(val, 'Object');
-        var isPathNode = isArray || isObject;
-        if (hasChanged && isPathNode) {
-          value = value || (isArray　? [] : {});
-          if (isArray) {
-            var oldLen = value.length;
-            var newLen = val.length;
-
-            if (newLen < oldLen) {
-              value.splice(newLen - oldLen, oldLen - newLen);
+    function getTokens(tag, node, scopeIndex) {
+        node.$template = node.$template || node.nodeValue;
+        var scope = scopeTreeManager.getScope(scopeIndex);
+        var tokens = tag.match(/(['"])\s*([$a-zA-Z\._0-9\s\-]+)\s*\1|(['"])?\s*([$a-zA-Z\._0-9\s]+)\s*\1?/g) || [];
+        var result = [];
+        var _loop_1 = function (i) {
+            var token = util.trim(tokens[i]);
+            if (!(/^\d+$/.test(token) || /^['"]/.test(token) || token == '' || token === 'true' || token === 'false')) {
+                var tokenReg = new RegExp('(^|\\b).*?(' + token.replace(/([.*?+\-^\/$])/g, '\\$1') + ')', 'g');
+                var lastTagStr = (node.$tag || tag);
+                var tagStr = lastTagStr.replace(tokenReg, function ($0, $1, $2) {
+                    if ($0.indexOf('util.getData("' + token) >= 0) {
+                        return $0;
+                    }
+                    else {
+                        return $0.replace($2, 'util.getData("' + token + '", scope)');
+                    }
+                });
+                node.$template = node.$template.replace(lastTagStr, tagStr);
+                node.$tag = tagStr;
+                result.push(token);
             }
-          }
-
-          if(isObject){
-            for(var aa in value){
-              if(!(aa in val)){
-                val[aa] = undefined;
-              }
-            }
-          }
-
-          beacon.utility.merge(value, val);
-          // beacon.utility.blend(value, val, {reset:true});
-           isArray && callBack && callBack();
-          //  (isObject) && callBack && callBack(util.getData(dataPath, scope.scope));
-          
-          // callBack && callBack();
-        } else {
-          if (value !== val) {
-            value = val;
-            tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
-          }
+        };
+        for (var i = 0; i < tokens.length; i++) {
+            _loop_1(i);
         }
-      }
+        if (result.length === 0) {
+            node.$tag = tag;
+        }
+        return result;
     }
-    return descriptor;
-  }
-  beacon.on('updateObjectData', function(e, args){
-    bindObjectData(args.dataPath, args.currentScopeIndex);
-    // args.callback && args.callback();
-  })
-
-  return {
-    parseScope: parseScope,
-    getScope: scopeTreeManager.getScopeByName,
-    setRoot: scopeTreeManager.setRootScope,
-    getScopeInstance: scopeTreeManager.getScopeInstanceByName,
-    watchData: watchData
-  }
+    function tryGenerateSubViewScope(node, scopeStructure) {
+        if (node.tagName.toLowerCase() === 'view') {
+            var scopeKey = node.getAttribute('b-scope-key');
+            var viewName_1 = node.getAttribute('name');
+            var subScopeName = scopeKey || viewName_1;
+            var subScope = scopeStructure.scope;
+            var currentScopeIndex = scopeStructure.index;
+            if (!subScope) {
+                var subScopeIndex = scopeTreeManager.addScope(currentScopeIndex, subScopeName);
+                subScope = scopeTreeManager.getScope(subScopeIndex);
+            }
+            if (scopeKey) {
+                var controllerMap = memCache.get('controllerMap') || {};
+                var controller_1 = controllerMap[viewName_1];
+                if (controller_1) {
+                    setTimeout(function () {
+                        b.run(viewName_1, controller_1);
+                    }, 0);
+                }
+            }
+        }
+        return scopeStructure;
+    }
+    function createDescriptor(value, dataPath, scopeIndex, callBack) {
+        var scope = scopeTreeManager.getScope(scopeIndex);
+        var oldLength = 0;
+        var descriptor = {
+            enumerable: true,
+            configurable: true,
+            get: function () {
+                var isArray = beacon.utility.isType(value, 'Array');
+                if (isArray) {
+                    setTimeout(function () {
+                        if (oldLength !== value.length) {
+                            callBack && callBack();
+                        }
+                        oldLength = value.length;
+                    }, 0);
+                }
+                return value;
+            },
+            set: function (val) {
+                var hasChanged = value !== val;
+                var isArray = beacon.utility.isType(val, 'Array');
+                var isObject = beacon.utility.isType(val, 'Object');
+                var isPathNode = isArray || isObject;
+                if (hasChanged && isPathNode) {
+                    value = value || (isArray ? [] : {});
+                    if (isArray) {
+                        var oldLen = value.length;
+                        var newLen = val.length;
+                        if (newLen < oldLen) {
+                            value.splice(newLen - oldLen, oldLen - newLen);
+                        }
+                    }
+                    if (isObject) {
+                        for (var aa in value) {
+                            if (!(aa in val)) {
+                                val[aa] = undefined;
+                            }
+                        }
+                    }
+                    beacon.utility.merge(value, val);
+                    isArray && callBack && callBack();
+                }
+                else {
+                    if (value !== val) {
+                        value = val;
+                        tagManager.updateNodeValue(scopeIndex, scope.scope, dataPath);
+                    }
+                }
+            }
+        };
+        return descriptor;
+    }
+    beacon.on('updateObjectData', function (e, args) {
+        bindObjectData(args.dataPath, args.currentScopeIndex);
+    });
+    var ScopeManager = (function () {
+        function ScopeManager() {
+            this.getScope = scopeTreeManager.getScopeByName;
+            this.setRoot = scopeTreeManager.setRootScope;
+            this.getScopeInstance = scopeTreeManager.getScopeInstanceByName;
+        }
+        ScopeManager.prototype.parseScope = function (viewName, viewElement, needScope) {
+            var scopeStructure = scopeTreeManager.getScopeByName(viewName);
+            if (!scopeStructure) {
+                this.parseTemplate(viewElement, viewName, null, null, needScope);
+                scopeStructure = scopeTreeManager.getScopeByName(viewName) || {};
+            }
+            return scopeStructure.scope;
+        };
+        ScopeManager.prototype.watchData = function (tag, node, scopeIndex, callback, callbackNow) {
+            var scope = scopeTreeManager.getScope(scopeIndex);
+            var tokens = getTokens(tag, node, scopeIndex);
+            for (var i = 0; i < tokens.length; i++) {
+                var activeToken = tokens[i];
+                callback && callbackNow && callback(util.getData(activeToken, scope.scope));
+                tagManager.addNode(scopeIndex, activeToken, node, callback);
+                bindObjectData(activeToken, scopeIndex, callback);
+            }
+        };
+        ScopeManager.prototype.parseTEXT = function (node, currentScopeIndex) {
+            var tags = node.nodeValue.match(/{{.*?}}/g) || [];
+            var scope = scopeTreeManager.getScope(currentScopeIndex).scope;
+            for (var i = 0; i < tags.length; i++) {
+                var activeTag = tags[i];
+                this.watchData(activeTag, node, currentScopeIndex);
+                if (node.$tag) {
+                    var val = eval(node.$tag.replace(/(^{{)|(}}$)/g, '')) || '';
+                    node.nodeValue = node.nodeValue.replace(activeTag, val);
+                    node.$tag = '';
+                }
+            }
+        };
+        ScopeManager.prototype.parseHTML = function (node, currentScopeName) {
+            var scopeStructure = scopeTreeManager.getScope(currentScopeName);
+            tryGenerateSubViewScope(node, scopeStructure);
+            var scope = scopeStructure.scope;
+            existDirective(node, scopeStructure, this.watchData);
+            if (!node.parentElement) {
+                return;
+            }
+            initModel(node, scopeStructure, this.watchData);
+            eventDirective(node, scope);
+            showDirective(node, scopeStructure, this.watchData);
+            styleDirective(node, scopeStructure, this.watchData);
+            propertyDirective(node, scopeStructure, this.watchData);
+            var attributes = [].concat.apply([], node.attributes);
+            for (var i = 0; i < attributes.length; i++) {
+                var activeAttribute = attributes[i];
+                if ([initModel.key, showDirective.key].indexOf(activeAttribute.name) !== -1) {
+                    continue;
+                }
+                this.parseTEXT(activeAttribute, currentScopeName);
+            }
+        };
+        ScopeManager.prototype.parseViewElement = function (view) {
+            return view.lastChild;
+        };
+        ScopeManager.prototype.parseTemplate = function (rootElement, currentScopeName) {
+            if (currentScopeName === void 0) { currentScopeName = 'root'; }
+            var other = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                other[_i - 2] = arguments[_i];
+            }
+            var treeWalker = document.createTreeWalker(rootElement);
+            var scopeList = [];
+            var lastViewEndElement = [];
+            do {
+                var currentNode = treeWalker.currentNode;
+                if (isView(currentNode)) {
+                    scopeList.push(currentScopeName);
+                    var lastChildElement = currentNode.lastChild;
+                    lastChildElement && lastViewEndElement.push(lastChildElement);
+                    currentScopeName = currentNode.getAttribute('b-scope-key') || currentNode.getAttribute('name');
+                    var parentScopName = scopeList[scopeList.length - 1] || 'root';
+                    scopeTreeManager.addScope(parentScopName, currentScopeName);
+                }
+                else if (isRepeat(currentNode)) {
+                    var repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
+                }
+                switch (currentNode.nodeType) {
+                    case nodeUtil.type.HTML:
+                        this.parseHTML(currentNode, currentScopeName);
+                        break;
+                    case nodeUtil.type.TEXT:
+                    case nodeUtil.type.ATTR:
+                        this.parseTEXT(currentNode, currentScopeName);
+                        break;
+                    default:
+                }
+                if (lastViewEndElement[lastViewEndElement.length - 1] === currentNode) {
+                    lastViewEndElement.pop();
+                    currentScopeName = scopeList.pop();
+                }
+            } while (treeWalker.nextNode());
+        };
+        ScopeManager.prototype.parseTemplateBAK = function (node, scopeName, currentScopeIndex, isSub, needScope) {
+            var _this = this;
+            if (!node) {
+                return;
+            }
+            if (!isSub) {
+                backtrackingPoints = [];
+            }
+            currentScopeIndex = currentScopeIndex || 0;
+            var goOn = function (nextNode, scopeName) {
+                var targetScopeIndex;
+                if (!nextNode && isSub) {
+                    var lastNode = backtrackingPoints.pop();
+                    nextNode = lastNode && lastNode.nextSibling;
+                    targetScopeIndex = isView(lastNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex;
+                    scopeName = isView(lastNode) && targetScopeIndex;
+                }
+                return _this.parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
+            };
+            if (isView(node) || needScope) {
+                scopeName = node.getAttribute('b-scope-key') || node.getAttribute('name');
+                currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
+            }
+            else if (isRepeat(node)) {
+                var nextNode_1 = isSub && node.nextSibling;
+                var repeatNode = this.createRepeatNodes(node, currentScopeIndex);
+                if (!repeatNode) {
+                    return goOn(nextNode_1, scopeName);
+                }
+                else {
+                    node = repeatNode;
+                }
+            }
+            if (isSub && node.nextSibling && node.firstChild) {
+                backtrackingPoints.push(node);
+            }
+            ;
+            var nextSibling = node.nextSibling;
+            switch (node.nodeType) {
+                case nodeUtil.type.HTML:
+                    this.parseHTML(node, currentScopeIndex);
+                    break;
+                case nodeUtil.type.TEXT:
+                case nodeUtil.type.ATTR:
+                    this.parseTEXT(node, currentScopeIndex);
+                    break;
+                default:
+            }
+            var nextNode;
+            if (!node.parentElement) {
+                if (isSub && node.firstChild) {
+                    backtrackingPoints.pop();
+                }
+                nextNode = (isSub && nextSibling);
+            }
+            else {
+                nextNode = node.firstChild || (isSub && nextSibling);
+            }
+            return goOn(nextNode, scopeName);
+        };
+        ScopeManager.prototype.createRepeatNodes = function (template, currentScopeIndex) {
+            var _this = this;
+            var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
+            var parseTemplateProxy = function (node, scopeName, currentScopeIndex, isSub, needScope) {
+                _this.parseTemplate(node, scopeName, currentScopeIndex, isSub, needScope);
+            };
+            var repeater = new Repeater(template, currentScopeIndex, scopeStructure, parseTemplateProxy);
+            var newFirstNode = repeater.updateUI()[0];
+            return newFirstNode;
+        };
+        return ScopeManager;
+    }());
+    return new ScopeManager();
 });
 ;Air.Module('B.network.HTTP', function() {
 

@@ -67,8 +67,6 @@ Air.Module("B.view.viewManager", function(require:Function){
         this.mainViewport.views[viewName] = view;
       }
 
-      
-
       private changeURLParams(viewName:string, options:Dictionary = {}) {
         if(options.isComponent){return;} // 全屏组件不切换 URL，也不需要更新URL参数
         var $scope = scopeManager.getScopeInstance(viewName);
@@ -143,7 +141,6 @@ Air.Module("B.view.viewManager", function(require:Function){
         });
       }
     
-    
       private show (viewName:string){
         var view:View = this.getViewByViewName(viewName);
         if (view) {
@@ -154,13 +151,10 @@ Air.Module("B.view.viewManager", function(require:Function){
         }
       }
     
-    
       private throw404(){
         var fnName = 'viewNotFound';
         middleware.run(fnName);
       };
-    
-    
     
       private saveLastView() {
         this.lastView = this.getActive();
@@ -275,7 +269,6 @@ Air.Module("B.view.viewManager", function(require:Function){
         });        
       }
     
-
       private viewIsLoading(viewName:string):boolean {
         // return beacon.utility.arrayIndexOf(this.loadingViewList, viewName) === -1 ? false : true;
         return !this.loadingViewList.indexOf(viewName);
@@ -296,7 +289,6 @@ Air.Module("B.view.viewManager", function(require:Function){
         }
       }      
 
-      
      
       public goTo (viewName:string, options:Dictionary){
         let fnName:string = 'beforeGoTo';
@@ -340,7 +332,6 @@ Air.Module("B.view.viewManager", function(require:Function){
       public back () {
         window.history.back();
       } 
-      
 
       public addMiddleware (middlewareName:string, fn:Function):void {
         middleware.add(middlewareName, fn);

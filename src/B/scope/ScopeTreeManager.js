@@ -33,6 +33,7 @@ Air.Module('B.scope.ScopeTreeManager', function(require) {
       rootScope.scope = rootScope.scope || {};
       beacon.utility.merge(rootScope.scope, scope);
       scopeTree[0] = rootScope;
+      scopeTree['root'] = rootScope;
     }
 
     /**
@@ -41,7 +42,7 @@ Air.Module('B.scope.ScopeTreeManager', function(require) {
      *返回：生成的scope结构的索引值
      **/
     var addScope = function(parentIndex, scopeName) {
-      var parentScopeStructure = getScope(parentIndex);
+      var parentScopeStructure = getScope(parentIndex)||getScope(0);
       var newScope = getStructure();
       scopeTree[scopeName] = newScope;
       var scopeIndex = scopeTree.push(newScope) - 1;
