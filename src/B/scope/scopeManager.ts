@@ -14,7 +14,7 @@ Air.Module('B.scope.scopeManager', function(require:any) {
   let nodeUtil = require('B.util.node');
   let memCache = require('B.data.memCache');
 
-  let scopeTreeManager = new ScopeTreeManager(rootScope);
+  let scopeTreeManager = new ScopeTreeManager();
 
 
   function isView(node:any) {
@@ -46,7 +46,7 @@ Air.Module('B.scope.scopeManager', function(require:any) {
    *返回：undefined
    **/
   function bindObjectData(dataPath:string, currentScopeIndex:number, callback?:Function) {
-    let scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
+    let scopeStructure = scopeTreeManager.getScope(currentScopeIndex) || scopeTreeManager.getRoot();
     let scope = scopeStructure.scope
     let activePath = '';
     // dataPath = dataPath.replace(/\.\d+$/,'')
@@ -106,9 +106,9 @@ Air.Module('B.scope.scopeManager', function(require:any) {
       let subScopeName = scopeKey || viewName;
       // let subScope = scopeTreeManager.getScopeByName(subScopeName);
       let subScope = scopeStructure.scope;
-      let currentScopeIndex = scopeStructure.index;
+      let currentScopeName = scopeStructure.name;
       if (!subScope) {
-        let subScopeIndex = scopeTreeManager.addScope(currentScopeIndex, subScopeName);
+        let subScopeIndex = scopeTreeManager.addScope(currentScopeName, subScopeName);
         subScope = scopeTreeManager.getScope(subScopeIndex);
       }
 
@@ -233,9 +233,16 @@ Air.Module('B.scope.scopeManager', function(require:any) {
   })
 
   class ScopeManager{
-    public getScope:Function = scopeTreeManager.getScopeByName;
-    public setRoot:Function = scopeTreeManager.setRootScope;
-    public getScopeInstance:Function =  scopeTreeManager.getScopeInstanceByName;
+    public getScope:Function = (scopeName:string) => {
+      return scopeTreeManager.getScopeByName(scopeName)
+    };
+
+    public setRoot:Function = (scope:any)=>{
+      return scopeTreeManager.setRootScope(scope)
+    };
+    public getScopeInstance:Function =  (scopeName:string) =>{
+      return scopeTreeManager.getScopeInstanceByName(scopeName)
+    };
 
     /**
      *作用：get scope of view
@@ -246,8 +253,9 @@ Air.Module('B.scope.scopeManager', function(require:any) {
       **/
     public parseScope(viewName:string, viewElement:HTMLElement, needScope?:boolean) {
       let scopeStructure = scopeTreeManager.getScopeByName(viewName);
+      
       if (!scopeStructure) {
-        this.parseTemplate(viewElement, viewName, null, null, needScope);
+        this.parseTemplate(viewElement, viewName);
         scopeStructure = scopeTreeManager.getScopeByName(viewName) || {};
       }
       return scopeStructure.scope;
@@ -279,7 +287,8 @@ Air.Module('B.scope.scopeManager', function(require:any) {
     **/
     private parseTEXT(node:any, currentScopeIndex:any) {
       let tags = node.nodeValue.match(/{{.*?}}/g) || [];
-      let scope = scopeTreeManager.getScope(currentScopeIndex).scope;
+      let scopeStructure = scopeTreeManager.getScope(currentScopeIndex) || scopeTreeManager.getRoot();
+      let scope = scopeStructure.scope;
 
       // 遍历节点内所有数据标签
       for (let i = 0; i < tags.length; i++) {
@@ -301,7 +310,7 @@ Air.Module('B.scope.scopeManager', function(require:any) {
     *返回：undefind
     **/
     private parseHTML(node:HTMLElement, currentScopeName:string) {
-      let scopeStructure = scopeTreeManager.getScope(currentScopeName);
+      let scopeStructure = scopeTreeManager.getScope(currentScopeName) || scopeTreeManager.getRoot();;
       tryGenerateSubViewScope(node, scopeStructure);
       let scope = scopeStructure.scope;
       existDirective(node, scopeStructure, this.watchData)
@@ -338,26 +347,42 @@ Air.Module('B.scope.scopeManager', function(require:any) {
     *返回：undefind
     **/
     private parseTemplate(rootElement:HTMLElement,currentScopeName:string='root', ...other:Array<any>){
-      let treeWalker = document.createTreeWalker(rootElement);
+      // let treeWalker = document.createTreeWalker(rootElement);
+      let treeWalker = [].concat.apply(rootElement,rootElement.querySelectorAll("*"));
       let scopeList:Array<string> = [];
       let lastViewEndElement:Array<Node> = [];
       // let currentScopeName;
+      let index:number = 0;
       do {
-        let currentNode:HTMLElement = (<HTMLElement>treeWalker.currentNode);
+        // let currentNode:HTMLElement = (<HTMLElement>treeWalker.currentNode);
+        let currentNode = (<HTMLElement>treeWalker[index]);
         if(isView(currentNode)) {
           scopeList.push(currentScopeName);
           let lastChildElement = currentNode.lastChild;
           lastChildElement && lastViewEndElement.push(lastChildElement);
 
           currentScopeName = currentNode.getAttribute('b-scope-key') || currentNode.getAttribute('name');
-          let parentScopName:string = scopeList[scopeList.length-1] || 'root';
+          let parentScopName:string = scopeList[scopeList.length-2];
           scopeTreeManager.addScope(parentScopName, currentScopeName);
         } else if (isRepeat(currentNode)) {
           let repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
+          index++;
+          continue;
+          // treeWalker.nextNode();
+          // let nextSibling = currentNode.nextSibling;
+          // do {
+          //   treeWalker.nextNode();
+          //   if(treeWalker.currentNode===nextSibling){
+          //     currentNode = (<HTMLElement>treeWalker.currentNode);
+          //     // continue;
+          //   }
+          // } while(treeWalker.currentNode!==nextSibling)
         }
+        
 
         switch (currentNode.nodeType) {
           case nodeUtil.type.HTML:
+            
             this.parseHTML(currentNode, currentScopeName);
             break;
           case nodeUtil.type.TEXT:
@@ -366,12 +391,21 @@ Air.Module('B.scope.scopeManager', function(require:any) {
             break;
           default:
         }
-        
+
         if(lastViewEndElement[lastViewEndElement.length-1] === currentNode) {
           lastViewEndElement.pop();
           currentScopeName = scopeList.pop();
         }
-      } while(treeWalker.nextNode())
+
+        index++;
+        let result = treeWalker[index] && treeWalker[index].outerHTML
+      } while(index<treeWalker.length)
+
+      var nodeIterator = document.createNodeIterator(rootElement);
+      console.log(nodeIterator.nextNode().nodeName,"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+      console.log(nodeIterator.nextNode(),"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+      console.log(nodeIterator.nextNode(),"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
     }
 
     private parseTemplateBAK (node:any, scopeName:any, currentScopeIndex:any, isSub:any, needScope?:any):any {

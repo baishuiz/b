@@ -1,15 +1,15 @@
 describe('远程模板', function () {
 
   var loadingstate;
-   var loadingTest = {
-     show : function(){
-       loadingstate = "active"
-     },
+    var loadingTest = {
+      show : function(){
+        loadingstate = "active";
+      },
 
-     hide : function(){
-       loadingstate = "hide"
-     }
-   }
+      hide : function(){
+        loadingstate = "hide";
+      }
+    };
     b.views.loading.setLoading(loadingTest);
 
   it('初始化', function (done) {
@@ -23,7 +23,7 @@ describe('远程模板', function () {
         // 模板 HTML元素引用
         var activeView = b.views.getActive().getDom();
 
-        var activeViewContent = activeView.querySelector('p')
+        var activeViewContent = activeView.querySelector('p');
         var img = activeView.querySelector('img');
         expect(activeViewContent.innerText).toEqual('hello remote page');
         expect(img.src).toEqual('http://image.cjia.com/roommodel%2F4x3%2F801.jpg');

@@ -6,7 +6,7 @@ Air.run(function (require) {
             this.FRAMEWORK_NAME = 'b';
             this.views = viewManager;
             this.router = router;
-            this.scopeManagerr = scopeManager;
+            this.scopeManager = scopeManager;
             this.service = serviceFactory;
             this.run = run;
             this.Module = Air.Module;

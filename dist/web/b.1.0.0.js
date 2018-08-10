@@ -754,87 +754,52 @@
   }
   return api;
 });
-;Air.Module('B.scope.ScopeTreeManager', function(require) {
-  var Scope = require('B.scope.Scope');
-
-  /**
-   *作用：节点管理器类
-   *参数：根 scope数据对象
-   *返回：节点管理器 API
-   *TODO: 考虑改为单例模式
-   **/
-  function ScopeTreeManager(rootScope) {
-    var scopeTree = []; // scope 栈
-    var scopeMap = {};
-    var getStructure = function() {
-      return {
-        scope: null,
-        // mScope : null,
-        pn: null, // parent scope index
-        name: null
-      };
-    };
-
-    var getScope = function(index) {
-      return scopeTree[index] || null;
-    }
-
-    /**
-     *作用：更新根scope
-     *参数：scope 新数据对象
-     *返回：undefind
-     **/
-    var setRootScope = function(scope) {
-      var rootScope = scopeTree[0] || getStructure();
-      rootScope.scope = rootScope.scope || {};
-      beacon.utility.merge(rootScope.scope, scope);
-      scopeTree[0] = rootScope;
-      scopeTree['root'] = rootScope;
-    }
-
-    /**
-     *作用：生成新的scope结构，该结构内含 scope 及 对应的中间scope（mscope）
-     *参数：父级scope结构的索引值
-     *返回：生成的scope结构的索引值
-     **/
-    var addScope = function(parentIndex, scopeName) {
-      var parentScopeStructure = getScope(parentIndex)||getScope(0);
-      var newScope = getStructure();
-      scopeTree[scopeName] = newScope;
-      var scopeIndex = scopeTree.push(newScope) - 1;
-      newScope.scope = new Scope(parentScopeStructure.scope);
-      newScope.pn = parentIndex;
-      newScope.name = scopeName;
-      newScope.index = scopeIndex;
-      scopeMap[scopeName] = newScope;
-      // return scopeIndex;
-      return scopeName;
-    }
-
-    var getScopeByName = function(scopeName) {
-      return scopeMap[scopeName];
-    }
-
-    var getScopeInstanceByName = function(scopeName) {
-      var scopeStructure = scopeMap[scopeName] || {};
-      return scopeStructure.scope;
-    }
-
-    // 初始化根 scope
-    setRootScope(rootScope);
-
-    var api = {
-      addScope: addScope,
-      getScope: getScope,
-      getScopeByName: getScopeByName,
-      getScopeInstanceByName: getScopeInstanceByName,
-      setRootScope: setRootScope
-    };
-
-    return api;
-  }
-
-  return ScopeTreeManager;
+;Air.Module('B.scope.ScopeTreeManager', function (require) {
+    var Scope = require('B.scope.Scope');
+    var ScopeTreeManager = (function () {
+        function ScopeTreeManager(rootScope) {
+            if (rootScope === void 0) { rootScope = {}; }
+            this.scopeMap = {};
+            var scopeStructure = ScopeTreeManager.getStructure();
+            scopeStructure.scope = rootScope;
+            this.rootScope = scopeStructure;
+        }
+        ScopeTreeManager.getStructure = function () {
+            return {
+                scope: null,
+                pn: null,
+                name: null
+            };
+        };
+        ;
+        ScopeTreeManager.prototype.getScope = function (scopeName) {
+            return this.getScopeByName(scopeName);
+        };
+        ScopeTreeManager.prototype.getRoot = function () {
+            return this.rootScope;
+        };
+        ScopeTreeManager.prototype.setRootScope = function (scope) {
+            this.rootScope.scope = scope;
+        };
+        ScopeTreeManager.prototype.addScope = function (parentName, scopeName) {
+            var parentScopeStructure = this.getScope(parentName) || this.rootScope;
+            var newScope = ScopeTreeManager.getStructure();
+            this.scopeMap[scopeName] = newScope;
+            newScope.scope = new Scope(parentScopeStructure.scope);
+            newScope.pn = parentName;
+            newScope.name = scopeName;
+            return scopeName;
+        };
+        ScopeTreeManager.prototype.getScopeByName = function (scopeName) {
+            return this.scopeMap[scopeName];
+        };
+        ScopeTreeManager.prototype.getScopeInstanceByName = function (scopeName) {
+            var scopeStructure = this.getScope(scopeName) || {};
+            return scopeStructure.scope;
+        };
+        return ScopeTreeManager;
+    }());
+    return ScopeTreeManager;
 });
 ;Air.Module('B.directive.Repeater', function(require) {
   var attrName = 'b-repeat';
@@ -1309,7 +1274,7 @@
     var util = require('B.util.util');
     var nodeUtil = require('B.util.node');
     var memCache = require('B.data.memCache');
-    var scopeTreeManager = new ScopeTreeManager(rootScope);
+    var scopeTreeManager = new ScopeTreeManager();
     function isView(node) {
         var isHTMLElement = util.isHTML(node);
         return isHTMLElement && (node.nodeName.toUpperCase() == 'VIEW');
@@ -1320,7 +1285,7 @@
     }
     var backtrackingPoints = [];
     function bindObjectData(dataPath, currentScopeIndex, callback) {
-        var scopeStructure = scopeTreeManager.getScope(currentScopeIndex);
+        var scopeStructure = scopeTreeManager.getScope(currentScopeIndex) || scopeTreeManager.getRoot();
         var scope = scopeStructure.scope;
         var activePath = '';
         var pathNodes = dataPath.split('.') || [];
@@ -1371,9 +1336,9 @@
             var viewName_1 = node.getAttribute('name');
             var subScopeName = scopeKey || viewName_1;
             var subScope = scopeStructure.scope;
-            var currentScopeIndex = scopeStructure.index;
+            var currentScopeName = scopeStructure.name;
             if (!subScope) {
-                var subScopeIndex = scopeTreeManager.addScope(currentScopeIndex, subScopeName);
+                var subScopeIndex = scopeTreeManager.addScope(currentScopeName, subScopeName);
                 subScope = scopeTreeManager.getScope(subScopeIndex);
             }
             if (scopeKey) {
@@ -1445,14 +1410,20 @@
     });
     var ScopeManager = (function () {
         function ScopeManager() {
-            this.getScope = scopeTreeManager.getScopeByName;
-            this.setRoot = scopeTreeManager.setRootScope;
-            this.getScopeInstance = scopeTreeManager.getScopeInstanceByName;
+            this.getScope = function (scopeName) {
+                return scopeTreeManager.getScopeByName(scopeName);
+            };
+            this.setRoot = function (scope) {
+                return scopeTreeManager.setRootScope(scope);
+            };
+            this.getScopeInstance = function (scopeName) {
+                return scopeTreeManager.getScopeInstanceByName(scopeName);
+            };
         }
         ScopeManager.prototype.parseScope = function (viewName, viewElement, needScope) {
             var scopeStructure = scopeTreeManager.getScopeByName(viewName);
             if (!scopeStructure) {
-                this.parseTemplate(viewElement, viewName, null, null, needScope);
+                this.parseTemplate(viewElement, viewName);
                 scopeStructure = scopeTreeManager.getScopeByName(viewName) || {};
             }
             return scopeStructure.scope;
@@ -1469,7 +1440,8 @@
         };
         ScopeManager.prototype.parseTEXT = function (node, currentScopeIndex) {
             var tags = node.nodeValue.match(/{{.*?}}/g) || [];
-            var scope = scopeTreeManager.getScope(currentScopeIndex).scope;
+            var scopeStructure = scopeTreeManager.getScope(currentScopeIndex) || scopeTreeManager.getRoot();
+            var scope = scopeStructure.scope;
             for (var i = 0; i < tags.length; i++) {
                 var activeTag = tags[i];
                 this.watchData(activeTag, node, currentScopeIndex);
@@ -1481,7 +1453,8 @@
             }
         };
         ScopeManager.prototype.parseHTML = function (node, currentScopeName) {
-            var scopeStructure = scopeTreeManager.getScope(currentScopeName);
+            var scopeStructure = scopeTreeManager.getScope(currentScopeName) || scopeTreeManager.getRoot();
+            ;
             tryGenerateSubViewScope(node, scopeStructure);
             var scope = scopeStructure.scope;
             existDirective(node, scopeStructure, this.watchData);
@@ -1511,21 +1484,24 @@
             for (var _i = 2; _i < arguments.length; _i++) {
                 other[_i - 2] = arguments[_i];
             }
-            var treeWalker = document.createTreeWalker(rootElement);
+            var treeWalker = [].concat.apply(rootElement, rootElement.querySelectorAll("*"));
             var scopeList = [];
             var lastViewEndElement = [];
+            var index = 0;
             do {
-                var currentNode = treeWalker.currentNode;
+                var currentNode = treeWalker[index];
                 if (isView(currentNode)) {
                     scopeList.push(currentScopeName);
                     var lastChildElement = currentNode.lastChild;
                     lastChildElement && lastViewEndElement.push(lastChildElement);
                     currentScopeName = currentNode.getAttribute('b-scope-key') || currentNode.getAttribute('name');
-                    var parentScopName = scopeList[scopeList.length - 1] || 'root';
+                    var parentScopName = scopeList[scopeList.length - 2];
                     scopeTreeManager.addScope(parentScopName, currentScopeName);
                 }
                 else if (isRepeat(currentNode)) {
                     var repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
+                    index++;
+                    continue;
                 }
                 switch (currentNode.nodeType) {
                     case nodeUtil.type.HTML:
@@ -1541,7 +1517,13 @@
                     lastViewEndElement.pop();
                     currentScopeName = scopeList.pop();
                 }
-            } while (treeWalker.nextNode());
+                index++;
+                var result = treeWalker[index] && treeWalker[index].outerHTML;
+            } while (index < treeWalker.length);
+            var nodeIterator = document.createNodeIterator(rootElement);
+            console.log(nodeIterator.nextNode().nodeName, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            console.log(nodeIterator.nextNode(), "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            console.log(nodeIterator.nextNode(), "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         };
         ScopeManager.prototype.parseTemplateBAK = function (node, scopeName, currentScopeIndex, isSub, needScope) {
             var _this = this;
@@ -2583,7 +2565,7 @@
             this.FRAMEWORK_NAME = 'b';
             this.views = viewManager;
             this.router = router;
-            this.scopeManagerr = scopeManager;
+            this.scopeManager = scopeManager;
             this.service = serviceFactory;
             this.run = run;
             this.Module = Air.Module;

@@ -20,7 +20,7 @@ Air.run(function(require:any) {
 
     public views  = viewManager;
     public router = router;
-    public scopeManagerr = scopeManager;
+    public scopeManager = scopeManager;
     public service = serviceFactory;
     public run = run;
     public Module   =  Air.Module;

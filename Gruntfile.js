@@ -9,7 +9,7 @@ module.exports = function(grunt){
 
         ts: {
           default : {
-              src: ["'./dist//**/*.ts"],
+              src: ["'./dist/**/*.ts"],
               tsconfig :true
           }
         },
@@ -17,9 +17,9 @@ module.exports = function(grunt){
         connect: {
           server: {
             options: {
-              port: 8001,
+              port: 8000,
               base: './',
-              useAvailablePort: false,
+              useAvailablePort: true,
               middleware: function(connect, options, middlewares) {
                 // inject a custom middleware into the array of default middlewares
                 // this is likely the easiest way for other grunt plugins to
