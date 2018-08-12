@@ -367,30 +367,19 @@ Air.Module('B.scope.scopeManager', function(require:any) {
           scopeTreeManager.addScope(parentScopName, currentScopeName);
         } else if (isRepeat(currentNode)) {
           let repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
-          // index++;
+          // continue;
+          let nextSibling = currentNode.nextSibling;
+          // while(currentNode !== nextSibling) {
+          //   currentNode = <HTMLElement>nodeIterator.nextNode()
+            
+          // } 
           continue;
-          // treeWalker.nextNode();
-          // let nextSibling = currentNode.nextSibling;
-          // do {
-          //   treeWalker.nextNode();
-          //   if(treeWalker.currentNode===nextSibling){
-          //     currentNode = (<HTMLElement>treeWalker.currentNode);
-          //     // continue;
-          //   }
-          // } while(treeWalker.currentNode!==nextSibling)
         }
         
 
         switch (currentNode.nodeType) {
           case nodeUtil.type.HTML:
-
             this.parseHTML(currentNode, currentScopeName);
-            let nodeIterator = document.createNodeIterator(rootElement, NodeFilter.SHOW_TEXT);
-            let currentTextNode;
-
-            while (currentTextNode = nodeIterator.nextNode()) {
-              this.parseTEXT(currentTextNode, currentScopeName);
-            }
             break;
           case nodeUtil.type.TEXT:
           case nodeUtil.type.ATTR:

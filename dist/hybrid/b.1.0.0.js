@@ -1663,16 +1663,12 @@
                 }
                 else if (isRepeat(currentNode)) {
                     var repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
+                    var nextSibling = currentNode.nextSibling;
                     continue;
                 }
                 switch (currentNode.nodeType) {
                     case nodeUtil.type.HTML:
                         this.parseHTML(currentNode, currentScopeName);
-                        var nodeIterator_1 = document.createNodeIterator(rootElement, NodeFilter.SHOW_TEXT);
-                        var currentTextNode = void 0;
-                        while (currentTextNode = nodeIterator_1.nextNode()) {
-                            this.parseTEXT(currentTextNode, currentScopeName);
-                        }
                         break;
                     case nodeUtil.type.TEXT:
                     case nodeUtil.type.ATTR:

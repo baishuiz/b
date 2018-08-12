@@ -123,9 +123,9 @@ describe('远程模板', function () {
     var goToMiddewareParamResult;
 
     // 中间件1
-    b.views.addMiddleware('beforeGoTo', function(paramObj, next) {
-      if (paramObj.viewName === 'remote_page_view_middleware_1') {
-        goToMiddewareParamResult = paramObj.options.toLocation;
+    b.views.addMiddleware('beforeGoTo', function(target, next) {
+      if (target.viewName === 'remote_page_view_middleware_1') {
+        goToMiddewareParamResult = target.options.toLocation;
         b.views.goTo('remote_page_view_middleware_2');
       } else {
         next();
@@ -140,7 +140,7 @@ describe('远程模板', function () {
       }
     });
 
-    b.views.goTo('remote_page_view_middleware_1', {toLocation:'123'});
+    
 
     // 1：监听 remote_page_map 的 onHide
     var activeView = b.views.getActive();
@@ -159,7 +159,7 @@ describe('远程模板', function () {
         done();
       });
     });
-
+    b.views.goTo('remote_page_view_middleware_1', {toLocation:'123'});
   });
 
 }); // 远程模板 over
