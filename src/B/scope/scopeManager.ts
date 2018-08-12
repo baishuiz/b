@@ -348,14 +348,15 @@ Air.Module('B.scope.scopeManager', function(require:any) {
     **/
     private parseTemplate(rootElement:HTMLElement,currentScopeName:string='root', ...other:Array<any>){
       // let treeWalker = document.createTreeWalker(rootElement);
-      let treeWalker = [].concat.apply(rootElement,rootElement.querySelectorAll("*"));
+      let nodeIterator = document.createNodeIterator(rootElement, NodeFilter.SHOW_ALL);
+      // let treeWalker = [].concat.apply(rootElement,rootElement.querySelectorAll("*"));
       let scopeList:Array<string> = [];
       let lastViewEndElement:Array<Node> = [];
-      // let currentScopeName;
-      let index:number = 0;
+      let currentNode = rootElement;
+      // let index:number = 0;
       do {
         // let currentNode:HTMLElement = (<HTMLElement>treeWalker.currentNode);
-        let currentNode = (<HTMLElement>treeWalker[index]);
+        // let currentNode = (<HTMLElement>treeWalker[index]);
         if(isView(currentNode)) {
           scopeList.push(currentScopeName);
           let lastChildElement = currentNode.lastChild;
@@ -366,7 +367,7 @@ Air.Module('B.scope.scopeManager', function(require:any) {
           scopeTreeManager.addScope(parentScopName, currentScopeName);
         } else if (isRepeat(currentNode)) {
           let repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
-          index++;
+          // index++;
           continue;
           // treeWalker.nextNode();
           // let nextSibling = currentNode.nextSibling;
@@ -382,8 +383,14 @@ Air.Module('B.scope.scopeManager', function(require:any) {
 
         switch (currentNode.nodeType) {
           case nodeUtil.type.HTML:
-            
+
             this.parseHTML(currentNode, currentScopeName);
+            let nodeIterator = document.createNodeIterator(rootElement, NodeFilter.SHOW_TEXT);
+            let currentTextNode;
+
+            while (currentTextNode = nodeIterator.nextNode()) {
+              this.parseTEXT(currentTextNode, currentScopeName);
+            }
             break;
           case nodeUtil.type.TEXT:
           case nodeUtil.type.ATTR:
@@ -397,14 +404,11 @@ Air.Module('B.scope.scopeManager', function(require:any) {
           currentScopeName = scopeList.pop();
         }
 
-        index++;
-        let result = treeWalker[index] && treeWalker[index].outerHTML
-      } while(index<treeWalker.length)
+        // index++;
+        // let result = treeWalker[index] && treeWalker[index].outerHTML
+      } while(currentNode = <HTMLElement>nodeIterator.nextNode())
 
-      var nodeIterator = document.createNodeIterator(rootElement);
-      console.log(nodeIterator.nextNode().nodeName,"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-      console.log(nodeIterator.nextNode(),"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-      console.log(nodeIterator.nextNode(),"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+      
 
     }
 

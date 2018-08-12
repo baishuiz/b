@@ -1484,12 +1484,11 @@
             for (var _i = 2; _i < arguments.length; _i++) {
                 other[_i - 2] = arguments[_i];
             }
-            var treeWalker = [].concat.apply(rootElement, rootElement.querySelectorAll("*"));
+            var nodeIterator = document.createNodeIterator(rootElement, NodeFilter.SHOW_ALL);
             var scopeList = [];
             var lastViewEndElement = [];
-            var index = 0;
+            var currentNode = rootElement;
             do {
-                var currentNode = treeWalker[index];
                 if (isView(currentNode)) {
                     scopeList.push(currentScopeName);
                     var lastChildElement = currentNode.lastChild;
@@ -1500,12 +1499,16 @@
                 }
                 else if (isRepeat(currentNode)) {
                     var repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
-                    index++;
                     continue;
                 }
                 switch (currentNode.nodeType) {
                     case nodeUtil.type.HTML:
                         this.parseHTML(currentNode, currentScopeName);
+                        var nodeIterator_1 = document.createNodeIterator(rootElement, NodeFilter.SHOW_TEXT);
+                        var currentTextNode = void 0;
+                        while (currentTextNode = nodeIterator_1.nextNode()) {
+                            this.parseTEXT(currentTextNode, currentScopeName);
+                        }
                         break;
                     case nodeUtil.type.TEXT:
                     case nodeUtil.type.ATTR:
@@ -1517,13 +1520,7 @@
                     lastViewEndElement.pop();
                     currentScopeName = scopeList.pop();
                 }
-                index++;
-                var result = treeWalker[index] && treeWalker[index].outerHTML;
-            } while (index < treeWalker.length);
-            var nodeIterator = document.createNodeIterator(rootElement);
-            console.log(nodeIterator.nextNode().nodeName, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            console.log(nodeIterator.nextNode(), "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            console.log(nodeIterator.nextNode(), "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            } while (currentNode = nodeIterator.nextNode());
         };
         ScopeManager.prototype.parseTemplateBAK = function (node, scopeName, currentScopeIndex, isSub, needScope) {
             var _this = this;
