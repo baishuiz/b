@@ -236,9 +236,8 @@ Air.Module('B.scope.scopeManager', function (require) {
                     scopeTreeManager.addScope(parentScopName, currentScopeName);
                 }
                 else if (isRepeat(currentNode)) {
-                    var repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
                     var nextSibling = currentNode.nextSibling;
-                    continue;
+                    var repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
                 }
                 switch (currentNode.nodeType) {
                     case nodeUtil.type.HTML:

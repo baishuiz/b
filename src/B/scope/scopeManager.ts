@@ -366,14 +366,15 @@ Air.Module('B.scope.scopeManager', function(require:any) {
           let parentScopName:string = scopeList[scopeList.length-2];
           scopeTreeManager.addScope(parentScopName, currentScopeName);
         } else if (isRepeat(currentNode)) {
+          let nextSibling = currentNode.nextSibling;
           let repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
           // continue;
-          let nextSibling = currentNode.nextSibling;
+          
           // while(currentNode !== nextSibling) {
           //   currentNode = <HTMLElement>nodeIterator.nextNode()
             
           // } 
-          continue;
+          // continue;
         }
         
 

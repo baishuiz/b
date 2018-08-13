@@ -138,15 +138,21 @@ module.exports = function(grunt){
                   './test/spec/TDK/*Spec.js'
                 ],
                 keepRunner: true,
+                noSandbox:true,
+                version:'2.9',
+                summary:false,
+                '--random':false,
                 host: 'http://127.0.0.1:8000/',
                 vendor: ['node_modules/jasmine-ajax/lib/mock-ajax.js'],
-                template: require('grunt-template-jasmine-istanbul'),
-                templateOptions: {
-                    template : 'test/template/DefaultRunner.tmpl',
-                    coverage: 'bin/coverage/coverage.json',
-                    report: 'bin/coverage',
-                    files:'./dist/web/<%=output.fileName %>'
-                }
+                template: 'test/template/DefaultRunner.tmpl'
+                // template: require('grunt-template-jasmine-istanbul'),
+                // templateOptions: {
+                //     template : './test/template/DefaultRunner.tmpl',
+
+                //     coverage: './bin/coverage/coverage.json',
+                //     report: './bin/coverage',
+                //     files:'./dist/web/<%=output.fileName %>'
+                // }
               }
             },
             
