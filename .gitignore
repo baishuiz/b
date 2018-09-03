@@ -1,5 +1,6 @@
 #typescript cache
 .tscache
+.tstemp
 
 # Logs
 logs

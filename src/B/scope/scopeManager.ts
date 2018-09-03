@@ -132,30 +132,6 @@ Air.Module('B.scope.scopeManager', function(require:any) {
 
 
 
-//   function parseTemplateProxy(f:Function) {
-//     let value;
-//     let active = false;
-//     let accumulated = [];
-
-//     return function accumulator() {
-//         accumulated.push(arguments);
-
-//         if (!active) {
-//             active = true;
-
-//             while (accumulated.length) {
-//                 value = f.apply(this, accumulated.shift());
-//             }
-
-//             active = false;
-
-//             return value;
-//         }
-//     }
-// }
-
-// let parseTemplate = parseTemplateProxy(parseTemplateRAW);
-
 
 
   /**
@@ -368,13 +344,12 @@ Air.Module('B.scope.scopeManager', function(require:any) {
         } else if (isRepeat(currentNode)) {
           let nextSibling = currentNode.nextSibling;
           let repeatNode = this.createRepeatNodes(currentNode, currentScopeName);
-          // continue;
-          
-          // while(currentNode !== nextSibling) {
-          //   currentNode = <HTMLElement>nodeIterator.nextNode()
-            
-          // } 
-          // continue;
+          if(repeatNode) {
+            for (let nodeIndex = 0; nodeIndex < repeatNode.length; nodeIndex++) {
+              const element = repeatNode[nodeIndex];
+              this.parseTemplate(element,currentScopeName);
+            }
+          }
         }
         
 
@@ -402,77 +377,7 @@ Air.Module('B.scope.scopeManager', function(require:any) {
 
     }
 
-    private parseTemplateBAK (node:any, scopeName:any, currentScopeIndex:any, isSub:any, needScope?:any):any {
-    // function parseTemplateRAW(node, scopeName, currentScopeIndex, isSub, needScope) {
-
-      if (!node) {
-        return
-      }
-
-      if (!isSub) {
-        backtrackingPoints = [];
-      }
-      currentScopeIndex = currentScopeIndex || 0;
-
-      let goOn = (nextNode:any, scopeName:any) => {
-        let targetScopeIndex;
-        if (!nextNode && isSub) {
-          let lastNode = backtrackingPoints.pop();
-          nextNode = lastNode && lastNode.nextSibling;
-          targetScopeIndex = isView(lastNode) ? scopeTreeManager.getScope(currentScopeIndex).pn : currentScopeIndex
-          scopeName = isView(lastNode) && targetScopeIndex;
-        }
-
-        return this.parseTemplate(nextNode, scopeName, targetScopeIndex || currentScopeIndex, true);
-      }
-
-      if (isView(node) || needScope) {
-        // view scope 压栈
-        scopeName = node.getAttribute('b-scope-key') || node.getAttribute('name');
-        currentScopeIndex = scopeTreeManager.addScope(currentScopeIndex, scopeName);
-        // scopeName = currentScopeIndex;
-      } else if (isRepeat(node)) { // view 不允许进行 repeat
-        let nextNode = isSub && node.nextSibling;
-        let repeatNode = this.createRepeatNodes(node, currentScopeIndex);
-        if (!repeatNode) {
-          // repeat 元素没有下一个节点时退栈，统一放到 goOn 中处理
-          return goOn(nextNode, scopeName);
-        } else {
-          node = repeatNode;
-        }
-      }
-
-
-
-      // 回溯点压栈
-      if (isSub && node.nextSibling && node.firstChild) { backtrackingPoints.push(node) };
-
-      let nextSibling = node.nextSibling;
-      switch (node.nodeType) {
-        case nodeUtil.type.HTML:
-          this.parseHTML(node, currentScopeIndex);
-          break;
-        case nodeUtil.type.TEXT:
-        case nodeUtil.type.ATTR:
-          this.parseTEXT(node, currentScopeIndex);
-          break;
-        default:
-      }
-
-      let nextNode;
-      if (!node.parentElement) {
-        if (isSub && node.firstChild) {
-          backtrackingPoints.pop();
-        }
-
-        nextNode = (isSub && nextSibling);
-      } else {
-        nextNode = node.firstChild || (isSub && nextSibling);
-      }
-
-      return goOn(nextNode, scopeName);
-    }
-
+ 
     /**
      *作用：基于 repeat 模板生成对应 UI元素
     *参数: <template> repeat模板引用.
@@ -485,8 +390,10 @@ Air.Module('B.scope.scopeManager', function(require:any) {
         this.parseTemplate(node, scopeName, currentScopeIndex,isSub, needScope);
       }
       let repeater = new Repeater(template, currentScopeIndex, scopeStructure, parseTemplateProxy);
-      let newFirstNode = repeater.updateUI()[0];
-      return newFirstNode;
+      let newNodes = repeater.updateUI();
+      // let newFirstNode = repeater.updateUI()[0];
+      // return newFirstNode;
+      return newNodes;
     }
 
   }
