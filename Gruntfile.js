@@ -15,6 +15,10 @@ module.exports = function(grunt){
           }
         },
 
+        clean: {
+          dest: ["dist/"]
+      },        
+
         connect: {
           server: {
             options: {
@@ -232,7 +236,7 @@ module.exports = function(grunt){
 
     });
 
-    grunt.registerTask('clean', function(){
+    grunt.registerTask('cleanTsTemp', function(){
       grunt.file.delete('./src/.tstemp');
     });
 
@@ -241,9 +245,10 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks("grunt-ts");
     // grunt.registerTask("default", ["ts"]);
-    grunt.registerTask('default', ['connect',  'concat:web','ts','concat:addLibs', 'uglify', 'jasmine:mini', 'clean']);
-    grunt.registerTask('package', ['concat:web','ts','concat:addLibs' , 'uglify','jshint', 'clean']);
-    grunt.registerTask('debug', [ 'connect', 'concat:web','ts','concat:addLibs' , 'jasmine:pivotal', 'jshint', 'clean']);
+    grunt.registerTask('default', ['clean', 'connect',  'concat:web','ts','concat:addLibs', 'uglify', 'jasmine:mini', 'cleanTsTemp']);
+    grunt.registerTask('package', ['clean', 'concat:web','ts','concat:addLibs' , 'uglify','jshint', 'cleanTsTemp']);
+    grunt.registerTask('debug', [ 'clean', 'connect', 'concat:web','ts','concat:addLibs' , 'jasmine:pivotal', 'jshint', 'cleanTsTemp']);
 };

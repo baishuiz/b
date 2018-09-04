@@ -32,9 +32,10 @@
   "homepage": "https://github.com/baishuiz/b.js",
   "devDependencies": {
     "grunt": "^1.0.0",
+    "grunt-contrib-clean": "^1.1.0",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",
-    "grunt-contrib-jasmine": "^2.0.1",
+    "grunt-contrib-jasmine": "^2.0.2",
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-uglify": "^3.0.2",
     "grunt-template-jasmine-istanbul": "^0.5.0",
